@@ -1,3 +1,7 @@
+/*
+ * This file checks the database every 15 min and
+ * updates it if there's a new tweet form @cool_oh_nft
+ */
 import axios from 'axios'
 import { Client, TextChannel } from 'discord.js';
 import dotenv from 'dotenv'

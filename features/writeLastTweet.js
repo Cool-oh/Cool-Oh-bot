@@ -13,6 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = void 0;
+/*
+ * This file checks the database every 15 min and
+ * updates it if there's a new tweet form @cool_oh_nft
+ */
 const axios_1 = __importDefault(require("axios"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const backendless_1 = __importDefault(require("backendless"));
