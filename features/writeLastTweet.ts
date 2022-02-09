@@ -201,7 +201,7 @@ export default async (client: Client) => {
         await backendlessUpdateIfNeeded()
 
          if(totalNewTweetsSaved !=0 ) {
-            (client.channels.cache.get(channelNotificationsId!) as TextChannel ).send('Just updated the database with ' + totalNewTweetsSaved + ' Tweets!')
+            (client.channels.cache.get(channelNotificationsId!) as TextChannel ).send('Just updated the database with ' + totalNewTweetsSaved + ' Tweets...')
             console.log('Messaged Discord! New tweets saved: ' + totalNewTweetsSaved)
         }
          setTimeout(checkIfUpdateNeeded, 1000 * 60 * 15)
