@@ -181,7 +181,7 @@ exports.default = (client) => __awaiter(void 0, void 0, void 0, function* () {
         return __awaiter(this, void 0, void 0, function* () {
             yield backendlessUpdateIfNeeded();
             if (totalNewTweetsSaved != 0) {
-                client.channels.cache.get(channelNotificationsId).send('Just updated the database with ' + totalNewTweetsSaved + ' Tweets...');
+                client.channels.cache.get(channelNotificationsId).send('Just updated the database with ' + totalNewTweetsSaved + ' Tweets!');
                 console.log('Messaged Discord! New tweets saved: ' + totalNewTweetsSaved);
             }
             setTimeout(checkIfUpdateNeeded, 1000 * 60 * 15);
