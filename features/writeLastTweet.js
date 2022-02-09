@@ -106,9 +106,9 @@ function getAllTweets(twitterUserID, maxResults, since_id) {
         tempTimelineData = yield axios_1.default.get(uri, headers);
         timelineData = tempTimelineData;
         nextPaginationToken = tempTimelineData.data.meta.next_token;
-        console.log(" Is there pagination?: " + nextPaginationToken);
         if (nextPaginationToken != undefined) {
             //There's pagination and there are more tweets
+            console.log(" There's pagination: " + nextPaginationToken);
             tempUri = uri + '&pagination_token=' + nextPaginationToken;
             let paginationID = 1;
             while (nextPaginationToken != undefined) {
@@ -144,7 +144,7 @@ function getBackendlessLastTweet() {
             queryBuilder = backendless_1.default.DataQueryBuilder.create().setWhereClause(whereClause);
             result = yield backendless_1.default.Data.of(backendlessTable).find(queryBuilder);
             if (result.length > 1) {
-                console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...');
+                //console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...' )
                 let sortedArray = sortByKey(result, backendlessTwitterIdColumn); // Sort the thread by tweetId
                 let lastTweetStored = sortedArray.at(-1); //get last item in the sorted array. It's the latest one.
                 return lastTweetStored;
@@ -169,7 +169,7 @@ function backendlessUpdateIfNeeded() {
             console.log('Database up to date');
         }
         else {
-            //database need to be updated
+            //database needs to be updated
             console.log('Database NOT up to date');
             console.log('Saving new tweets after tweet ID: ' + (databaseLastTweet === null || databaseLastTweet === void 0 ? void 0 : databaseLastTweet.tweet_id) + ' ' + (databaseLastTweet === null || databaseLastTweet === void 0 ? void 0 : databaseLastTweet.tweet_text));
             saveAllTweetsToBackendless(twitterTimeline);

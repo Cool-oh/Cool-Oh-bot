@@ -1,6 +1,6 @@
 import DiscordJS, { Intents } from 'discord.js'
 import dotenv from 'dotenv'
-import WOKCommands from 'wokCommands'
+import WOKCommands from 'wokcommands'
 import path from 'path'
 
 
@@ -16,10 +16,11 @@ const client = new DiscordJS.Client({
 })
 
 client.on('ready', () => {
+      
     new WOKCommands(client, {
         commandsDir: path.join(__dirname, 'commands'),
         featuresDir:path.join(__dirname, 'features'),
-        typeScript: true,
+        typeScript: false,
         testServers: process.env.GUILD_ID,
         botOwners: process.env.BOT_OWNER1,
         mongoUri: process.env.MONGO_URI

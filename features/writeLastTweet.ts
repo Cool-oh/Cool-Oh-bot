@@ -3,9 +3,9 @@
  * updates it if there's a new tweet form @cool_oh_nft
  */
 import axios from 'axios'
-import { Client, TextChannel } from 'discord.js';
+import { Client, TextChannel } from 'discord.js'
 import dotenv from 'dotenv'
-import Backendless from 'backendless';
+import Backendless from 'backendless'
 import {Twitter_Cool_oh_NFT, TwitterTimelineData, Twitter_Cool_oh_NFT_To_Save} from '../interfaces/interfaces'
 
 const channelNotificationsId = process.env.CHANNEL_NOTIFICATIONS
@@ -107,10 +107,11 @@ async function getAllTweets(twitterUserID: string, maxResults: number, since_id?
     tempTimelineData = await axios.get(uri, headers)
     timelineData = tempTimelineData
     nextPaginationToken = tempTimelineData.data.meta.next_token
-    console.log(" Is there pagination?: " + nextPaginationToken)
+    
 
     if (nextPaginationToken != undefined) {
         //There's pagination and there are more tweets
+        console.log(" There's pagination: " + nextPaginationToken)
         tempUri = uri +'&pagination_token=' + nextPaginationToken
         let paginationID = 1
         while (nextPaginationToken != undefined) {
@@ -154,7 +155,7 @@ async function getBackendlessLastTweet() : Promise <Twitter_Cool_oh_NFT>{
         result =  await Backendless.Data.of( backendlessTable! ).find<Twitter_Cool_oh_NFT>( queryBuilder )
         if(result.length > 1)
         {
-            console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...' )
+            //console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...' )
             let sortedArray = sortByKey(result, backendlessTwitterIdColumn!) // Sort the thread by tweetId
             let lastTweetStored = sortedArray.at(-1) //get last item in the sorted array. It's the latest one.
             return lastTweetStored
@@ -184,7 +185,7 @@ async function backendlessUpdateIfNeeded(){
         console.log('Database up to date')
 
     }else{
-        //database need to be updated
+        //database needs to be updated
         console.log('Database NOT up to date')
         console.log('Saving new tweets after tweet ID: ' + databaseLastTweet?.tweet_id + ' ' + databaseLastTweet?.tweet_text)
         saveAllTweetsToBackendless(twitterTimeline)
