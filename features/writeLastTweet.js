@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.config = void 0;
+exports.config = exports.getBackendlessLastTweet = void 0;
 /*
  * This file checks the database every 15 min and
  * updates it if there's a new tweet form @cool_oh_nft
@@ -153,6 +153,7 @@ function getBackendlessLastTweet() {
         return result[0];
     });
 }
+exports.getBackendlessLastTweet = getBackendlessLastTweet;
 function sortByKey(array, key) {
     return array.sort(function (a, b) {
         var x = a[key];

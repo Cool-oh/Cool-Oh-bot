@@ -14,6 +14,9 @@ const twitterID = process.env.TWITTER_ID
 const backendlessTwitterIdColumn = process.env.BACKENDLESS_TWITTER_ID_COLUMN
 const twitterMaxQuery = Number(process.env.TWITTER_MAX_QUERY)
 const backendlessTable = process.env.BACKENDLESS_TABLE
+
+
+
 var totalNewTweetsSaved = 0
 const headers = {
     headers: {
@@ -107,7 +110,7 @@ async function getAllTweets(twitterUserID: string, maxResults: number, since_id?
     tempTimelineData = await axios.get(uri, headers)
     timelineData = tempTimelineData
     nextPaginationToken = tempTimelineData.data.meta.next_token
-    
+
 
     if (nextPaginationToken != undefined) {
         //There's pagination and there are more tweets
@@ -136,7 +139,7 @@ async function getAllTweets(twitterUserID: string, maxResults: number, since_id?
     return timelineData
 }
 
-async function getBackendlessLastTweet() : Promise <Twitter_Cool_oh_NFT>{
+export async function getBackendlessLastTweet() : Promise <Twitter_Cool_oh_NFT>{
 
     //first get Last Tweet
     var queryBuilder = Backendless.DataQueryBuilder.create();

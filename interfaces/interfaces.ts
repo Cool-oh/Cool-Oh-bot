@@ -8,6 +8,7 @@ export interface Twitter_Cool_oh_NFT {
     tweet_id: string,
     tweet_text: string
     date_published: Date
+    created: Date
 }
 
 export interface Twitter_Cool_oh_NFT_To_Save {
@@ -42,4 +43,9 @@ export interface TwitterTimelineData {
             next_token: string
             }
     }
+}
+
+export interface DatabaseCount {
+    count: number,
+    class: string
 }
