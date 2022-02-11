@@ -20,6 +20,6 @@ const server = (0, express_1.default)();
 server.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.send("pong");
 }));
-server.listen(pingPort, () => {
+server.listen(pingPort, "0.0.0.0", () => {
     console.log("Server is ready...");
 });

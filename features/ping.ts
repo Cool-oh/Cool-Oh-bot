@@ -11,7 +11,7 @@ server.get("/ping", async (req, res) => {
   })
 
 
-server.listen(pingPort, () => {
+server.listen(pingPort,"0.0.0.0", () => {
     console.log("Server is ready..." );
 
   })
