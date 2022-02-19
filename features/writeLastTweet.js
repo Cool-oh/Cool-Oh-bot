@@ -25,7 +25,7 @@ const backendlessMaxNumObjects = Number(process.env.BACKENDLESS_MAX_NUM_OBJECTS)
 const twitterID = process.env.TWITTER_ID;
 const backendlessTwitterIdColumn = process.env.BACKENDLESS_TWITTER_ID_COLUMN;
 const twitterMaxQuery = Number(process.env.TWITTER_MAX_QUERY);
-const backendlessTable = process.env.BACKENDLESS_TABLE;
+const backendlessTable = process.env.BACKENDLESS_TWITTER_TABLE;
 var totalNewTweetsSaved = 0;
 const headers = {
     headers: {

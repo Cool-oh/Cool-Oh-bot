@@ -1,0 +1,32 @@
+{
+    "color": "#0099ff",
+    "title": "INTRO TO COOL-OH QUESTS",
+    "url": "https://app.gitbook.com/s/y5Q05ZqXpPaJ2HS5kj6z/quests/intro-to-quests",
+    "author": {
+        "name": "Cool-Oh Bot",
+        "iconURL": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/Cool-oh-bot.png?raw=true",
+        "url": "https://cool-oh.com"
+    },
+    "description": "Welcome to Cool-Oh Quests!!",
+    "thumbnail": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/Cool-Oh_Knight_128x128.png?raw=true",
+    "fields": [
+        { "name": "Get involved in our community!!", "value": "Hey! You just found the best way to get involved in the Cool-Oh community. Below you will find available quests based on your current level. Earn $COOL tokens to buy NFT perks and EXP points to reach higher levels in our community.", "inline":false },
+        { "name": "\u200B", "value": "\u200B", "inline":false },
+        { "name": "YOUR LEVEL", "value": "L0", "inline":false },
+        { "name": "YOUR COOLS", "value": "0 $COOLs", "inline":false},
+        { "name": "YOUR EXP", "value": "0 EXP", "inline":false},
+        { "name": "Your Quests", "value": "You aren't doing any quest at the moment", "inline":false},
+        { "name": "YOUR SOLANA ADRESS", "value": "You didn't provide it yet", "inline":false},
+        { "name": "If you need help", "value": "If you need help with setting your Solana wallet, you can read the quest documentation by clicking on the quest title.", "inline":false},
+        { "name": "\u200B", "value": "\u200B", "inline":false }],
+        "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
+    "footer": {
+        "text":"👇 SELECT A QUEST BELOW FROM THE DROPDOWN LIST 👇" ,
+        "image":"https://i.imgur.com/wSTFkRM.png"
+    },
+        "button": {},
+        "menu": {
+            "label": "Intro to Quests",
+            "value":"intro_to_quests"
+        }
+}

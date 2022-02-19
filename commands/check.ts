@@ -5,10 +5,12 @@ import Backendless from 'backendless'
 import {DatabaseCount} from '../interfaces/interfaces'
 import {getBackendlessLastTweet} from '../features/writeLastTweet'
 
-const backendlessTable = process.env.BACKENDLESS_TABLE
+dotenv.config();
+
+const backendlessTable = process.env.BACKENDLESS_TWITTER_TABLE
 const iconDatabaseStats = process.env.ICON_DATABASE_STATS
 var actionTakenContent = '';
-dotenv.config();
+
 Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API_KEY!);
 
 

@@ -16,10 +16,10 @@ const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
 const backendless_1 = __importDefault(require("backendless"));
 const writeLastTweet_1 = require("../features/writeLastTweet");
-const backendlessTable = process.env.BACKENDLESS_TABLE;
+dotenv_1.default.config();
+const backendlessTable = process.env.BACKENDLESS_TWITTER_TABLE;
 const iconDatabaseStats = process.env.ICON_DATABASE_STATS;
 var actionTakenContent = '';
-dotenv_1.default.config();
 backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
 function getDatabaseTweetCount() {
     return __awaiter(this, void 0, void 0, function* () {

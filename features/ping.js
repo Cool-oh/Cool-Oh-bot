@@ -14,12 +14,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const fs_1 = __importDefault(require("fs"));
 const pingPort = Number(process.env.PING_PORT);
-dotenv_1.default.config();
-const server = (0, express_1.default)();
-server.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.send("pong");
-}));
-server.listen(pingPort, "0.0.0.0", () => {
-    console.log("Server is ready...");
-});
+//const outputFile = process.env.ERROR_FILE 
+const outputFile = './error.txt';
+function writeErrorFile(data) {
+    fs_1.default.appendFileSync(outputFile, data);
+}
+try {
+    dotenv_1.default.config();
+    const server = (0, express_1.default)();
+    server.get("/ping", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        res.send("pong");
+    }));
+    server.listen(pingPort, "0.0.0.0", () => {
+        console.log("Server is ready...");
+    });
+}
+catch (error) {
+    writeErrorFile(error);
+    console.log(error);
+}

@@ -1,0 +1,35 @@
+{
+    "color": "#0099ff",
+    "title": "TWITTER QUEST",
+    "url": "https://app.gitbook.com/s/y5Q05ZqXpPaJ2HS5kj6z/quests/twitter-quest",
+    "author": {
+        "name": "Cool-Oh Bot",
+        "iconURL": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/Cool-oh-bot.png?raw=true",
+        "url": "https://cool-oh.com"
+    },
+    "description": "Some description here",
+    "thumbnail": "https://karencropper.files.wordpress.com/2013/06/twitter.png",
+    "fields": [
+        { "name": "Welcome to the Twitter quest!!", "value": "For this quest, we need you to follow help on othe promotion of our Twitter profile.", "inline":false },
+        { "name": "\u200B", "value": "\u200B", "inline":false  },
+        { "name": "LEVEL REQUIRED", "value": "Level 1", "inline":true },
+        { "name": "LEVEL OBTAINED", "value": "You will get to Level 1", "inline":true },
+        { "name": "What we need from you", "value": "1.- You need to Follow  @Cool-Oh_NFT\n2.- Like any of our Tweets from the last two weeks.\n3.- Retweet oany of our Tweets from the last two weeks\n4.- Mentin us in any of your Tweets", "inline":false },
+        { "name": "What you'll get", "value": "5 $COOLs for each action.", "inline":false },
+        { "name": "If you need help", "value": "If you need help with setting your Solana wallet, you can read the quest documentation by clicking on the quest title.", "inline":false }],
+        "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
+    "footer": {
+        "text":"Let's get the adventure started!!" ,
+        "image":"https://i.imgur.com/wSTFkRM.png"
+    },
+    "button": {
+        "customId": "twitterQuest_yes",
+        "emoji": "🔨",
+        "label": "Join Twitter Quest",
+        "style": "SUCCESS"
+    },
+    "menu": {
+        "label": "Twitter Quest",
+        "value":"twitter_quest"
+    }
+}

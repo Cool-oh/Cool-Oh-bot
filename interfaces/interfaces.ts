@@ -1,3 +1,5 @@
+import { ColorResolvable, MessageButtonStyleResolvable } from "discord.js";
+
 export interface TwitterUser {
     twitterId: number
 }
@@ -48,4 +50,48 @@ export interface TwitterTimelineData {
 export interface DatabaseCount {
     count: number,
     class: string
+}
+
+export interface BackendlessPerson {
+    ddbb_name?: string
+    objectId?: string,
+    email?: string,
+    First_Name?: string,
+    Last_Name?: string,
+    Discord_Handle?: string,
+    Discord_ID?: number,
+    Twitter_Handle?: string,
+    Twitter_ID?: number,
+    created?: Date,
+    updated?: Date
+}
+
+export interface QuestEmbedJson{
+    color: ColorResolvable,
+    title: string,
+    url: string,
+    author: {
+        name: string,
+        iconURL: string,
+        url: string
+    },
+    description: string,
+    thumbnail: string,
+    fields: [
+        { name: string, value: string,  inline: boolean},],
+        image: string,
+    footer: {
+        text:string ,
+        image:string
+    },
+    button: {
+        customId: string,
+        emoji: string,
+        label: string,
+        style: MessageButtonStyleResolvable
+    },
+    menu: {
+        label: string,
+        value: string
+    }
 }
