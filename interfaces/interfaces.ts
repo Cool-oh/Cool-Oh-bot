@@ -77,9 +77,9 @@ export interface QuestEmbedJson{
     },
     description: string,
     thumbnail: string,
-    fields: [
-        { name: string, value: string,  inline: boolean},],
-        image: string,
+    fields:
+        { name: string, value: string,  inline: boolean}[],
+    image: string,
     footer: {
         text:string ,
         image:string
@@ -92,6 +92,21 @@ export interface QuestEmbedJson{
     },
     menu: {
         label: string,
-        value: string
+        value: string,
+        description: string
+    },
+    modal: {
+        id: string,
+        title: string,
+        componentsList:
+            {
+            id: string,
+            label: string,
+            style: string,
+            minLenght: number,
+            maxLength: number,
+            placeholder: string,
+            required: boolean,
+        }[]
     }
 }

@@ -20,8 +20,10 @@ const questInitEmbed = new discord_js_1.MessageEmbed()
     .addFields(questInitFields.fields)
     .setImage(questInitFields.image)
     .setFooter(questInitFields.footer);
-function joinQuestButtonClicked() {
+function joinQuestButtonClicked(interaction) {
     console.log("Clicked!");
+}
+function modalSubmit(modal) {
 }
 const joinQuestButton = new discord_js_1.MessageButton();
 class QuestInit {
@@ -34,8 +36,14 @@ class QuestInit {
     get menu() {
         return menu;
     }
-    get joinQuestButtonClicked() {
-        return joinQuestButtonClicked();
+    joinQuestButtonClicked(interaction) {
+        return joinQuestButtonClicked(interaction);
+    }
+    get modal() {
+        return { "modal": { "customId": "" } };
+    }
+    modalQuestSubmit(modal) {
+        modalSubmit(modal);
     }
 }
 exports.QuestInit = QuestInit;

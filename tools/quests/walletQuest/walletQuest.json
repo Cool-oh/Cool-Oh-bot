@@ -17,7 +17,7 @@
         { "name": "What we need from you", "value": "Your solana address", "inline":false },
         { "name": "What you'll get", "value": "40 $COOLs.\n\n The first 100 will be given the role of Original Gangster (OG) and will receive 100 additional $COOLs. \n The first 1000 will be whitelisted and will receive additional 50 $COOLs", "inline":false },
         { "name": "If you need help", "value": "If you need help with setting your Solana wallet, you can read the quest documentation by clicking on the quest title.", "inline":false }],
-        "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
+    "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
     "footer": {
         "text":"Let's get the adventure started!!" ,
         "image":"https://i.imgur.com/wSTFkRM.png"
@@ -30,6 +30,20 @@
     },
     "menu": {
         "label": "Wallet Quest",
-        "value":"wallet_quest"
+        "value":"wallet_quest",
+        "description": ""
+    },
+    "modal": {
+        "id":"wallet_quest_modal",
+        "title": "Wallet Quest Form",
+        "componentsList": [{
+            "id": "textinput_wallet_quest",
+            "label": "Please provide your Solana wallet address",
+            "style": "SHORT",
+            "minLenght": 4,
+            "maxLength": 60,
+            "placeholder": "Write your Solana Address here",
+            "required": true
+        }]
     }
 }

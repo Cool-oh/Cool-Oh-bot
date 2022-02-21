@@ -43,37 +43,36 @@ Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API
     }));
 
 
-if(newArrayOfObj.length > backendlessMaxNumObjects){
+    if(newArrayOfObj.length > backendlessMaxNumObjects){
     //Backendless only allow to store 100 items per bulkCreate command
-    let slicedArray:Twitter_Cool_oh_NFT_To_Save[]
-    let chunk = newArrayOfObj.length / backendlessMaxNumObjects
-    if((newArrayOfObj.length % backendlessMaxNumObjects) > 0){
-        chunk = ~~(newArrayOfObj.length/backendlessMaxNumObjects) + 1
-        }
-        console.log('Array length: ' + newArrayOfObj.length)
-		console.log('Splitting the array in '+ chunk + ' chunks')
-		let j = 0
-		let k = backendlessMaxNumObjects
-		for (let index = 0; index < chunk; index++) {
-
-            slicedArray = newArrayOfObj.slice(j,k)
-            j += backendlessMaxNumObjects
-            k += backendlessMaxNumObjects
-            console.log( ' Chunk ' + index +'. Updating database with ' + slicedArray.length + ' new tweets...')
-            totalNewTweetsSaved = slicedArray.length
-          //  await Backendless.Data.of( "Twitter_Cool_oh_NFT" ).bulkCreate( slicedArray )
-          //This is much faster:
-            Backendless.Data.of( backendlessTable! ).bulkCreate( slicedArray )
-            .then( function ( obj )  {
-            console.log( "object saved.")
-            totalNewTweetsSaved = 0
-                } )
-            .catch( function( error ) {
-                 console.log( "got error - " + error )
-             })
-
+        let slicedArray:Twitter_Cool_oh_NFT_To_Save[]
+        let chunk = newArrayOfObj.length / backendlessMaxNumObjects
+        if((newArrayOfObj.length % backendlessMaxNumObjects) > 0){
+         chunk = ~~(newArrayOfObj.length/backendlessMaxNumObjects) + 1
             }
-	}else{
+            console.log('Array length: ' + newArrayOfObj.length)
+		    console.log('Splitting the array in '+ chunk + ' chunks')
+		    let j = 0
+		    let k = backendlessMaxNumObjects
+		    for (let index = 0; index < chunk; index++) {
+                slicedArray = newArrayOfObj.slice(j,k)
+                j += backendlessMaxNumObjects
+                k += backendlessMaxNumObjects
+                console.log( ' Chunk ' + index +'. Updating database with ' + slicedArray.length + ' new tweets...')
+                totalNewTweetsSaved = slicedArray.length
+                //  await Backendless.Data.of( "Twitter_Cool_oh_NFT" ).bulkCreate( slicedArray )
+                //This is much faster:
+                Backendless.Data.of( backendlessTable! ).bulkCreate( slicedArray )
+                .then( function ( obj )  {
+                    console.log( "object saved.")
+                    totalNewTweetsSaved = 0
+                    } )
+                .catch( function( error ) {
+                    console.log( "got error - " + error )
+                })
+            }
+	}
+    else {
         //If array is small enough to save directly into backendless
         console.log( 'Updating database with ' + newArrayOfObj.length + ' new tweets...')
         totalNewTweetsSaved = newArrayOfObj.length
@@ -111,7 +110,6 @@ async function getAllTweets(twitterUserID: string, maxResults: number, since_id?
     timelineData = tempTimelineData
     nextPaginationToken = tempTimelineData.data.meta.next_token
 
-
     if (nextPaginationToken != undefined) {
         //There's pagination and there are more tweets
         console.log(" There's pagination: " + nextPaginationToken)
@@ -135,7 +133,6 @@ async function getAllTweets(twitterUserID: string, maxResults: number, since_id?
     } else {
 
     }
-
     return timelineData
 }
 
@@ -180,7 +177,6 @@ function sortByKey(array:any, key:string) {
 async function backendlessUpdateIfNeeded(){
 
     let databaseLastTweet = await getBackendlessLastTweet(); //if last tweets where part of a thread, it returns an array with the thread (all have the same timestamp)
-
     let twitterTimeline = await getAllTweets(twitterID!, twitterMaxQuery, databaseLastTweet?.tweet_id )
 
     if(twitterTimeline.data.meta.result_count == 0){
@@ -194,9 +190,6 @@ async function backendlessUpdateIfNeeded(){
         saveAllTweetsToBackendless(twitterTimeline)
     }
 }
-
-
-
 
 export default async (client: Client) => {
 

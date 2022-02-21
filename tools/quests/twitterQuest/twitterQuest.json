@@ -17,7 +17,7 @@
         { "name": "What we need from you", "value": "1.- You need to Follow  @Cool-Oh_NFT\n2.- Like any of our Tweets from the last two weeks.\n3.- Retweet oany of our Tweets from the last two weeks\n4.- Mentin us in any of your Tweets", "inline":false },
         { "name": "What you'll get", "value": "5 $COOLs for each action.", "inline":false },
         { "name": "If you need help", "value": "If you need help with setting your Solana wallet, you can read the quest documentation by clicking on the quest title.", "inline":false }],
-        "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
+    "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
     "footer": {
         "text":"Let's get the adventure started!!" ,
         "image":"https://i.imgur.com/wSTFkRM.png"
@@ -30,6 +30,20 @@
     },
     "menu": {
         "label": "Twitter Quest",
-        "value":"twitter_quest"
+        "value":"twitter_quest",
+        "description": ""
+    },
+    "modal": {
+        "id":"twitter_quest_modal",
+        "title": "Twitter Quest Form",
+        "componentsList": [{
+            "id": "textinput_twitter_quest",
+            "label": "Please provide your twitter handle with the @",
+            "style": "SHORT",
+            "minLenght": 4,
+            "maxLength": 10,
+            "placeholder": "@yourTwitterHandle",
+            "required": true
+        }]
     }
 }

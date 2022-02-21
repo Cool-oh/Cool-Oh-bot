@@ -1,11 +1,11 @@
 import { Client, ColorResolvable, GuildMember, Interaction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Role, TextChannel } from 'discord.js';
-
 import { ICommand } from 'wokcommands';
 import dotenv from 'dotenv'
 import { TwitterQuest } from '../tools/quests/twitterQuest/twitterQuest';
 import { QuestInit } from '../tools/quests/questInit';
-import { QuestEmbedJson } from '../interfaces/interfaces';
-import { WalletQuest } from '../tools/quests/walletQuest/walletQuest';
+import { QuestEmbedJson } from '../interfaces/interfaces';import { WalletQuest } from '../tools/quests/walletQuest/walletQuest';
+import {Modal, TextInputComponent, showModal } from 'discord-modals'
+const discordModals = require('discord-modals')
 
 dotenv.config();
 
@@ -22,13 +22,10 @@ for (let index = 0; index < questsObjList.length; index++) {
     optionsList.push(questsObjList[index].menu)
 }
 
-
 function buildMessageSelectoptions(optionToDelete: string,  options:MessageSelectOptionData[] ):MessageSelectOptionData[]{
 	//optionToDelete: the string we want to remove from the menu of options
-    //menuArray: the array of options from the menu of the interaction
     //options: The array of all possible options
     let menuArray = [...options]
-
     for (let index = 0; index < menuArray.length; index++) {
       if (menuArray[index].value == optionToDelete) {
 				menuArray.splice(index, 1)
@@ -37,7 +34,7 @@ function buildMessageSelectoptions(optionToDelete: string,  options:MessageSelec
     return menuArray
 }
 
-export default {
+export  default {
     category: 'Configuration',
     description: 'Adds a role to the auto role message',
     permissions: ['ADMINISTRATOR'],
@@ -47,10 +44,11 @@ export default {
     testOnly: true,
     guildOnly: true,
 
-    init: (client: Client) => { //this function is invoked whenever the command is run. We are creating an event listener to listen
+    init: async (client: Client) => { //this function is invoked whenever the command is run. We are creating an event listener to listen
                                 // to whenever an interaction is created
 
         client.on('interactionCreate', interaction => {
+
             if (interaction.isSelectMenu()){
                 const {customId, values} = interaction
                 const component = interaction.component as MessageSelectMenu
@@ -64,6 +62,7 @@ export default {
                 for (let index = 0; index < optionsList.length; index++) {
 
                     if(selectedOptions[0].value == optionsList[index].value){
+
                         if( buttonRow.components[0] != null){
                             buttonRow.spliceComponents(0,1) //deletes the previous button
                         }
@@ -77,6 +76,7 @@ export default {
                             buttonRow.addComponents(questsObjList[index].joinQuestButton)
                             componentList = [dropDown,buttonRow]
                         }
+
                         interaction.update({
                             content: 'Updated',
                             embeds: [questsObjList[index].embed],
@@ -87,14 +87,24 @@ export default {
             }
         }
         if(interaction.isButton()){
-
             for (let index = 0; index < optionsList.length; index++) {
                 if(interaction.customId == questsObjList[index].joinQuestButton.customId){
-                    console.log(questsObjList[index].joinQuestButton.label + ' clicked!')
-                    questsObjList[index].joinQuestButtonClicked
+                    questsObjList[index].joinQuestButtonClicked(interaction, client)
+                    }
                 }
             }
         }
+        )
+
+        await discordModals(client);
+
+        client.on('modalSubmit', (modal) => {
+            for (let index = 0; index < optionsList.length; index++) {
+
+                if(modal.customId === questsObjList[index].modal.customId){
+                    questsObjList[index].modalQuestSubmit(modal)  //show quest's modal
+                }
+            }
         })
     },
 

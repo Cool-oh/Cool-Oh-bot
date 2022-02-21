@@ -1,7 +1,8 @@
 import dotenv from 'dotenv'
-import { ColorResolvable, MessageButton, MessageEmbed } from 'discord.js';
+import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
 import { QuestEmbedJson } from '../../../interfaces/interfaces';
 import twitterQuestJson from './twitterQuest.json'
+import {Modal, TextInputComponent, showModal } from 'discord-modals'
 
 dotenv.config();
 
@@ -25,9 +26,37 @@ const joinQuestButton = new MessageButton()
 .setLabel(twitterQuestFields.button.label)
 .setStyle(twitterQuestFields.button.style)
 
-function joinQuestButtonClicked(){
-    console.log("Twitter Quest Clicked!")
+const modal = new Modal() // We create a Modal
+.setCustomId(twitterQuestFields.modal.id)
+.setTitle(twitterQuestFields.modal.title)
+.addComponents(
+  new TextInputComponent() // We create a Text Input Component
+  .setCustomId(twitterQuestFields.modal.componentsList[0].id)
+  .setLabel(twitterQuestFields.modal.componentsList[0].label)
+  .setStyle(twitterQuestFields.modal.componentsList[0].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+  .setMinLength(twitterQuestFields.modal.componentsList[0].minLenght)
+  .setMaxLength(twitterQuestFields.modal.componentsList[0].maxLength)
+  .setPlaceholder(twitterQuestFields.modal.componentsList[0].placeholder)
+  .setRequired(twitterQuestFields.modal.componentsList[0].required) // If it's required or not
+);
+
+function joinQuestButtonClicked(interaction:Interaction, client: Client){
+
+    if (interaction.isButton()){
+
+        showModal(modal, {
+        client: client, // The showModal() method needs the client to send the modal through the API.
+        interaction: interaction // The showModal() method needs the interaction to send the modal with the Interaction ID & Token.
+      })
+
+    }}
+
+function modalSubmit(modal: any){
+    const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
+    modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``)
+
 }
+
 export class TwitterQuest {
     public get embed(): MessageEmbed{
         return twitterQuestEmbed
@@ -38,7 +67,14 @@ export class TwitterQuest {
     public get menu(){
         return menu
     }
-    public get  joinQuestButtonClicked(){
-        return  joinQuestButtonClicked()
+    public   joinQuestButtonClicked(interaction:Interaction, client: Client ){
+        return  joinQuestButtonClicked(interaction, client)
     }
+    public modalQuestSubmit(modal:any){
+        modalSubmit(modal)
+    }
+    public get modal(){
+        return modal
+    }
+
 }

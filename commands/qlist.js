@@ -17,6 +17,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const twitterQuest_1 = require("../tools/quests/twitterQuest/twitterQuest");
 const questInit_1 = require("../tools/quests/questInit");
 const walletQuest_1 = require("../tools/quests/walletQuest/walletQuest");
+const discordModals = require('discord-modals');
 dotenv_1.default.config();
 const dropDown = new discord_js_1.MessageActionRow();
 const buttonRow = new discord_js_1.MessageActionRow();
@@ -30,7 +31,6 @@ for (let index = 0; index < questsObjList.length; index++) {
 }
 function buildMessageSelectoptions(optionToDelete, options) {
     //optionToDelete: the string we want to remove from the menu of options
-    //menuArray: the array of options from the menu of the interaction
     //options: The array of all possible options
     let menuArray = [...options];
     for (let index = 0; index < menuArray.length; index++) {
@@ -49,7 +49,7 @@ exports.default = {
     slash: true,
     testOnly: true,
     guildOnly: true,
-    init: (client) => {
+    init: (client) => __awaiter(void 0, void 0, void 0, function* () {
         // to whenever an interaction is created
         client.on('interactionCreate', interaction => {
             if (interaction.isSelectMenu()) {
@@ -87,13 +87,20 @@ exports.default = {
             if (interaction.isButton()) {
                 for (let index = 0; index < optionsList.length; index++) {
                     if (interaction.customId == questsObjList[index].joinQuestButton.customId) {
-                        console.log(questsObjList[index].joinQuestButton.label + ' clicked!');
-                        questsObjList[index].joinQuestButtonClicked;
+                        questsObjList[index].joinQuestButtonClicked(interaction, client);
                     }
                 }
             }
         });
-    },
+        yield discordModals(client);
+        client.on('modalSubmit', (modal) => {
+            for (let index = 0; index < optionsList.length; index++) {
+                if (modal.customId === questsObjList[index].modal.customId) {
+                    questsObjList[index].modalQuestSubmit(modal); //show quest's modal
+                }
+            }
+        });
+    }),
     callback: ({ interaction: msgInt, interaction, args, client, channel }) => __awaiter(void 0, void 0, void 0, function* () {
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList); //remove the first item from the option list in the dropdown (INDEX)
         if (dropDown.components.length > 0) {

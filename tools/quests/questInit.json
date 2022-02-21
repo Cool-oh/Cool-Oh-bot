@@ -19,14 +19,33 @@
         { "name": "YOUR SOLANA ADRESS", "value": "You didn't provide it yet", "inline":false},
         { "name": "If you need help", "value": "If you need help with setting your Solana wallet, you can read the quest documentation by clicking on the quest title.", "inline":false},
         { "name": "\u200B", "value": "\u200B", "inline":false }],
-        "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
+    "image": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/cool-oh-frodo-128x128.png?raw=true",
     "footer": {
         "text":"👇 SELECT A QUEST BELOW FROM THE DROPDOWN LIST 👇" ,
         "image":"https://i.imgur.com/wSTFkRM.png"
     },
-        "button": {},
-        "menu": {
-            "label": "Intro to Quests",
-            "value":"intro_to_quests"
+    "button":  {
+        "customId": "",
+        "emoji": "",
+        "label": "",
+        "style": ""
+    },
+    "menu": {
+        "label": "Intro to Quests",
+        "value":"intro_to_quests",
+        "description": ""
+    },
+    "modal": {
+        "id":"init_quest_modal",
+        "title": "Init Quest Form",
+        "componentsList": [{
+            "id": "textinput_init_quest",
+            "label": "",
+            "style": "SHORT",
+            "minLenght": 4,
+            "maxLength": 10,
+            "placeholder": "",
+            "required": true
+            }]
         }
 }

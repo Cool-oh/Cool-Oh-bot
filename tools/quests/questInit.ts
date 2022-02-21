@@ -1,4 +1,4 @@
-import { ColorResolvable, MessageButton, MessageEmbed } from 'discord.js';
+import { ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
 import dotenv from 'dotenv'
 import { QuestEmbedJson } from '../../interfaces/interfaces';
 import questInitJson from './questInit.json'
@@ -19,8 +19,11 @@ const questInitEmbed = new MessageEmbed()
 .setImage(questInitFields.image)
 .setFooter(questInitFields.footer)
 
-function joinQuestButtonClicked(){
+function joinQuestButtonClicked(interaction:Interaction){
     console.log("Clicked!")
+}
+function modalSubmit(modal:any){
+
 }
 
 const joinQuestButton = new MessageButton()
@@ -35,8 +38,14 @@ export class QuestInit {
     public get menu(){
         return menu
     }
-    public get  joinQuestButtonClicked(){
-        return  joinQuestButtonClicked()
+    public   joinQuestButtonClicked(interaction:Interaction ){
+        return  joinQuestButtonClicked(interaction)
+    }
+    public get modal(){
+        return {"modal": {"customId": ""}}
+    }
+    public modalQuestSubmit(modal:any){
+        modalSubmit(modal)
     }
 }
 
