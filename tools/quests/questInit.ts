@@ -38,8 +38,8 @@ export class QuestInit {
     public get menu(){
         return menu
     }
-    public   joinQuestButtonClicked(interaction:Interaction ){
-        return  joinQuestButtonClicked(interaction)
+    public joinQuestButtonClicked(interaction:Interaction ){
+        joinQuestButtonClicked(interaction)
     }
     public get modal(){
         return {"modal": {"customId": ""}}

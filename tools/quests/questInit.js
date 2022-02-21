@@ -37,7 +37,7 @@ class QuestInit {
         return menu;
     }
     joinQuestButtonClicked(interaction) {
-        return joinQuestButtonClicked(interaction);
+        joinQuestButtonClicked(interaction);
     }
     get modal() {
         return { "modal": { "customId": "" } };

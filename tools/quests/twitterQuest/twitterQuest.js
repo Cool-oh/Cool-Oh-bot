@@ -61,7 +61,7 @@ class TwitterQuest {
         return menu;
     }
     joinQuestButtonClicked(interaction, client) {
-        return joinQuestButtonClicked(interaction, client);
+        joinQuestButtonClicked(interaction, client);
     }
     modalQuestSubmit(modal) {
         modalSubmit(modal);

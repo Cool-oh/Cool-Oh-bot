@@ -67,8 +67,8 @@ export class TwitterQuest {
     public get menu(){
         return menu
     }
-    public   joinQuestButtonClicked(interaction:Interaction, client: Client ){
-        return  joinQuestButtonClicked(interaction, client)
+    public joinQuestButtonClicked(interaction:Interaction, client: Client ){
+        joinQuestButtonClicked(interaction, client)
     }
     public modalQuestSubmit(modal:any){
         modalSubmit(modal)

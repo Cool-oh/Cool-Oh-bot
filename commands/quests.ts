@@ -1,153 +1,134 @@
-import { GuildMember } from 'discord.js';
+import { Client, ColorResolvable, GuildMember, Interaction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Role, TextChannel } from 'discord.js';
 import { ICommand } from 'wokcommands';
-import {BackendlessPerson} from '../interfaces/interfaces'
 import dotenv from 'dotenv'
-import Backendless from 'backendless'
-
+import { TwitterQuest } from '../tools/quests/twitterQuest/twitterQuest';
+import { QuestInit } from '../tools/quests/questInit';
+import { QuestEmbedJson } from '../interfaces/interfaces';import { WalletQuest } from '../tools/quests/walletQuest/walletQuest';
+import {Modal, TextInputComponent, showModal } from 'discord-modals'
+const discordModals = require('discord-modals')
 
 dotenv.config();
-const channelNotificationsId = process.env.CHANNEL_NOTIFICATIONS
-const backendlessMaxNumObjects = Number(process.env.BACKENDLESS_MAX_NUM_OBJECTS)
-const backendlessTwitterIdColumn = process.env.BACKENDLESS_TWITTER_ID_COLUMN
-const backendlessTwitterTable = process.env.BACKENDLESS_TWITTER_TABLE
-const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE
 
-Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API_KEY!);
+const dropDown = new MessageActionRow()
+const buttonRow = new MessageActionRow()
 
-async function saveUser(user: BackendlessPerson, table:string){
-    try {
-        await Backendless.Data.of( table).save(user)
-    } catch (error) {
-        console.log(error)
+const initQuest = new QuestInit()
+const walletQuest =new WalletQuest()
+const twitterQuest = new TwitterQuest()
+const questsObjList = [initQuest, walletQuest, twitterQuest]
+const optionsList: MessageSelectOptionData[] = []
+
+for (let index = 0; index < questsObjList.length; index++) {
+    optionsList.push(questsObjList[index].menu)
+}
+
+function buildMessageSelectoptions(optionToDelete: string,  options:MessageSelectOptionData[] ):MessageSelectOptionData[]{
+	//optionToDelete: the string we want to remove from the menu of options
+    //options: The array of all possible options
+    let menuArray = [...options]
+    for (let index = 0; index < menuArray.length; index++) {
+      if (menuArray[index].value == optionToDelete) {
+				menuArray.splice(index, 1)
+        }
     }
-
-
+    return menuArray
 }
 
-async function getUser(discordUserId:number){
-    var queryBuilder = Backendless.DataQueryBuilder.create();
-    //queryBuilder.setPageSize( 1 ).setOffset( 0 ).setSortBy( ["date_published DESC" ] );
-    var whereClause = "Discord_ID = '" + discordUserId + "'";
-    console.log(whereClause)
-    queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause( whereClause );
-
-    let result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
-
-    console.log(result)
-}
-
-
-export default {
-    category: 'Quests',
-    description: 'Manages quests',
-    slash: true,
-    testOnly: true, //non test commands can take up to one hour to register to all servers using this bot
-    guildOnly: true,
+export  default {
+    category: 'Configuration',
+    description: 'Adds a role to the auto role message',
+    permissions: ['ADMINISTRATOR'],
     minArgs: 0,
     expectedArgs: '<help> <user_stats> <join_quest> <leave_quest>',
+    slash: true,
+    testOnly: true,
+    guildOnly: true,
 
-    options: [
-        {
-            type: 'SUB_COMMAND',
-            name: 'help',
-            description: 'Displays quests help information',
-        },
-        {
-            type: 'SUB_COMMAND',
-            name: 'user_stats',
-            description: 'Displays all the user quests stats',
+    init: async (client: Client) => { //this function is invoked whenever the command is run. We are creating an event listener to listen
+                                // to whenever an interaction is created
 
-        },
-        {
-            type: 'SUB_COMMAND',
-            name: 'join_quest',
-            description: 'Allows you to join a quest',
-            options: [
-                {
-                    name: 'quest_name',
-                    type: 'STRING',
-                    description: 'The name of the quest you want to join',
-                    required: true,
-                    choices: [{
-                        name: 'Twitter Quest',
-                        value: 'Twitter Quest'
-                    },
-                    {
-                        name: 'Cool-Obrity Quest',
-                        value: 'Cool-Obrity Quest'
+        client.on('interactionCreate', interaction => {
+
+            if (interaction.isSelectMenu()){
+                const {customId, values} = interaction
+                const component = interaction.component as MessageSelectMenu
+                const selectedOptions = component.options.filter((option) => { //we run this function for each individual option for this component
+                    return values.includes(option.value)  //removed is going to be an array with all option de-selected on the menu
+            })
+
+            if (customId === 'quest_select'){ //user interacted with the menu
+                let componentList = [dropDown]
+
+                for (let index = 0; index < optionsList.length; index++) {
+
+                    if(selectedOptions[0].value == optionsList[index].value){
+
+                        if( buttonRow.components[0] != null){
+                            buttonRow.spliceComponents(0,1) //deletes the previous button
+                        }
+                        let fixedOptions = buildMessageSelectoptions(optionsList[index].value, optionsList)
+                        dropDown.setComponents(component.spliceOptions(0,component.options.length)) //remove all options from menu
+                        dropDown.setComponents(component.addOptions(fixedOptions!)) //rebuild menu
+                        if( buttonRow.components[0] != null){
+                            buttonRow.spliceComponents(0,1) //deletes the previous button
+                        }
+                        if(selectedOptions[0].value != optionsList[0].value){ //if its not the intro quest, build the button
+                            buttonRow.addComponents(questsObjList[index].joinQuestButton)
+                            componentList = [dropDown,buttonRow]
+                        }
+
+                        interaction.update({
+                            content: 'Updated',
+                            embeds: [questsObjList[index].embed],
+                            components: componentList,
+                       })
                     }
-                    ]
-
-                },
-
-            ],
-        },
-        {
-            type: 'SUB_COMMAND',
-            name: 'leave_quest',
-            description: 'Allows you to leave a quest',
-            options: [
-                {
-                    name: 'user',
-                    type: 'USER',
-                    description: 'The user to list warnings for',
-                    required: true,
-                },
-            ],
+                }
+            }
         }
-    ],
-
-
-    callback: ({interaction, args}) =>{
-        //const target = interaction.options.getMember('user') as GuildMember
-
-
-        console.log(args[0])
-        //getUser(888)
-        //saveUser(user, backendlessUserTable!)
-        if (args[0] == null){
-            return {
-
-                custom: true,   // WOK Commands. For slash commands
-                content: 'Cannot ban that user!',
-                ephemeral: true  //Only the user who sent the command can see this
-             }
+        if(interaction.isButton()){
+            for (let index = 0; index < optionsList.length; index++) {
+                if(interaction.customId == questsObjList[index].joinQuestButton.customId){
+                    questsObjList[index].joinQuestButtonClicked(interaction, client)
+                    }
+                }
+            }
         }
+        )
 
-        return null;
+        await discordModals(client);
 
+        client.on('modalSubmit', (modal) => {
+            for (let index = 0; index < optionsList.length; index++) {
+
+                if(modal.customId === questsObjList[index].modal.customId){
+                    questsObjList[index].modalQuestSubmit(modal)  //show quest's modal
+                }
+            }
+        })
+    },
+
+    callback: async ({ interaction: msgInt, interaction, args, client, channel}) => {
+
+        let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList) //remove the first item from the option list in the dropdown (INDEX)
+
+        if(dropDown.components.length > 0){
+            dropDown.setComponents([])
+            }
+
+        dropDown.addComponents(
+            new MessageSelectMenu()
+            .setCustomId('quest_select')  //must be unique across all the different interactions
+            .setMinValues(1)
+            .setMaxValues(1)
+            .setPlaceholder('Select the quest...')
+            .addOptions(fixedOptions)
+        )
+        await msgInt.reply({
+          content: 'Please select what you want me to do',
+          embeds: [questsObjList[0].embed],
+          components: [dropDown],
+          ephemeral: true // Only user who invokes the command can see the result
+      })
     }
 } as ICommand
-
-
-/*
-    options: [
-        {
-            name:'quest_name',
-            type: 'STRING',
-            required: false,
-            description:'Select the Quest you want to interact with from the options menu... ',
-            choices: [{
-                name: 'Quest Help',
-                value: 'Quest Help'
-            },
-            {
-                name: 'Twitter Quest',
-                value: 'Twitter Quest'
-            }
-            ]
-        }
-    ],
-
-    */
-
-    /*
-            let user = {
-            email: 'a@aa.com',
-            First_Name: 'Carlos',
-            Last_Name: 'LN',
-            Discord_Handle: 'discordhandle2',
-            Discord_ID: 1233,
-        }
-
-        */

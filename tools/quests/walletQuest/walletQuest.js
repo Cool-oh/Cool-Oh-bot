@@ -9,11 +9,9 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const walletQuest_json_1 = __importDefault(require("./walletQuest.json"));
 const discord_modals_1 = require("discord-modals");
 const web3_js_1 = require("@solana/web3.js");
-//onst solanaWeb3 = require('@solana/web3.js');
 dotenv_1.default.config();
 const walletQuestFields = walletQuest_json_1.default;
 const menu = walletQuestFields.menu;
-const discordModals = require('discord-modals');
 const modal = new discord_modals_1.Modal() // We create a Modal
     .setCustomId(walletQuestFields.modal.id)
     .setTitle(walletQuestFields.modal.title)
@@ -61,16 +59,13 @@ function validateSolAddress(address) {
 }
 function modalSubmit(modal) {
     const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id);
-    // ArSEpRmb2SFZrhGekjoENWFAYihVoWzqe84agFDQ2YMt
     let isSolAddress = validateSolAddress(firstResponse);
-    console.log('IS SOL ADDRESS: ' + isSolAddress);
     if (isSolAddress) {
         modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
     }
     else {
         modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true });
     }
-    console.log('The address is valid');
 }
 class WalletQuest {
     get embed() {
@@ -83,7 +78,7 @@ class WalletQuest {
         return menu;
     }
     joinQuestButtonClicked(interaction, client) {
-        return joinQuestButtonClicked(interaction, client);
+        joinQuestButtonClicked(interaction, client);
     }
     get modal() {
         return modal;

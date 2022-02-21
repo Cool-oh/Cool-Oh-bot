@@ -4,18 +4,12 @@ import { QuestEmbedJson } from '../../../interfaces/interfaces';
 import walletQuestJson from './walletQuest.json'
 import {Modal, TextInputComponent, showModal } from 'discord-modals'
 import {PublicKey} from '@solana/web3.js'
-import * as solanaWeb3 from '@solana/web3.js';
-//onst solanaWeb3 = require('@solana/web3.js');
-
 
 dotenv.config();
 
 const walletQuestFields = walletQuestJson as QuestEmbedJson
-
 const menu = walletQuestFields.menu
 
-
-const discordModals = require('discord-modals')
 
 const modal = new Modal() // We create a Modal
 .setCustomId(walletQuestFields.modal.id)
@@ -71,16 +65,15 @@ function validateSolAddress(address:string){
     }
 }
 function modalSubmit(modal: any){
+
     const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id)
-   // ArSEpRmb2SFZrhGekjoENWFAYihVoWzqe84agFDQ2YMt
-   let isSolAddress = validateSolAddress(firstResponse)
-   console.log('IS SOL ADDRESS: '+ isSolAddress )
-  if (isSolAddress) {
-    modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
-  }else{
-    modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true })
+    let isSolAddress = validateSolAddress(firstResponse)
+
+    if (isSolAddress) {
+        modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
+    }else{
+        modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true })
   }
-console.log('The address is valid')
 
 }
 
@@ -95,8 +88,8 @@ export class WalletQuest {
     public get menu(){
         return menu
     }
-    public   joinQuestButtonClicked(interaction:Interaction, client: Client ){
-          return joinQuestButtonClicked(interaction, client)
+    public joinQuestButtonClicked(interaction:Interaction, client: Client ){
+        joinQuestButtonClicked(interaction, client)
     }
     public get modal(){
         return modal
