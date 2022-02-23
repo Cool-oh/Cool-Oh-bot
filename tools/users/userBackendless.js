@@ -96,9 +96,14 @@ function mergeBackendlessData(user1, user2) {
             userMerged = Object.assign(Object.assign({}, _.omitBy(user1, _.isNull)), _.omitBy(user2, _.isNull)); //merge both users, if same property, user2 overwrites user1 becasue it's newer
             userToDelete = user1;
         }
-        yield backendless_1.default.Data.of(backendlessUserTable).remove(userToDelete.objectId);
-        userResult = yield backendless_1.default.Data.of(backendlessUserTable).save(userMerged);
-        console.log("User with ID: " + userToDelete.objectId + 'deleted, and merged with user ID ' + userResult.objectId + ' which is newer.');
+        try {
+            yield backendless_1.default.Data.of(backendlessUserTable).remove(userToDelete.objectId);
+            userResult = yield backendless_1.default.Data.of(backendlessUserTable).save(userMerged);
+            console.log("User with ID: " + userToDelete.objectId + 'deleted, and merged with user ID ' + userResult.objectId + ' which is newer.');
+        }
+        catch (error) {
+            throw (error);
+        }
         return userResult;
     });
 }
@@ -107,61 +112,66 @@ function udpateDiscordUser(user) {
         let result;
         let userEmail;
         let registeredUser;
-        if (!user.Discord_ID) {
-            throw new Error("Unexpected error: Missing User DiscordID");
-        }
-        if (user.email) { //email provided
-            console.log('User provides email');
-            userEmail = yield checkIfEmailRegistered(user.email);
-            console.log('User email: ' + userEmail);
-            if (userEmail !== undefined) { //if email exists in ddbb
-                registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
-                if (registeredUser !== undefined) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
-                    console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.");
-                    if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
-                        console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same reccord. We UPDATE it");
+        try {
+            if (!user.Discord_ID) {
+                throw new Error("Unexpected error: Missing User DiscordID");
+            }
+            if (user.email) { //email provided
+                console.log('User provides email');
+                userEmail = yield checkIfEmailRegistered(user.email);
+                console.log('User email: ' + userEmail);
+                if (userEmail !== undefined) { //if email exists in ddbb
+                    registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
+                    if (registeredUser !== undefined) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
+                        console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.");
+                        if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
+                            console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same reccord. We UPDATE it");
+                            user.objectId = userEmail.objectId;
+                            result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
+                        }
+                        else { //is it a different record? DiscordID & Email are in different records. PROBLEM. We merge the data, assuming new data is better
+                            console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. They are in different records. PROBLEM. We merge the data, assuming new data is better");
+                            let mergedUser = yield mergeBackendlessData(userEmail, registeredUser);
+                            console.log("1:" + JSON.stringify(userEmail));
+                            console.log("2" + JSON.stringify(registeredUser));
+                            console.log(mergedUser);
+                        }
+                    }
+                    else { //DiscordID !exist in ddbb: we update email ddbb with discordId. WE OVERWRITE discordID! Assume new data is better
+                        console.log("2 Email Provided. Email exists in ddbb. DiscordID !exist in ddbb: We UPDATE email ddbb with discordID");
                         user.objectId = userEmail.objectId;
                         result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
                     }
-                    else { //is it a different record? DiscordID & Email are in different records. PROBLEM. We merge the data, assuming new data is better
-                        console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. They are in different records. PROBLEM. We merge the data, assuming new data is better");
-                        let mergedUser = yield mergeBackendlessData(userEmail, registeredUser);
-                        console.log("1:" + JSON.stringify(userEmail));
-                        console.log("2" + JSON.stringify(registeredUser));
-                        console.log(mergedUser);
+                }
+                else { //email !exist in ddbb
+                    console.log('email doesnt exist in ddbb');
+                    registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
+                    if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
+                        console.log("3 Email Provided. Email !exist in ddbb. DiscordID exists: We UPDATE record");
+                        user.objectId = registeredUser.objectId;
+                        result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
+                    }
+                    else { //DiscordID !exist in ddbb: Create record
+                        console.log("4 Email Provided. Email !exist in ddbb. DiscordID !exist: We CREATE record");
+                        result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
                     }
                 }
-                else { //DiscordID !exist in ddbb: we update email ddbb with discordId. WE OVERWRITE discordID! Assume new data is better
-                    console.log("2 Email Provided. Email exists in ddbb. DiscordID !exist in ddbb: We UPDATE email ddbb with discordID");
-                    user.objectId = userEmail.objectId;
-                    result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
-                }
             }
-            else { //email !exist in ddbb
-                console.log('email doesnt exist in ddbb');
-                registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
+            else { //email not provided
+                let registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
                 if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
-                    console.log("3 Email Provided. Email !exist in ddbb. DiscordID exists: We UPDATE record");
+                    console.log("5 Email !provided. DiscordID exists: We UPDATE record");
                     user.objectId = registeredUser.objectId;
                     result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
                 }
                 else { //DiscordID !exist in ddbb: Create record
-                    console.log("4 Email Provided. Email !exist in ddbb. DiscordID !exist: We CREATE record");
+                    console.log("6 Email !provided. DiscordID !exists: We CREATE record");
                     result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
                 }
             }
         }
-        else { //email not provided
-            let registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
-            if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
-                console.log("5 Email !provided. DiscordID exists: We UPDATE record");
-                user.objectId = registeredUser.objectId;
-                result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
-            }
-            else { //DiscordID !exist in ddbb: Create record
-                console.log("6 Email !provided. DiscordID !exists: We CREATE record");
-                result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
-            }
+        catch (error) {
+            throw error;
         }
     });
 }
