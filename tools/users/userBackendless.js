@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.udpateDiscordUser = exports.udpateDiscordUser2 = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = void 0;
+exports.udpateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const _ = require("lodash");
@@ -59,39 +59,6 @@ function checkIfDiscordIDRegistered(discordUserId) {
     });
 }
 exports.checkIfDiscordIDRegistered = checkIfDiscordIDRegistered;
-function udpateDiscordUser2(user) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let result;
-        let userEmail;
-        try {
-            if (!user.Discord_ID) {
-                throw new Error("Unexpected error: Missing User DiscordID");
-            }
-            if (user.email) { //if we provide email, check if that email exists in the ddbb
-                console.log('User provides email');
-                userEmail = yield checkIfEmailRegistered(user.email);
-                console.log('Email: ' + userEmail);
-                if (userEmail !== undefined) { //user with email is in the database
-                    console.log('Inside Email: ' + userEmail);
-                    user.objectId = userEmail.objectId; //we update our user with the ddbb's objectID
-                }
-                console.log('Email found: ' + userEmail.email);
-            }
-            let registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
-            if (registeredUser !== undefined) { //User is in the database. We update it
-                user.objectId = registeredUser.objectId;
-                result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
-            }
-            else { //user is not in the database. We create it
-                result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
-            }
-        }
-        catch (error) {
-            console.log(error);
-        }
-    });
-}
-exports.udpateDiscordUser2 = udpateDiscordUser2;
 function mergeBackendlessData(user1, user2) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log("Merging data...");
@@ -131,7 +98,7 @@ function mergeBackendlessData(user1, user2) {
         }
         yield backendless_1.default.Data.of(backendlessUserTable).remove(userToDelete.objectId);
         userResult = yield backendless_1.default.Data.of(backendlessUserTable).save(userMerged);
-        console.log("User with ID: " + userToDelete.objectId + 'deletd, and merged with user ID ' + userResult.objectId + ' which is newer.');
+        console.log("User with ID: " + userToDelete.objectId + 'deleted, and merged with user ID ' + userResult.objectId + ' which is newer.');
         return userResult;
     });
 }

@@ -44,38 +44,6 @@ export async function  checkIfDiscordIDRegistered(discordUserId: Snowflake): Pro
     }
 }
 
-export async function udpateDiscordUser2(user:BackendlessPerson) {
-    let result
-    let userEmail
-    try {
-        if (!user.Discord_ID) {
-           throw new Error("Unexpected error: Missing User DiscordID");
-        } if (user.email) { //if we provide email, check if that email exists in the ddbb
-            console.log('User provides email')
-            userEmail = await checkIfEmailRegistered(user.email)
-            console.log('Email: ' + userEmail)
-            if(userEmail !== undefined){ //user with email is in the database
-                console.log('Inside Email: ' + userEmail)
-                user.objectId = userEmail.objectId //we update our user with the ddbb's objectID
-            }
-            console.log('Email found: ' + userEmail.email)
-        }
-
-        let registeredUser = await checkIfDiscordIDRegistered(user.Discord_ID)
-
-        if(registeredUser !== undefined){ //User is in the database. We update it
-
-            user.objectId = registeredUser.objectId
-            result =  await Backendless.Data.of( backendlessUserTable! ).save<BackendlessPerson>( user )
-        }else{ //user is not in the database. We create it
-            result =  await Backendless.Data.of( backendlessUserTable! ).save<BackendlessPerson>( user )
-        }
-
-} catch (error) {
-    console.log(error)
-}
-}
-
 async function mergeBackendlessData(user1:BackendlessPerson, user2:BackendlessPerson){
     console.log("Merging data...")
     console.log("ID1: " + user1.objectId)
@@ -103,7 +71,6 @@ async function mergeBackendlessData(user1:BackendlessPerson, user2:BackendlessPe
     }
 
     //sort them the two users by date
-
     if (user1LastDate >user2LastDate) { //We take ID1
 
        userMerged ={..._.omitBy(user2, _.isNull), ..._.omitBy(user1, _.isNull)}
@@ -117,10 +84,9 @@ async function mergeBackendlessData(user1:BackendlessPerson, user2:BackendlessPe
     }
     await Backendless.Data.of( backendlessUserTable! ).remove( userToDelete.objectId! )
     userResult =  await Backendless.Data.of( backendlessUserTable! ).save<BackendlessPerson>( userMerged )
-    console.log("User with ID: " + userToDelete.objectId! + 'deletd, and merged with user ID ' + userResult.objectId + ' which is newer.')
+    console.log("User with ID: " + userToDelete.objectId! + 'deleted, and merged with user ID ' + userResult.objectId + ' which is newer.')
 
     return userResult
-
 }
 
 export async function udpateDiscordUser(user:BackendlessPerson) {
