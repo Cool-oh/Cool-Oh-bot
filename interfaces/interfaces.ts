@@ -1,4 +1,4 @@
-import { ColorResolvable, MessageButtonStyleResolvable } from "discord.js";
+import { ColorResolvable, MessageButtonStyleResolvable, Snowflake } from "discord.js";
 
 export interface TwitterUser {
     twitterId: number
@@ -59,7 +59,7 @@ export interface BackendlessPerson {
     First_Name?: string,
     Last_Name?: string,
     Discord_Handle?: string,
-    Discord_ID?: number,
+    Discord_ID?: Snowflake,
     Twitter_Handle?: string,
     Twitter_ID?: number,
     created?: Date,

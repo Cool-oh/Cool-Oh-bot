@@ -11,14 +11,24 @@ const backendlessTable = process.env.BACKENDLESS_TWITTER_TABLE
 const iconDatabaseStats = process.env.ICON_DATABASE_STATS
 var actionTakenContent = '';
 
-Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API_KEY!);
+try {
+  Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API_KEY!);
 
+} catch (error) {
+  console.log(error)
+}
 
 
 async function getDatabaseTweetCount(){
   var dataQueryBuilder = Backendless.DataQueryBuilder.create().setProperties( "Count(objectId)");
-  let result =  await Backendless.Data.of( backendlessTable! ).find<DatabaseCount>( dataQueryBuilder )
-  return result[0].count
+  try {
+    let result =  await Backendless.Data.of( backendlessTable! ).find<DatabaseCount>( dataQueryBuilder )
+    return result[0].count
+  } catch (error) {
+    console.log(error)
+    throw(error)
+  }
+
 }
 
 
@@ -64,10 +74,11 @@ export default {
       collection.forEach((click) => {
       //console.log(click.user.id, click.customId) //customId is the name of the button we specified up in the code
       })
-
+      let errorMessage=''
       if (collection.first()?.customId === 'Database_Stats') {
         actionTakenContent = 'Reporting last database stats!'
         let databaseTweetCount = await getDatabaseTweetCount()
+
         let lastTweetSaved =  await getBackendlessLastTweet()
         const date = new Date(lastTweetSaved.created );
         var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' } as const;
@@ -82,7 +93,7 @@ export default {
               url: 'https://cool-oh.com'
             }
           )
-          .addField('No. of Tweets', databaseTweetCount.toString() )
+          .addField('No. of Tweets ', databaseTweetCount!.toString() + errorMessage )
           .addField('Last tweet saved', (await lastTweetSaved).tweet_text )
           .addField('Saved to database  on', date.toLocaleDateString("en-US", options))
 

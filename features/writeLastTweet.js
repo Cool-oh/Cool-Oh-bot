@@ -133,24 +133,30 @@ function getBackendlessLastTweet() {
         //first get Last Tweet
         var queryBuilder = backendless_1.default.DataQueryBuilder.create();
         queryBuilder.setPageSize(1).setOffset(0).setSortBy(["date_published DESC"]);
-        let result = yield backendless_1.default.Data.of(backendlessTable).find(queryBuilder);
-        if (result[0] == undefined) {
-            //database is empty!
-            console.log('Database is empty!');
-        }
-        else {
-            //Now try to see if that tweet was a thread and might have more tweets
-            var whereClause = "date_published = '" + result[0].date_published + "'";
-            queryBuilder = backendless_1.default.DataQueryBuilder.create().setWhereClause(whereClause);
-            result = yield backendless_1.default.Data.of(backendlessTable).find(queryBuilder);
-            if (result.length > 1) {
-                //console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...' )
-                let sortedArray = sortByKey(result, backendlessTwitterIdColumn); // Sort the thread by tweetId
-                let lastTweetStored = sortedArray.at(-1); //get last item in the sorted array. It's the latest one.
-                return lastTweetStored;
+        try {
+            let result = yield backendless_1.default.Data.of(backendlessTable).find(queryBuilder);
+            if (result[0] == undefined) {
+                //database is empty!
+                console.log('Database is empty!');
             }
+            else {
+                //Now try to see if that tweet was a thread and might have more tweets
+                var whereClause = "date_published = '" + result[0].date_published + "'";
+                queryBuilder = backendless_1.default.DataQueryBuilder.create().setWhereClause(whereClause);
+                result = yield backendless_1.default.Data.of(backendlessTable).find(queryBuilder);
+                if (result.length > 1) {
+                    //console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...' )
+                    let sortedArray = sortByKey(result, backendlessTwitterIdColumn); // Sort the thread by tweetId
+                    let lastTweetStored = sortedArray.at(-1); //get last item in the sorted array. It's the latest one.
+                    return lastTweetStored;
+                }
+            }
+            return result[0];
         }
-        return result[0];
+        catch (error) {
+            console.log(error);
+            throw (error);
+        }
     });
 }
 exports.getBackendlessLastTweet = getBackendlessLastTweet;

@@ -141,28 +141,33 @@ export async function getBackendlessLastTweet() : Promise <Twitter_Cool_oh_NFT>{
     //first get Last Tweet
     var queryBuilder = Backendless.DataQueryBuilder.create();
     queryBuilder.setPageSize( 1 ).setOffset( 0 ).setSortBy( ["date_published DESC" ] );
+    try {
+        let result =  await Backendless.Data.of( backendlessTable! ).find<Twitter_Cool_oh_NFT>( queryBuilder )
+        if (result[0] == undefined) {
+            //database is empty!
+            console.log('Database is empty!')
+        }else{
+            //Now try to see if that tweet was a thread and might have more tweets
+            var whereClause = "date_published = '" + result[0].date_published + "'";
+            queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause( whereClause );
 
-    let result =  await Backendless.Data.of( backendlessTable! ).find<Twitter_Cool_oh_NFT>( queryBuilder )
-
-    if (result[0] == undefined) {
-        //database is empty!
-        console.log('Database is empty!')
-    }else{
-        //Now try to see if that tweet was a thread and might have more tweets
-        var whereClause = "date_published = '" + result[0].date_published + "'";
-        queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause( whereClause );
-
-        result =  await Backendless.Data.of( backendlessTable! ).find<Twitter_Cool_oh_NFT>( queryBuilder )
-        if(result.length > 1)
-        {
-            //console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...' )
-            let sortedArray = sortByKey(result, backendlessTwitterIdColumn!) // Sort the thread by tweetId
-            let lastTweetStored = sortedArray.at(-1) //get last item in the sorted array. It's the latest one.
-            return lastTweetStored
+            result =  await Backendless.Data.of( backendlessTable! ).find<Twitter_Cool_oh_NFT>( queryBuilder )
+            if(result.length > 1)
+            {
+                //console.log('Backendless last tweet is a thread of ' + result.length + ' tweets. Ordering them by id...' )
+                let sortedArray = sortByKey(result, backendlessTwitterIdColumn!) // Sort the thread by tweetId
+                let lastTweetStored = sortedArray.at(-1) //get last item in the sorted array. It's the latest one.
+                return lastTweetStored
+            }
         }
+        return result[0]
+    } catch (error) {
+        console.log(error)
+        throw(error)
     }
 
-    return result[0]
+
+
 }
 
 

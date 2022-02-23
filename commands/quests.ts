@@ -1,10 +1,11 @@
-import { Client, ColorResolvable, GuildMember, Interaction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Role, TextChannel } from 'discord.js';
+import { Client, ColorResolvable, GuildMember, Interaction, MessageActionRow, MessageButton, MessageEmbed, MessageSelectMenu, MessageSelectOptionData, Role, TextChannel, User } from 'discord.js';
 import { ICommand } from 'wokcommands';
 import dotenv from 'dotenv'
 import { TwitterQuest } from '../tools/quests/twitterQuest/twitterQuest';
 import { QuestInit } from '../tools/quests/questInit';
 import { QuestEmbedJson } from '../interfaces/interfaces';import { WalletQuest } from '../tools/quests/walletQuest/walletQuest';
 import {Modal, TextInputComponent, showModal } from 'discord-modals'
+import { checkIfDiscordIDRegistered } from '../tools/users/userBackendless';
 const discordModals = require('discord-modals')
 
 dotenv.config();
@@ -44,7 +45,7 @@ export  default {
     testOnly: true,
     guildOnly: true,
 
-    init: async (client: Client) => { //this function is invoked whenever the command is run. We are creating an event listener to listen
+    init: async (client: Client, user: User) => { //this function is invoked whenever the command is run. We are creating an event listener to listen
                                 // to whenever an interaction is created
 
         client.on('interactionCreate', interaction => {
@@ -89,6 +90,7 @@ export  default {
         if(interaction.isButton()){
             for (let index = 0; index < optionsList.length; index++) {
                 if(interaction.customId == questsObjList[index].joinQuestButton.customId){
+                    //checkIfUserRegistered(user)
                     questsObjList[index].joinQuestButtonClicked(interaction, client)
                     }
                 }
@@ -108,7 +110,7 @@ export  default {
         })
     },
 
-    callback: async ({ interaction: msgInt, interaction, args, client, channel}) => {
+    callback: async ({ interaction: msgInt, user}) => {
 
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList) //remove the first item from the option list in the dropdown (INDEX)
 

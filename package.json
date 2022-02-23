@@ -21,6 +21,7 @@
     "discordjs-modal": "^1.0.6",
     "dotenv": "^14.3.0",
     "express": "^4.17.2",
+    "lodash": "^4.17.21",
     "nodemon": "^2.0.15",
     "wokcommands": "^1.5.3"
   },

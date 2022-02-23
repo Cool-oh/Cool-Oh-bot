@@ -49,7 +49,7 @@ exports.default = {
     slash: true,
     testOnly: true,
     guildOnly: true,
-    init: (client) => __awaiter(void 0, void 0, void 0, function* () {
+    init: (client, user) => __awaiter(void 0, void 0, void 0, function* () {
         // to whenever an interaction is created
         client.on('interactionCreate', interaction => {
             if (interaction.isSelectMenu()) {
@@ -87,6 +87,7 @@ exports.default = {
             if (interaction.isButton()) {
                 for (let index = 0; index < optionsList.length; index++) {
                     if (interaction.customId == questsObjList[index].joinQuestButton.customId) {
+                        //checkIfUserRegistered(user)
                         questsObjList[index].joinQuestButtonClicked(interaction, client);
                     }
                 }
@@ -101,7 +102,7 @@ exports.default = {
             }
         });
     }),
-    callback: ({ interaction: msgInt, interaction, args, client, channel }) => __awaiter(void 0, void 0, void 0, function* () {
+    callback: ({ interaction: msgInt, user }) => __awaiter(void 0, void 0, void 0, function* () {
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList); //remove the first item from the option list in the dropdown (INDEX)
         if (dropDown.components.length > 0) {
             dropDown.setComponents([]);

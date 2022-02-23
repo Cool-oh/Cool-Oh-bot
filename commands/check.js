@@ -20,12 +20,23 @@ dotenv_1.default.config();
 const backendlessTable = process.env.BACKENDLESS_TWITTER_TABLE;
 const iconDatabaseStats = process.env.ICON_DATABASE_STATS;
 var actionTakenContent = '';
-backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
+try {
+    backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
+}
+catch (error) {
+    console.log(error);
+}
 function getDatabaseTweetCount() {
     return __awaiter(this, void 0, void 0, function* () {
         var dataQueryBuilder = backendless_1.default.DataQueryBuilder.create().setProperties("Count(objectId)");
-        let result = yield backendless_1.default.Data.of(backendlessTable).find(dataQueryBuilder);
-        return result[0].count;
+        try {
+            let result = yield backendless_1.default.Data.of(backendlessTable).find(dataQueryBuilder);
+            return result[0].count;
+        }
+        catch (error) {
+            console.log(error);
+            throw (error);
+        }
     });
 }
 exports.default = {
@@ -63,6 +74,7 @@ exports.default = {
             collection.forEach((click) => {
                 //console.log(click.user.id, click.customId) //customId is the name of the button we specified up in the code
             });
+            let errorMessage = '';
             if (((_a = collection.first()) === null || _a === void 0 ? void 0 : _a.customId) === 'Database_Stats') {
                 actionTakenContent = 'Reporting last database stats!';
                 let databaseTweetCount = yield getDatabaseTweetCount();
@@ -77,7 +89,7 @@ exports.default = {
                     iconURL: iconDatabaseStats,
                     url: 'https://cool-oh.com'
                 })
-                    .addField('No. of Tweets', databaseTweetCount.toString())
+                    .addField('No. of Tweets ', databaseTweetCount.toString() + errorMessage)
                     .addField('Last tweet saved', (yield lastTweetSaved).tweet_text)
                     .addField('Saved to database  on', date.toLocaleDateString("en-US", options));
                 //Send the results
