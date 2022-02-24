@@ -19,6 +19,20 @@ const _ = require("lodash");
 dotenv_1.default.config();
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE;
 backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
+/*
+export interface BackendlessPerson {
+    ddbb_name?: string
+    objectId?: string,
+    email?: string,
+    First_Name?: string,
+    Last_Name?: string,
+    Discord_Handle?: string,
+    Discord_ID?: Snowflake,
+    Twitter_Handle?: string,
+    Twitter_ID?: number,
+    created?: Date,
+    updated?: Date
+}*/
 function checkIfEmailRegistered(email) {
     return __awaiter(this, void 0, void 0, function* () {
         var whereClause = "email='" + email + "'";
