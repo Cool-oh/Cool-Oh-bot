@@ -35,30 +35,37 @@ function findUser(email) {
         return result;
     });
 }
-function findUserDeep(id) {
+function getUserDeep(id, relationsDepth) {
     return __awaiter(this, void 0, void 0, function* () {
-        /*
-         let related = [ 'Quests'];
-         var queryBuilder = Backendless.DataQueryBuilder.create();
-         queryBuilder.setRelationsDepth(1)
-         .setRelated(related)
-       */
-        //let result = await Backendless.Data.of( backendlessUserTable! ).findById( {objectId:id, queryBuilder})
         var queryBuilder = backendless_1.default.DataQueryBuilder.create();
-        queryBuilder.setRelated(["Quests",
-            "Quests.wallet_quest"]);
-        var objectCollection = backendless_1.default.Data.of(backendlessUserTable).find(queryBuilder);
-        backendless_1.default.Data.of(backendlessUserTable).find(queryBuilder)
-            .then(function (objectCollection) {
-            return objectCollection;
-        })
-            .catch(function (error) {
-        });
-        //var whereClause = "email='" + email + "'";
-        //var queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause( whereClause );
-        //let result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
+        queryBuilder.setRelationsDepth(relationsDepth);
+        let result = yield backendless_1.default.Data.of(backendlessUserTable).findById(id, queryBuilder);
+        return result;
     });
 }
+var user3 = {
+    email: 'cdelalama@gmail.com',
+    First_Name: 'Carlos Anton',
+    Discord_Handle: 'Mama Carlos',
+    Discord_ID: '623958779737931786',
+    Quests: {
+        Wallet_quest: [{
+                solana_address: '82oQgMz2yZrMZjwVig42gPd6dnTe1dbfFCgcN43ConaU',
+                Discord_server: {
+                    server_id: 9188182080127304,
+                    server_name: 'Cool-oh!'
+                }
+            }],
+        Twitter_quests: [{
+                twitter_handle: '@cdelalama',
+                twitter_id: '95220199',
+                Discord_server: {
+                    server_id: 9188182080127304,
+                    server_name: 'Cool-oh!'
+                }
+            }]
+    }
+};
 exports.default = {
     category: 'ManagementTools',
     description: 'Tests basic commands.',
@@ -69,6 +76,10 @@ exports.default = {
     callback: ({ interaction: msgInt, channel, interaction, user }) => __awaiter(void 0, void 0, void 0, function* () {
         //let check = checkIfUserRegistered(8222288)
         //let result = await udpateDiscordUser(testUser1)
-        console.log(yield findUserDeep('AEC160F2-7A04-4A4B-8A41-2A0B3830267B'));
+        //let userFound = await  getUserDeep('AEC160F2-7A04-4A4B-8A41-2A0B3830267B', 3) as BackendlessPerson
+        //console.log(userFound)
+        //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
+        (0, userBackendless_1.udpateDiscordUser)(user3);
+        //console.log(userFound.Quests?.Twitter_quests)
     }),
 };

@@ -53,17 +53,56 @@ export interface DatabaseCount {
 }
 
 export interface BackendlessPerson {
-    ddbb_name?: string
+    ddbb_name?: string,
     objectId?: string,
     email?: string,
     First_Name?: string,
     Last_Name?: string,
     Discord_Handle?: string,
-    Discord_ID?: Snowflake,
+    Discord_ID: Snowflake,
     Twitter_Handle?: string,
     Twitter_ID?: number,
     created?: Date,
     updated?: Date
+    Quests?: {
+        created?: Date,
+        objectId?: string
+        twitter_quest?: Object,
+        ownerId?: string,
+        updated?: Date,
+        Wallet_quest?:[{
+            created?: Date,
+            objectId?: string,
+            ownerId?: string,
+            solana_address: string,
+            total_coins_earned?: number,
+            updated?: Date,
+            Discord_server?: {
+                created?: Date,
+                objectId?: string,
+                ownerId?: string,
+                server_id: number,
+                server_name?: string,
+                updated?: Date
+                }
+        }],
+        Twitter_quests?:[{
+            created?: Date,
+            objectId?: string,
+            ownerId?: string,
+            twitter_handle: string,
+            twitter_id: string,
+            updated?: Date,
+            Discord_server?: {
+                created?: Date,
+                objectId?: string,
+                ownerId?: string,
+                server_id: number,
+                server_name?: string,
+                updated?: Date
+                }
+        }]
+    }
 }
 
 export interface QuestEmbedJson{

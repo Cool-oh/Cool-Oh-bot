@@ -5,6 +5,7 @@ import Backendless from 'backendless'
 import {BackendlessPerson, DatabaseCount} from '../interfaces/interfaces'
 import {getBackendlessLastTweet} from '../features/writeLastTweet'
 import { checkIfEmailRegistered, udpateDiscordUser, } from '../tools/users/userBackendless';
+import { first } from 'lodash';
 
 dotenv.config();
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE
@@ -47,39 +48,42 @@ async function findUser(email:string) {
 }
 
 
-async function findUserDeep(id:string) {
- 
- /*
-  let related = [ 'Quests'];
+async function getUserDeep(id:string, relationsDepth: number): Promise<BackendlessPerson>  {
+
   var queryBuilder = Backendless.DataQueryBuilder.create();
-  queryBuilder.setRelationsDepth(1)
-  .setRelated(related)
-*/
+  queryBuilder.setRelationsDepth( relationsDepth );
 
-
-
-  //let result = await Backendless.Data.of( backendlessUserTable! ).findById( {objectId:id, queryBuilder})
-  var queryBuilder = Backendless.DataQueryBuilder.create();
-  queryBuilder.setRelated( [ "Quests", 
-                             "Quests.wallet_quest" ] );
-
-  var objectCollection = Backendless.Data.of( backendlessUserTable! ).find( queryBuilder );
-
-  Backendless.Data.of( backendlessUserTable! ).find( queryBuilder )
- .then( function( objectCollection ) {
-  return objectCollection
-  })
- .catch( function( error ) {
-  });
-
-  //var whereClause = "email='" + email + "'";
-  //var queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause( whereClause );
-
-  //let result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
-
-  
+  let result = await Backendless.Data.of( backendlessUserTable! ).findById( id, queryBuilder ) as BackendlessPerson
+  return result
 
 }
+ var user3: BackendlessPerson = {
+  email: 'cdelalama@gmail.com',
+  First_Name: 'Carlos Anton',
+  Discord_Handle: 'Mama Carlos',
+  Discord_ID: '623958779737931786',
+  Quests: {
+    Wallet_quest: [{
+      solana_address: '82oQgMz2yZrMZjwVig42gPd6dnTe1dbfFCgcN43ConaU',
+      Discord_server: {
+        server_id: 9188182080127304,
+        server_name: 'Cool-oh!'
+      }
+    }],
+    Twitter_quests:[{
+      twitter_handle: '@cdelalama',
+      twitter_id: '95220199',
+      Discord_server: {
+        server_id: 9188182080127304,
+        server_name: 'Cool-oh!'
+      }
+    }]
+  }
+
+ }
+
+
+
 
  export default {
   category: 'ManagementTools',
@@ -97,11 +101,13 @@ async function findUserDeep(id:string) {
 
     //let result = await udpateDiscordUser(testUser1)
 
+    //let userFound = await  getUserDeep('AEC160F2-7A04-4A4B-8A41-2A0B3830267B', 3) as BackendlessPerson
+    //console.log(userFound)
+    //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
 
-    console.log(await findUserDeep('AEC160F2-7A04-4A4B-8A41-2A0B3830267B'))
+    udpateDiscordUser(user3)
 
-
-
+      //console.log(userFound.Quests?.Twitter_quests)
 
   },
 } as ICommand

@@ -125,9 +125,9 @@ export async function udpateDiscordUser(user:BackendlessPerson) {
                 if (registeredUser !== undefined) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
                     console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.")
                     if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
-                        console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same reccord. We UPDATE it")
+                        console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same record. We UPDATE it")
                         user.objectId =  userEmail.objectId
-                        result =  await Backendless.Data.of( backendlessUserTable! ).save<BackendlessPerson>( user )
+                        result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( user )
                     } else {//is it a different record? DiscordID & Email are in different records. PROBLEM. We merge the data, assuming new data is better
                         console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. They are in different records. PROBLEM. We merge the data, assuming new data is better")
 
