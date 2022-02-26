@@ -45,8 +45,8 @@ function getUserDeep(id, relationsDepth) {
 }
 var user3 = {
     email: 'cdelalama@gmail.com',
-    First_Name: 'Carlos Anton',
-    Discord_Handle: 'Mama Carlos',
+    First_Name: 'Carlos',
+    Discord_Handle: 'Mama Carlos2',
     Discord_ID: '623958779737931786',
     Quests: {
         Wallet_quest: [{

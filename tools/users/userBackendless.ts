@@ -9,26 +9,22 @@ dotenv.config();
 
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE
 Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API_KEY!);
-/*
-export interface BackendlessPerson {
-    ddbb_name?: string
-    objectId?: string,
-    email?: string,
-    First_Name?: string,
-    Last_Name?: string,
-    Discord_Handle?: string,
-    Discord_ID?: Snowflake,
-    Twitter_Handle?: string,
-    Twitter_ID?: number,
-    created?: Date,
-    updated?: Date
-}*/
 
 
+async function getUserDeep(id:string, relationsDepth: number): Promise<BackendlessPerson>  {
+
+    var queryBuilder = Backendless.DataQueryBuilder.create();
+    queryBuilder.setRelationsDepth( relationsDepth );
+  
+    let result = await Backendless.Data.of( backendlessUserTable! ).findById<BackendlessPerson>( id, queryBuilder )
+    return result
+  
+  }
 
 export async function checkIfEmailRegistered(email: string) : Promise<BackendlessPerson>{
     var whereClause = "email='" + email + "'";
     var queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause( whereClause );
+    queryBuilder.setRelationsDepth( 3 );
     try {
         let result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
         if (!result[0]) {
@@ -108,10 +104,51 @@ async function mergeBackendlessData(user1:BackendlessPerson, user2:BackendlessPe
     return userResult
 }
 
+function removeEmptyObjects(obj:any) {
+    return _(obj)
+      .pickBy(_.isObject) // pick objects only
+      .mapValues(removeEmptyObjects) // call only for object values
+      .omitBy(_.isEmpty, _.isNull) // remove all empty objects
+      .assign(_.omitBy(obj, _.isObject)) // assign back primitive values
+      .value();
+  }
+  function removeEmptyObjects2(obj:any) {
+
+	if(_.isArray(obj)) {
+  	return _(obj)
+    	.filter(_.isObject)
+      .map(removeEmptyObjects)
+      .reject(_.isEmpty)
+      .concat(_.reject(obj, _.isObject))
+      .value();
+	}
+
+  return _(obj)
+    .pickBy(_.isObject)
+    .mapValues(removeEmptyObjects)
+    .omitBy(_.isEmpty)
+    .assign(_.omitBy(obj, _.isObject))
+    .value();
+}
+function removeEmptyObjects3(obj:any) {
+    let finalObj:any = {};
+    Object.keys(obj).forEach((key) => {
+        if (obj[key] && typeof obj[key] === 'object') {
+            const nestedObj: any = removeEmptyObjects3(obj[key]);
+            if (Object.keys(nestedObj).length) {
+                finalObj[key] = nestedObj;
+            }
+        } else if (obj[key] !== '' && obj[key] !== undefined && obj[key] !== null) {
+            finalObj[key] = obj[key];
+        }
+    });
+    return finalObj;
+}
 export async function udpateDiscordUser(user:BackendlessPerson) {
     let result
     let userEmail
     let registeredUser
+    let userToSave:BackendlessPerson
     try {
         if (!user.Discord_ID) {
             throw new Error("Unexpected error: Missing User DiscordID");
@@ -126,10 +163,25 @@ export async function udpateDiscordUser(user:BackendlessPerson) {
                     console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.")
                     if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
                         console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same record. We UPDATE it")
-                        user.objectId =  userEmail.objectId
-                        result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( user )
+                        //user.objectId =  userEmail.objectId
+                         
+                        let  removedUserEmail= removeEmptyObjects3(userEmail)
+                        let removedUSer = removeEmptyObjects3(user)
+                        //userToSave = {..._.omitBy(removedUserEmail, _.isNull), ..._.omitBy(removedUSer, _.isNull)}
+                        userToSave = {...userEmail, ...user}
+                        
+                        console.log(JSON.stringify(userToSave))
+                        
+                        //console.log('removed' + JSON.stringify( removedtest))
+                       // console.log(_.omitBy(userEmail.Quests?.Twitter_quests, _.isNil))
+                       // console.log(_.omitBy(user, _.isNull)) 
+                        
+                       // console.log(user.Quests?.Twitter_quests)
+                        //console.log(userToSave.Quests?.Twitter_quests)
+
+                        result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( userToSave )
                     } else {//is it a different record? DiscordID & Email are in different records. PROBLEM. We merge the data, assuming new data is better
-                        console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. They are in different records. PROBLEM. We merge the data, assuming new data is better")
+                        console.log("1.2 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. They are in different records. PROBLEM. We merge the data, assuming new data is better")
 
                         let mergedUser = await mergeBackendlessData(userEmail, registeredUser)
                         console.log("1:" + JSON.stringify(userEmail))
