@@ -18,13 +18,23 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const _ = require("lodash");
 dotenv_1.default.config();
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE;
-backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
+try {
+    backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
+}
+catch (error) {
+    throw error;
+}
 function getUserDeep(id, relationsDepth) {
     return __awaiter(this, void 0, void 0, function* () {
         var queryBuilder = backendless_1.default.DataQueryBuilder.create();
         queryBuilder.setRelationsDepth(relationsDepth);
-        let result = yield backendless_1.default.Data.of(backendlessUserTable).findById(id, queryBuilder);
-        return result;
+        try {
+            let result = yield backendless_1.default.Data.of(backendlessUserTable).findById(id, queryBuilder);
+            return result;
+        }
+        catch (error) {
+            throw error;
+        }
     });
 }
 function checkIfEmailRegistered(email) {
@@ -73,6 +83,8 @@ function mergeBackendlessData(user1, user2) {
         console.log("Merging data...");
         console.log("ID1: " + user1.objectId);
         console.log("ID2: " + user2.objectId);
+        let removedUser1 = removeEmpty(user1);
+        let removedUSer2 = removeEmpty(user2);
         let userResult;
         let userMerged;
         let userToDelete;
@@ -85,7 +97,6 @@ function mergeBackendlessData(user1, user2) {
         else {
             console.log("ID1: NOT updated ");
             user1LastDate = new Date(user1.created);
-            //user1LastDate = user1.created!
         }
         if (user2.updated) {
             console.log("ID2: updated ");
@@ -97,18 +108,17 @@ function mergeBackendlessData(user1, user2) {
         }
         //sort them the two users by date
         if (user1LastDate > user2LastDate) { //We take ID1
-            userMerged = Object.assign(Object.assign({}, _.omitBy(user2, _.isNull)), _.omitBy(user1, _.isNull));
-            // userMerged = {...user2, ...user1} //merge both users, if same property, user1 overwrites user2 becasue it's newer
+            userMerged = _.merge(removedUSer2, removedUser1); //merge both users, if same property, user1 overwrites user2 becasue it's newer
             userToDelete = user2;
         }
         else { //we take ID2
-            userMerged = Object.assign(Object.assign({}, _.omitBy(user1, _.isNull)), _.omitBy(user2, _.isNull)); //merge both users, if same property, user2 overwrites user1 becasue it's newer
+            userMerged = _.merge(removedUser1, removedUSer2); //merge both users, if same property, user2 overwrites user1 becasue it's newer
             userToDelete = user1;
         }
         try {
             yield backendless_1.default.Data.of(backendlessUserTable).remove(userToDelete.objectId);
-            userResult = yield backendless_1.default.Data.of(backendlessUserTable).save(userMerged);
-            console.log("User with ID: " + userToDelete.objectId + 'deleted, and merged with user ID ' + userResult.objectId + ' which is newer.');
+            userResult = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(userMerged);
+            console.log("User with ID: " + userToDelete.objectId + ' deleted, and merged with user ID ' + userResult.objectId + ' which is newer.');
         }
         catch (error) {
             throw (error);
@@ -116,44 +126,11 @@ function mergeBackendlessData(user1, user2) {
         return userResult;
     });
 }
-function removeEmptyObjects(obj) {
-    return _(obj)
-        .pickBy(_.isObject) // pick objects only
-        .mapValues(removeEmptyObjects) // call only for object values
-        .omitBy(_.isEmpty, _.isNull) // remove all empty objects
-        .assign(_.omitBy(obj, _.isObject)) // assign back primitive values
-        .value();
-}
-function removeEmptyObjects2(obj) {
-    if (_.isArray(obj)) {
-        return _(obj)
-            .filter(_.isObject)
-            .map(removeEmptyObjects)
-            .reject(_.isEmpty)
-            .concat(_.reject(obj, _.isObject))
-            .value();
-    }
-    return _(obj)
-        .pickBy(_.isObject)
-        .mapValues(removeEmptyObjects)
-        .omitBy(_.isEmpty)
-        .assign(_.omitBy(obj, _.isObject))
-        .value();
-}
-function removeEmptyObjects3(obj) {
-    let finalObj = {};
-    Object.keys(obj).forEach((key) => {
-        if (obj[key] && typeof obj[key] === 'object') {
-            const nestedObj = removeEmptyObjects3(obj[key]);
-            if (Object.keys(nestedObj).length) {
-                finalObj[key] = nestedObj;
-            }
-        }
-        else if (obj[key] !== '' && obj[key] !== undefined && obj[key] !== null) {
-            finalObj[key] = obj[key];
-        }
-    });
-    return finalObj;
+function removeEmpty(obj) {
+    var clean = Object.fromEntries(Object.entries(obj)
+        .map(([k, v]) => [k, v === Object(v) ? removeEmpty(v) : v])
+        .filter(([_, v]) => v != null && (v !== Object(v) || Object.keys(v).length)));
+    return Array.isArray(obj) ? Object.values(clean) : clean;
 }
 function udpateDiscordUser(user) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -175,17 +152,10 @@ function udpateDiscordUser(user) {
                         console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.");
                         if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
                             console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same record. We UPDATE it");
-                            //user.objectId =  userEmail.objectId
-                            let removedUserEmail = removeEmptyObjects3(userEmail);
-                            let removedUSer = removeEmptyObjects3(user);
-                            //userToSave = {..._.omitBy(removedUserEmail, _.isNull), ..._.omitBy(removedUSer, _.isNull)}
-                            userToSave = Object.assign(Object.assign({}, userEmail), user);
-                            console.log(JSON.stringify(userToSave));
-                            //console.log('removed' + JSON.stringify( removedtest))
-                            // console.log(_.omitBy(userEmail.Quests?.Twitter_quests, _.isNil))
-                            // console.log(_.omitBy(user, _.isNull)) 
-                            // console.log(user.Quests?.Twitter_quests)
-                            //console.log(userToSave.Quests?.Twitter_quests)
+                            user.objectId = userEmail.objectId;
+                            let removedUserEmail = removeEmpty(userEmail);
+                            let removedUSer = removeEmpty(user);
+                            userToSave = _.merge(removedUserEmail, removedUSer);
                             result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(userToSave);
                         }
                         else { //is it a different record? DiscordID & Email are in different records. PROBLEM. We merge the data, assuming new data is better
@@ -199,7 +169,7 @@ function udpateDiscordUser(user) {
                     else { //DiscordID !exist in ddbb: we update email ddbb with discordId. WE OVERWRITE discordID! Assume new data is better
                         console.log("2 Email Provided. Email exists in ddbb. DiscordID !exist in ddbb: We UPDATE email ddbb with discordID");
                         user.objectId = userEmail.objectId;
-                        result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
+                        result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(user);
                     }
                 }
                 else { //email !exist in ddbb
@@ -208,11 +178,11 @@ function udpateDiscordUser(user) {
                     if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
                         console.log("3 Email Provided. Email !exist in ddbb. DiscordID exists: We UPDATE record");
                         user.objectId = registeredUser.objectId;
-                        result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
+                        result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(user);
                     }
                     else { //DiscordID !exist in ddbb: Create record
                         console.log("4 Email Provided. Email !exist in ddbb. DiscordID !exist: We CREATE record");
-                        result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
+                        result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(user);
                     }
                 }
             }
@@ -221,11 +191,11 @@ function udpateDiscordUser(user) {
                 if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
                     console.log("5 Email !provided. DiscordID exists: We UPDATE record");
                     user.objectId = registeredUser.objectId;
-                    result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
+                    result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(user);
                 }
                 else { //DiscordID !exist in ddbb: Create record
                     console.log("6 Email !provided. DiscordID !exists: We CREATE record");
-                    result = yield backendless_1.default.Data.of(backendlessUserTable).save(user);
+                    result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(user);
                 }
             }
         }

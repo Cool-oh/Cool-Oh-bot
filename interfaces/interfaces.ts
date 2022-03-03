@@ -70,16 +70,16 @@ export interface BackendlessPerson {
         twitter_quest?: Object,
         ownerId?: string,
         updated?: Date,
-        Wallet_quest?:[{
+        Wallet_quests?:[{
             created?: Date,
             objectId?: string,
             ownerId?: string,
             solana_address: string,
             total_coins_earned?: number,
             updated?: Date,
-            Discord_server?: {
+            Discord_Server: {
                 created?: Date,
-                objectId?: string,
+                objectId: string,
                 ownerId?: string,
                 server_id: number,
                 server_name?: string,
@@ -93,9 +93,9 @@ export interface BackendlessPerson {
             twitter_handle: string,
             twitter_id: string,
             updated?: Date,
-            Discord_server?: {
+            Discord_Server: {
                 created?: Date,
-                objectId?: string,
+                objectId: string,
                 ownerId?: string,
                 server_id: number,
                 server_name?: string,

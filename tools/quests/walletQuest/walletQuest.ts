@@ -71,6 +71,8 @@ function modalSubmit(modal: any){
 
     if (isSolAddress) {
         modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
+        
+
     }else{
         modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true })
   }
