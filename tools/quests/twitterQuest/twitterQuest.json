@@ -26,6 +26,7 @@
         "customId": "twitterQuest_yes",
         "emoji": "🔨",
         "label": "Join Twitter Quest",
+        "label_edit": "Edit Twitter Quest",
         "style": "SUCCESS"
     },
     "menu": {

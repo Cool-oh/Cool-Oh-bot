@@ -51,6 +51,50 @@ export interface DatabaseCount {
     count: number,
     class: string
 }
+export interface DiscordServer {
+    created?: Date,
+    objectId: string,
+    ownerId?: string,
+    server_id?: string,
+    server_name?: string,
+    updated?: Date
+}
+
+export interface AllQuests {
+    created?: Date,
+    objectId?: string,
+    ownerId?: string,
+    updated?: Date,
+    Discord_Server: DiscordServer
+
+}
+
+interface WalletQuest extends AllQuests{
+
+    solana_address: string,
+    total_coins_earned?: number,
+}
+
+
+export interface WalletQuests extends Array<WalletQuest>{}
+
+interface TwitterQuest extends AllQuests{
+
+    twitter_handle: string,
+    twitter_id: string,
+
+}
+export interface TwitterQuests extends Array<TwitterQuest>{}
+
+export interface Quests {
+    created?: Date,
+    objectId?: string,
+    ownerId?: string,
+    updated?: Date,
+    Wallet_quests?:WalletQuests,
+    Twitter_quests?: TwitterQuests,
+    [key: string]: any
+}
 
 export interface BackendlessPerson {
     ddbb_name?: string,
@@ -64,45 +108,7 @@ export interface BackendlessPerson {
     Twitter_ID?: number,
     created?: Date,
     updated?: Date
-    Quests?: {
-        created?: Date,
-        objectId?: string
-        twitter_quest?: Object,
-        ownerId?: string,
-        updated?: Date,
-        Wallet_quests?:[{
-            created?: Date,
-            objectId?: string,
-            ownerId?: string,
-            solana_address: string,
-            total_coins_earned?: number,
-            updated?: Date,
-            Discord_Server: {
-                created?: Date,
-                objectId: string,
-                ownerId?: string,
-                server_id: number,
-                server_name?: string,
-                updated?: Date
-                }
-        }],
-        Twitter_quests?:[{
-            created?: Date,
-            objectId?: string,
-            ownerId?: string,
-            twitter_handle: string,
-            twitter_id: string,
-            updated?: Date,
-            Discord_Server: {
-                created?: Date,
-                objectId: string,
-                ownerId?: string,
-                server_id: number,
-                server_name?: string,
-                updated?: Date
-                }
-        }]
-    }
+    Quests?: Quests
 }
 
 export interface QuestEmbedJson{
@@ -127,6 +133,7 @@ export interface QuestEmbedJson{
         customId: string,
         emoji: string,
         label: string,
+        label_edit:string
         style: MessageButtonStyleResolvable
     },
     menu: {

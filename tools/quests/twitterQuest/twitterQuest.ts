@@ -1,13 +1,15 @@
 import dotenv from 'dotenv'
 import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
-import { QuestEmbedJson } from '../../../interfaces/interfaces';
+import { BackendlessPerson, QuestEmbedJson } from '../../../interfaces/interfaces';
 import twitterQuestJson from './twitterQuest.json'
 import {Modal, TextInputComponent, showModal } from 'discord-modals'
+import { isSubscribedToQuest } from '../../users/userBackendless';
 
 dotenv.config();
 
 const twitterQuestFields = twitterQuestJson as QuestEmbedJson
 const menu = twitterQuestFields.menu
+var interactionGLobal:Interaction
 
 const twitterQuestEmbed = new MessageEmbed()
 .setColor(twitterQuestFields.color as ColorResolvable)
@@ -40,6 +42,17 @@ const modal = new Modal() // We create a Modal
   .setRequired(twitterQuestFields.modal.componentsList[0].required) // If it's required or not
 );
 
+async function init(interaction: Interaction,){
+    interactionGLobal = interaction
+    let subscribed = await isSubscribed()
+    if(subscribed){
+        joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
+        console.log('Twitter Quests subscribed: ' + subscribed)
+    }else{
+
+    }
+}
+
 function joinQuestButtonClicked(interaction:Interaction, client: Client){
 
     if (interaction.isButton()){
@@ -51,10 +64,28 @@ function joinQuestButtonClicked(interaction:Interaction, client: Client){
 
     }}
 
-function modalSubmit(modal: any){
-    const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
-    modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``)
+async function isSubscribed(): Promise <boolean> {
 
+    let discordServerID = interactionGLobal.guildId
+
+    let user:BackendlessPerson = {
+        Discord_ID: interactionGLobal.user.id,
+        Discord_Handle: interactionGLobal.user.username
+    }
+    try {
+        let result = isSubscribedToQuest(user, 'Twitter_quests',  discordServerID!  )
+        return result
+    } catch (error) {
+    throw error
+    }
+}
+
+async function modalSubmit(modal: any){
+    const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
+    //modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``)
+    await modal.deferReply({ ephemeral: true })
+    modal.followUp({ content: 'Congrats! Powered by discord-modals.' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
+ 
 }
 
 export class TwitterQuest {
@@ -65,16 +96,23 @@ export class TwitterQuest {
         return joinQuestButton
     }
     public get menu(){
+
         return menu
+    }
+    public async init(interaction: Interaction,){
+        return await init (interaction)
     }
     public joinQuestButtonClicked(interaction:Interaction, client: Client ){
         joinQuestButtonClicked(interaction, client)
     }
-    public modalQuestSubmit(modal:any){
-        modalSubmit(modal)
+    public async  modalQuestSubmit(modal:any){
+       await  modalSubmit(modal)
     }
     public get modal(){
         return modal
+    }
+    public  isSubscribed(): Promise <boolean>{
+        return isSubscribed()
     }
 
 }

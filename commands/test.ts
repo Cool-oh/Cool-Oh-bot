@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import Backendless from 'backendless'
 import {BackendlessPerson, DatabaseCount} from '../interfaces/interfaces'
 import {getBackendlessLastTweet} from '../features/writeLastTweet'
-import { checkIfEmailRegistered, udpateDiscordUser, } from '../tools/users/userBackendless';
+import { checkIfEmailRegistered, isSubscribedToQuest, udpateDiscordUser, } from '../tools/users/userBackendless';
 import { first } from 'lodash';
 
 dotenv.config();
@@ -28,7 +28,7 @@ let testUser1 =
 {
     Discord_Handle: 'MamaCarlos55',
     Discord_ID: '1234567892',
-    email: 'carlos@gmail.com'
+    email: 'cdelalama@gmail.com'
 
 
 } as BackendlessPerson
@@ -58,30 +58,35 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
 
 }
  var user3: BackendlessPerson = {
-  email: 'cdelalama22@gmail.com',
-  First_Name: 'Carlos Ca',
-  Discord_Handle: 'Mama Carlos222',
-  Discord_ID: '1234567892',
+  email: 'cdelalama2@gmail.com',
+  First_Name: 'Carlangas',
+  Discord_Handle: 'MamaCarlos',
+  Discord_ID: '6239587797379317863',
   Quests: {
     Wallet_quests: [{
-      solana_address: 'TestAddress22',
+      solana_address: 'TestAddress',
       Discord_Server: {
-        server_id: 9188182080127304,
-        server_name: 'Cool-oh!',
-        objectId: 'E1C15A66-4C98-4975-8298-1E231E8A52E0'
+
+        objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
+
       }
-    }],
+    },
+     {solana_address:'solana 1234',
+      Discord_Server:{
+        objectId:'EFE6A18E-95F9-4026-BF79-2C6238C88389'
+  }}
+
+  ],
     Twitter_quests:[{
-      twitter_handle: '@cdelalama22',
+      twitter_handle: '@cdelalamaabc',
       twitter_id: '95220199',
       Discord_Server: {
-        server_id: 9188182080127304,
-        server_name: 'Cool-oh!',
-        objectId:'E1C15A66-4C98-4975-8298-1E231E8A52E0'
+        objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
       }
-    }]
-  }
+    },
 
+  ]
+  }
  }
 
 
@@ -110,6 +115,8 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
     udpateDiscordUser(user3)
 
       //console.log(userFound.Quests?.Twitter_quests)
-
+     // let questName= 'Wallet_quests'
+     // let result = await isSubscribedToQuest(testUser1, questName , '854262020781113355')
+      //console.log('Is subscribed to '+ questName + ': ' + result)
   },
 } as ICommand

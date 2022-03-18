@@ -17,7 +17,8 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const twitterQuest_1 = require("../tools/quests/twitterQuest/twitterQuest");
 const questInit_1 = require("../tools/quests/questInit");
 const walletQuest_1 = require("../tools/quests/walletQuest/walletQuest");
-const discordModals = require('discord-modals');
+//const discordModals = require('discord-modals')
+const _1 = __importDefault(require("discord-modals//"));
 dotenv_1.default.config();
 const dropDown = new discord_js_1.MessageActionRow();
 const buttonRow = new discord_js_1.MessageActionRow();
@@ -49,9 +50,10 @@ exports.default = {
     slash: true,
     testOnly: true,
     guildOnly: true,
-    init: (client, user) => __awaiter(void 0, void 0, void 0, function* () {
+    init: (client) => __awaiter(void 0, void 0, void 0, function* () {
         // to whenever an interaction is created
-        client.on('interactionCreate', interaction => {
+        yield (0, _1.default)(client);
+        client.on('interactionCreate', (interaction) => __awaiter(void 0, void 0, void 0, function* () {
             if (interaction.isSelectMenu()) {
                 const { customId, values } = interaction;
                 const component = interaction.component;
@@ -72,6 +74,7 @@ exports.default = {
                                 buttonRow.spliceComponents(0, 1); //deletes the previous button
                             }
                             if (selectedOptions[0].value != optionsList[0].value) { //if its not the intro quest, build the button
+                                yield questsObjList[index].init(interaction);
                                 buttonRow.addComponents(questsObjList[index].joinQuestButton);
                                 componentList = [dropDown, buttonRow];
                             }
@@ -92,18 +95,18 @@ exports.default = {
                     }
                 }
             }
-        });
-        yield discordModals(client);
-        client.on('modalSubmit', (modal) => {
+        }));
+        client.on('modalSubmit', (modal) => __awaiter(void 0, void 0, void 0, function* () {
             for (let index = 0; index < optionsList.length; index++) {
                 if (modal.customId === questsObjList[index].modal.customId) {
-                    questsObjList[index].modalQuestSubmit(modal); //show quest's modal
+                    yield questsObjList[index].modalQuestSubmit(modal); //show quest's modal
                 }
             }
-        });
+        }));
     }),
     callback: ({ interaction: msgInt, user }) => __awaiter(void 0, void 0, void 0, function* () {
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList); //remove the first item from the option list in the dropdown (INDEX)
+        questsObjList[0].init(msgInt); //we init the Index Quest so we can retrieve the data for the user and display it
         if (dropDown.components.length > 0) {
             dropDown.setComponents([]);
         }

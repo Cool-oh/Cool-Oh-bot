@@ -7,6 +7,7 @@ dotenv.config();
 
 const questInitFields = questInitJson as QuestEmbedJson
 const menu = questInitFields.menu
+var interactionGLobal:Interaction
 
 const questInitEmbed = new MessageEmbed()
 .setColor(questInitFields.color as ColorResolvable)
@@ -19,16 +20,30 @@ const questInitEmbed = new MessageEmbed()
 .setImage(questInitFields.image)
 .setFooter(questInitFields.footer)
 
+
+async function init(interaction: Interaction,){
+    interactionGLobal = interaction
+
+}
+
 function joinQuestButtonClicked(interaction:Interaction){
     console.log("Clicked!")
 }
 function modalSubmit(modal:any){
 
 }
+async function isSubscribed(): Promise <boolean> {
+
+        return true
+
+}
 
 const joinQuestButton = new MessageButton()
 
 export class QuestInit {
+    public async init(interaction: Interaction,){
+        return await init (interaction)
+    }
     public get embed(): MessageEmbed{
         return questInitEmbed
     }
@@ -38,6 +53,7 @@ export class QuestInit {
     public get menu(){
         return menu
     }
+
     public joinQuestButtonClicked(interaction:Interaction ){
         joinQuestButtonClicked(interaction)
     }
@@ -46,6 +62,9 @@ export class QuestInit {
     }
     public modalQuestSubmit(modal:any){
         modalSubmit(modal)
+    }
+    public  isSubscribed(): Promise <boolean>{
+        return isSubscribed()
     }
 }
 

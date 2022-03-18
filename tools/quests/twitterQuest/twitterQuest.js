@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,9 +17,11 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const discord_js_1 = require("discord.js");
 const twitterQuest_json_1 = __importDefault(require("./twitterQuest.json"));
 const discord_modals_1 = require("discord-modals");
+const userBackendless_1 = require("../../users/userBackendless");
 dotenv_1.default.config();
 const twitterQuestFields = twitterQuest_json_1.default;
 const menu = twitterQuestFields.menu;
+var interactionGLobal;
 const twitterQuestEmbed = new discord_js_1.MessageEmbed()
     .setColor(twitterQuestFields.color)
     .setTitle(twitterQuestFields.title)
@@ -38,6 +49,18 @@ const modal = new discord_modals_1.Modal() // We create a Modal
     .setPlaceholder(twitterQuestFields.modal.componentsList[0].placeholder)
     .setRequired(twitterQuestFields.modal.componentsList[0].required) // If it's required or not
 );
+function init(interaction) {
+    return __awaiter(this, void 0, void 0, function* () {
+        interactionGLobal = interaction;
+        let subscribed = yield isSubscribed();
+        if (subscribed) {
+            joinQuestButton.setLabel(twitterQuestFields.button.label_edit);
+            console.log('Twitter Quests subscribed: ' + subscribed);
+        }
+        else {
+        }
+    });
+}
 function joinQuestButtonClicked(interaction, client) {
     if (interaction.isButton()) {
         (0, discord_modals_1.showModal)(modal, {
@@ -46,9 +69,29 @@ function joinQuestButtonClicked(interaction, client) {
         });
     }
 }
+function isSubscribed() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let discordServerID = interactionGLobal.guildId;
+        let user = {
+            Discord_ID: interactionGLobal.user.id,
+            Discord_Handle: interactionGLobal.user.username
+        };
+        try {
+            let result = (0, userBackendless_1.isSubscribedToQuest)(user, 'Twitter_quests', discordServerID);
+            return result;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+}
 function modalSubmit(modal) {
-    const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id);
-    modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``);
+    return __awaiter(this, void 0, void 0, function* () {
+        const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id);
+        //modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``)
+        yield modal.deferReply({ ephemeral: true });
+        modal.followUp({ content: 'Congrats! Powered by discord-modals.' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
+    });
 }
 class TwitterQuest {
     get embed() {
@@ -60,14 +103,24 @@ class TwitterQuest {
     get menu() {
         return menu;
     }
+    init(interaction) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield init(interaction);
+        });
+    }
     joinQuestButtonClicked(interaction, client) {
         joinQuestButtonClicked(interaction, client);
     }
     modalQuestSubmit(modal) {
-        modalSubmit(modal);
+        return __awaiter(this, void 0, void 0, function* () {
+            yield modalSubmit(modal);
+        });
     }
     get modal() {
         return modal;
+    }
+    isSubscribed() {
+        return isSubscribed();
     }
 }
 exports.TwitterQuest = TwitterQuest;

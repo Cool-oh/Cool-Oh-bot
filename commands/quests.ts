@@ -6,8 +6,8 @@ import { QuestInit } from '../tools/quests/questInit';
 import { QuestEmbedJson } from '../interfaces/interfaces';import { WalletQuest } from '../tools/quests/walletQuest/walletQuest';
 import {Modal, TextInputComponent, showModal } from 'discord-modals'
 import { checkIfDiscordIDRegistered } from '../tools/users/userBackendless';
-const discordModals = require('discord-modals')
-
+//const discordModals = require('discord-modals')
+import  discordModals   from 'discord-modals//'
 dotenv.config();
 
 const dropDown = new MessageActionRow()
@@ -45,12 +45,11 @@ export  default {
     testOnly: true,
     guildOnly: true,
 
-    init: async (client: Client, user: User) => { //this function is invoked whenever the command is run. We are creating an event listener to listen
+    init: async (client: Client) => { //this function is invoked at start. We are creating an event listener to listen
                                 // to whenever an interaction is created
-
-        client.on('interactionCreate', interaction => {
-
-            if (interaction.isSelectMenu()){
+        await discordModals(client);
+        client.on('interactionCreate', async interaction => {
+                if (interaction.isSelectMenu()){
                 const {customId, values} = interaction
                 const component = interaction.component as MessageSelectMenu
                 const selectedOptions = component.options.filter((option) => { //we run this function for each individual option for this component
@@ -74,10 +73,10 @@ export  default {
                             buttonRow.spliceComponents(0,1) //deletes the previous button
                         }
                         if(selectedOptions[0].value != optionsList[0].value){ //if its not the intro quest, build the button
+                            await questsObjList[index].init(interaction)
                             buttonRow.addComponents(questsObjList[index].joinQuestButton)
                             componentList = [dropDown,buttonRow]
                         }
-
                         interaction.update({
                             content: 'Updated',
                             embeds: [questsObjList[index].embed],
@@ -98,22 +97,25 @@ export  default {
         }
         )
 
-        await discordModals(client);
 
-        client.on('modalSubmit', (modal) => {
+
+        client.on('modalSubmit', async modal => {
             for (let index = 0; index < optionsList.length; index++) {
 
                 if(modal.customId === questsObjList[index].modal.customId){
-                    questsObjList[index].modalQuestSubmit(modal)  //show quest's modal
+                    await questsObjList[index].modalQuestSubmit(modal)  //show quest's modal
                 }
             }
         })
+
+
+
     },
 
     callback: async ({ interaction: msgInt, user}) => {
 
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList) //remove the first item from the option list in the dropdown (INDEX)
-
+        questsObjList[0].init(msgInt) //we init the Index Quest so we can retrieve the data for the user and display it
         if(dropDown.components.length > 0){
             dropDown.setComponents([])
             }

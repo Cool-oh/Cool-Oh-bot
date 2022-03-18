@@ -26,6 +26,7 @@
         "customId": "walletQuest_yes",
         "emoji": "🔨",
         "label": "Join Wallet Quest",
+        "label_edit": "Edit Wallet Quest",
         "style": "SUCCESS"
     },
     "menu": {

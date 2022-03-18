@@ -23,7 +23,7 @@ backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKEN
 let testUser1 = {
     Discord_Handle: 'MamaCarlos55',
     Discord_ID: '1234567892',
-    email: 'carlos@gmail.com'
+    email: 'cdelalama@gmail.com'
 };
 let testUser2 = {
     Discord_Handle: 'MamaCarlos5',
@@ -44,28 +44,30 @@ function getUserDeep(id, relationsDepth) {
     });
 }
 var user3 = {
-    email: 'cdelalama22@gmail.com',
-    First_Name: 'Carlos Ca',
-    Discord_Handle: 'Mama Carlos222',
-    Discord_ID: '1234567892',
+    email: 'cdelalama2@gmail.com',
+    First_Name: 'Carlangas',
+    Discord_Handle: 'MamaCarlos',
+    Discord_ID: '6239587797379317863',
     Quests: {
         Wallet_quests: [{
-                solana_address: 'TestAddress22',
+                solana_address: 'TestAddress',
                 Discord_Server: {
-                    server_id: 9188182080127304,
-                    server_name: 'Cool-oh!',
-                    objectId: 'E1C15A66-4C98-4975-8298-1E231E8A52E0'
+                    objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
                 }
-            }],
+            },
+            { solana_address: 'solana 1234',
+                Discord_Server: {
+                    objectId: 'EFE6A18E-95F9-4026-BF79-2C6238C88389'
+                } }
+        ],
         Twitter_quests: [{
-                twitter_handle: '@cdelalama22',
+                twitter_handle: '@cdelalamaabc',
                 twitter_id: '95220199',
                 Discord_Server: {
-                    server_id: 9188182080127304,
-                    server_name: 'Cool-oh!',
-                    objectId: 'E1C15A66-4C98-4975-8298-1E231E8A52E0'
+                    objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
                 }
-            }]
+            },
+        ]
     }
 };
 exports.default = {
@@ -83,5 +85,8 @@ exports.default = {
         //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
         (0, userBackendless_1.udpateDiscordUser)(user3);
         //console.log(userFound.Quests?.Twitter_quests)
+        // let questName= 'Wallet_quests'
+        // let result = await isSubscribedToQuest(testUser1, questName , '854262020781113355')
+        //console.log('Is subscribed to '+ questName + ': ' + result)
     }),
 };
