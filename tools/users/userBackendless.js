@@ -12,10 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.udpateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getAllUserQuests = void 0;
+exports.udpateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const discordLogger_1 = require("../../features/discordLogger");
 const _ = require("lodash");
+const filename = 'userBackendless.ts';
 dotenv_1.default.config();
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE;
 const backendlessRelationshipDepth = Number(process.env.BACKENDLESS_RELATIONSHIP_DEPTH);
@@ -40,31 +42,6 @@ function getObject(object, searchString) {
     });
     return result;
 }
-function getAllUserQuests(user, discordServerID) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let isUserRegistered = yield checkIfDiscordIDRegistered(user.Discord_ID);
-            if (isUserRegistered) { //user is registered
-                if (isUserRegistered.Quests) { //the user has quests. We get all of them, but only the ones from the current discord server
-                }
-                else { //the user is not subscribed to any quest
-                    return [];
-                }
-            }
-            else { //user not registered. We register it
-                let userToSave = {
-                    Discord_ID: user.Discord_ID,
-                    Discord_Handle: user.Discord_Handle
-                };
-                udpateDiscordUser(userToSave);
-                return [];
-            }
-        }
-        catch (error) {
-        }
-    });
-}
-exports.getAllUserQuests = getAllUserQuests;
 function isSubscribedToQuest(user, questName, discordServerID) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -134,6 +111,8 @@ function checkIfEmailRegistered(email) {
 exports.checkIfEmailRegistered = checkIfEmailRegistered;
 function checkIfDiscordIDRegistered(discordUserId) {
     return __awaiter(this, void 0, void 0, function* () {
+        let functionName = checkIfDiscordIDRegistered.name;
+        let errMsg = 'Trying to find discord user ID: ' + discordUserId + ' in DDBB';
         var queryBuilder = backendless_1.default.DataQueryBuilder.create();
         queryBuilder.setRelationsDepth(backendlessRelationshipDepth);
         queryBuilder.setWhereClause('Discord_ID = ' + discordUserId);
@@ -158,6 +137,7 @@ function mergeBackendlessData(user1, user2) {
         console.log("Merging data...");
         console.log("ID1: " + user1.objectId);
         console.log("ID2: " + user2.objectId);
+        let functionName = mergeBackendlessData.name;
         let removedUser1 = removeEmpty(user1);
         let removedUSer2 = removeEmpty(user2);
         let userResult;
@@ -191,9 +171,11 @@ function mergeBackendlessData(user1, user2) {
             userToDelete = user1;
         }
         try {
-            yield backendless_1.default.Data.of(backendlessUserTable).remove(userToDelete.objectId);
-            userResult = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(userMerged);
-            console.log("User with ID: " + userToDelete.objectId + ' deleted, and merged with user ID ' + userResult.objectId + ' which is newer.');
+            yield backendless_1.default.Data.of(backendlessUserTable).remove(userToDelete.objectId)
+                .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying remove user with objectID: ' + userToDelete.objectId + ' from DDBB', e.toString()));
+            userResult = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(userMerged)
+                .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to deep save a merged user: ' + JSON.stringify(userMerged), e.toString()));
+            console.log("User with ID: " + userToDelete.objectId + ' deleted, and merged with user ID ' + (userResult === null || userResult === void 0 ? void 0 : userResult.objectId) + ' which is newer.');
         }
         catch (error) {
             throw (error);
@@ -210,7 +192,9 @@ function removeEmpty(obj) {
 function deepSave(user) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(user);
+            let result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(user)
+                .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, 'udpateDiscordUser', 'Trying to save user ' + user.Discord_Handle +
+                ' with discordID: ' + user.Discord_ID + ' in DDBB: \n1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But its same record. We UPDATE it\n', e.toString()));
             return result;
         }
         catch (error) {
@@ -330,6 +314,7 @@ function mergeUsersWithQuests(userDDBB, newUser) {
 }
 function udpateDiscordUser(user) {
     return __awaiter(this, void 0, void 0, function* () {
+        let functionName = udpateDiscordUser.name;
         let result;
         let userEmail;
         let registeredUser;
@@ -348,15 +333,20 @@ function udpateDiscordUser(user) {
                     if (registeredUser !== undefined) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
                         console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.");
                         if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
-                            console.log("1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same record. We UPDATE it");
+                            let msg = "1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same record. We UPDATE it";
+                            console.log(msg);
                             removedUser.objectId = userEmail.objectId;
                             let removedUserEmail = removeEmpty(userEmail);
                             //userToSave = _.merge(removedUserEmail, removedUser)
                             userToSave = mergeUsersWithQuests(removedUserEmail, removedUser);
-                            result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(userToSave).catch(console.error);
+                            result = yield backendless_1.default.Data.of(backendlessUserTable)
+                                .deepSave(userToSave)
+                                .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle +
+                                ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg, e.toString()));
                         }
                         else { //is it a different record? DiscordID & Email are in different records. PROBLEM. We merge the data, assuming new data is better
-                            console.log("1.2 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. They are in different records. PROBLEM. We merge the data, assuming new data is better");
+                            let msg = "1.2 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. They are in different records. PROBLEM. We merge the data, assuming new data is better";
+                            console.log(msg);
                             //first we merge the two records in the database
                             let mergedUser = yield mergeBackendlessData(userEmail, registeredUser); //we need to make sure which one is newer so we can merge them
                             console.log("1 User with email in ddbb:" + JSON.stringify(userEmail) + '\n');
@@ -366,40 +356,68 @@ function udpateDiscordUser(user) {
                             let removedmergedUser = removeEmpty(mergedUser);
                             let userMergedSecond = _.merge(removedmergedUser, removedUser);
                             console.log('User to save: ' + JSON.stringify(userMergedSecond) + '\n');
-                            result = yield deepSave(userMergedSecond);
+                            //result =  await deepSave(userMergedSecond )
+                            result = yield backendless_1.default.Data.of(backendlessUserTable)
+                                .deepSave(userMergedSecond)
+                                .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle +
+                                ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg, e.toString()));
                         }
                     }
                     else { //DiscordID !exist in ddbb: we update email ddbb with discordId. WE OVERWRITE discordID! Assume new data is better
-                        console.log("2 Email Provided. Email exists in ddbb. DiscordID !exist in ddbb: We UPDATE email ddbb with discordID");
+                        let msg = "2 Email Provided. Email exists in ddbb. DiscordID !exist in ddbb: We UPDATE email ddbb with discordID";
+                        console.log(msg);
                         removedUser.objectId = userEmail.objectId;
-                        result = yield deepSave(removedUser);
-                        // result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( user )
+                        // result = await deepSave(removedUser)
+                        result = yield backendless_1.default.Data.of(backendlessUserTable)
+                            .deepSave(removedUser)
+                            .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle +
+                            ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg, e.toString()));
                     }
                 }
                 else { //email !exist in ddbb
-                    console.log('email doesnt exist in ddbb');
+                    let msg = 'email doesnt exist in ddbb';
+                    console.log(msg);
                     registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
                     if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
                         console.log("3 Email Provided. Email !exist in ddbb. DiscordID exists: We UPDATE record");
                         removedUser.objectId = registeredUser.objectId;
-                        result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(removedUser);
+                        result = yield backendless_1.default.Data.of(backendlessUserTable)
+                            .deepSave(removedUser)
+                            .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle +
+                            ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg, e.toString()));
+                        //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
                     }
                     else { //DiscordID !exist in ddbb: Create record
-                        console.log("4 Email Provided. Email !exist in ddbb. DiscordID !exist: We CREATE record");
-                        result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(removedUser);
+                        let msg = "4 Email Provided. Email !exist in ddbb. DiscordID !exist: We CREATE record";
+                        console.log(msg);
+                        result = yield backendless_1.default.Data.of(backendlessUserTable)
+                            .deepSave(removedUser)
+                            .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle +
+                            ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg, e.toString()));
+                        //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
                     }
                 }
             }
             else { //email not provided
                 let registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
                 if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
-                    console.log("5 Email !provided. DiscordID exists: We UPDATE record");
+                    let msg = "5 Email !provided. DiscordID exists: We UPDATE record";
+                    console.log(msg);
                     removedUser.objectId = registeredUser.objectId;
-                    result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(removedUser);
+                    result = yield backendless_1.default.Data.of(backendlessUserTable)
+                        .deepSave(removedUser)
+                        .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, 'udpateDiscordUser', 'Trying to save user ' + userToSave.Discord_Handle +
+                        ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg, e.toString()));
+                    //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
                 }
                 else { //DiscordID !exist in ddbb: Create record
-                    console.log("6 Email !provided. DiscordID !exists: We CREATE record");
-                    result = yield backendless_1.default.Data.of(backendlessUserTable).deepSave(removedUser);
+                    let msg = "6 Email !provided. DiscordID !exists: We CREATE record";
+                    console.log(msg);
+                    //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
+                    result = yield backendless_1.default.Data.of(backendlessUserTable)
+                        .deepSave(removedUser)
+                        .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, 'udpateDiscordUser', 'Trying to save user ' + userToSave.Discord_Handle +
+                        ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg, e.toString()));
                 }
             }
         }

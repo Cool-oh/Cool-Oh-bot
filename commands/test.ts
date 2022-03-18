@@ -6,6 +6,7 @@ import {BackendlessPerson, DatabaseCount} from '../interfaces/interfaces'
 import {getBackendlessLastTweet} from '../features/writeLastTweet'
 import { checkIfEmailRegistered, isSubscribedToQuest, udpateDiscordUser, } from '../tools/users/userBackendless';
 import { first } from 'lodash';
+import {writeDiscordLog} from '../features/discordLogger';
 
 dotenv.config();
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE
@@ -113,6 +114,7 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
     //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
 
     udpateDiscordUser(user3)
+   
 
       //console.log(userFound.Quests?.Twitter_quests)
      // let questName= 'Wallet_quests'
