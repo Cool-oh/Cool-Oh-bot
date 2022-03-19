@@ -45,7 +45,7 @@ function getUserDeep(id, relationsDepth) {
 }
 var user3 = {
     email: 'cdelalama2@gmail.com',
-    First_Name: 'Carlangas',
+    First_Name: 'Carlos',
     Discord_Handle: 'MamaCarlos',
     Discord_ID: '6239587797379317863',
     Quests: {
@@ -83,7 +83,7 @@ exports.default = {
         //let userFound = await  getUserDeep('AEC160F2-7A04-4A4B-8A41-2A0B3830267B', 3) as BackendlessPerson
         //console.log(userFound)
         //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
-        (0, userBackendless_1.udpateDiscordUser)(user3);
+        (0, userBackendless_1.updateDiscordUser)(user3);
         //console.log(userFound.Quests?.Twitter_quests)
         // let questName= 'Wallet_quests'
         // let result = await isSubscribedToQuest(testUser1, questName , '854262020781113355')

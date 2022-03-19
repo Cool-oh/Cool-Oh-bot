@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import Backendless from 'backendless'
 import {BackendlessPerson, DatabaseCount} from '../interfaces/interfaces'
 import {getBackendlessLastTweet} from '../features/writeLastTweet'
-import { checkIfEmailRegistered, isSubscribedToQuest, udpateDiscordUser, } from '../tools/users/userBackendless';
+import { checkIfEmailRegistered, isSubscribedToQuest, updateDiscordUser, } from '../tools/users/userBackendless';
 import { first } from 'lodash';
 import {writeDiscordLog} from '../features/discordLogger';
 
@@ -60,7 +60,7 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
 }
  var user3: BackendlessPerson = {
   email: 'cdelalama2@gmail.com',
-  First_Name: 'Carlangas',
+  First_Name: 'Carlos',
   Discord_Handle: 'MamaCarlos',
   Discord_ID: '6239587797379317863',
   Quests: {
@@ -105,7 +105,7 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
 
 
     //let check = checkIfUserRegistered(8222288)
-
+ 
 
     //let result = await udpateDiscordUser(testUser1)
 
@@ -113,7 +113,7 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
     //console.log(userFound)
     //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
 
-    udpateDiscordUser(user3)
+    updateDiscordUser(user3)
    
 
       //console.log(userFound.Quests?.Twitter_quests)

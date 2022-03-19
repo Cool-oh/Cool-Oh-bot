@@ -52,8 +52,8 @@ export interface DatabaseCount {
     class: string
 }
 export interface DiscordServer {
-    created?: Date,
     objectId: string,
+    created?: Date,
     ownerId?: string,
     server_id?: string,
     server_name?: string,
@@ -61,12 +61,11 @@ export interface DiscordServer {
 }
 
 export interface AllQuests {
+    Discord_Server: DiscordServer
     created?: Date,
     objectId?: string,
     ownerId?: string,
     updated?: Date,
-    Discord_Server: DiscordServer
-
 }
 
 interface WalletQuest extends AllQuests{

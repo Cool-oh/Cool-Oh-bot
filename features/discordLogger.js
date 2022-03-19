@@ -18,7 +18,7 @@ const channelLoggerId = process.env.CHANNEL_LOGGER;
 dotenv_1.default.config();
 let clientVar;
 function writeDiscordLog(fileName, functionName, errortype, errorText) {
-    let errorMsg = errortype + '\n' + errorText + '\n' + 'Filename: ' + fileName + '\n' + 'in function: ' + functionName;
+    let errorMsg = errortype + '\n' + errorText + '\n' + 'Filename: ' + fileName + '\n' + 'In function: ' + functionName;
     clientVar.channels.cache.get(channelLoggerId).send(errorMsg);
     console.log(errorMsg);
 }

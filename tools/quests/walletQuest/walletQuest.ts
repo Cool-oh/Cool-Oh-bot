@@ -8,7 +8,7 @@ import {Modal, TextInputComponent, showModal } from 'discord-modals'
 import {PublicKey} from '@solana/web3.js'
 import web3 from '@solana/web3.js'
 
-import { udpateDiscordUser, isSubscribedToQuest } from '../../users/userBackendless';
+import { updateDiscordUser, isSubscribedToQuest } from '../../users/userBackendless';
 
 dotenv.config();
 const discordServerObjID = process.env.DISCORD_SERVER_OBJ_ID
@@ -123,7 +123,7 @@ function modalSubmit(modal:any){
             }
         }
 
-        udpateDiscordUser(userToSave)
+        updateDiscordUser(userToSave)
         //check if user has already joined the wallet quest
 
     }else{

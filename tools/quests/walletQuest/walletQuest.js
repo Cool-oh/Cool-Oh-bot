@@ -123,7 +123,7 @@ function modalSubmit(modal) {
                     }]
             }
         };
-        (0, userBackendless_1.udpateDiscordUser)(userToSave);
+        (0, userBackendless_1.updateDiscordUser)(userToSave);
         //check if user has already joined the wallet quest
     }
     else {

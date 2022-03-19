@@ -1,7 +1,7 @@
-import {Snowflake, ThreadChannel } from 'discord.js';
+import {Snowflake } from 'discord.js';
 import Backendless from 'backendless'
 import dotenv from 'dotenv'
-import { BackendlessPerson, AllQuests, Quests , DiscordServer, WalletQuests, TwitterQuests} from '../../interfaces/interfaces';
+import { BackendlessPerson, AllQuests, WalletQuests, TwitterQuests, DiscordServer} from '../../interfaces/interfaces';
 import {writeDiscordLog} from '../../features/discordLogger';
 const _ = require("lodash");
 const filename='userBackendless.ts'
@@ -9,21 +9,45 @@ const filename='userBackendless.ts'
 dotenv.config();
 
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE
+const backendlessDiscordServersTable = process.env.BACKENDLESS_DISCORDSERVERS_TABLE
 const backendlessRelationshipDepth = Number(process.env.BACKENDLESS_RELATIONSHIP_DEPTH)
-
 
 try {
     Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API_KEY!);
-} catch (error) {
+
+} catch (error:any) {
+    writeDiscordLog(filename, 'Backendless initialization', 'Trying to inoitialize Backendless: ', error.toString())
     throw error
 }
 
-function onQuickSearchChangeHandler(quickCriteria:string, objectArray:object[]){
+export async function getDiscordServerObjID(serverId:string):Promise<string>{
+    let functionName = getDiscordServerObjID.name
+    let errMsg = 'Trying to get discord server ObjectID from server iD: ' + serverId + ' in DDBB'
+    var queryBuilder = Backendless.DataQueryBuilder.create()
+    let result:DiscordServer[]
+    queryBuilder.setWhereClause('server_id = ' + serverId)
 
-    let quickResult = objectArray.filter(obj => Object.values(obj).some(val => val?val.toString().toLowerCase().includes(quickCriteria):false));
 
-    return quickResult;
- }
+    try {
+        result =  await Backendless.Data.of( backendlessDiscordServersTable! ).find<DiscordServer>( queryBuilder )
+        .catch( e => {
+            writeDiscordLog(filename, functionName, errMsg, e.toString())
+            return result
+        })
+        if(result[0]){
+            console.log(result[0].server_id)
+            return result[0].server_id!
+        }
+        else{
+            console.log('doesnt exist')
+            return ''
+        }
+
+    } catch (error) {
+        throw error
+    }
+   
+}
 
  function getObject(object:object, searchString:string) { //finds if the string is a property of the object. If it is, it returns the subobject
     var result;
@@ -34,7 +58,6 @@ function onQuickSearchChangeHandler(quickCriteria:string, objectArray:object[]){
     });
     return result;
 }
-
 
 export async function isSubscribedToQuest(user:BackendlessPerson, questName: string, discordServerID:string): Promise <boolean> {//userID is the objectID in backendless for the user
 
@@ -60,7 +83,7 @@ export async function isSubscribedToQuest(user:BackendlessPerson, questName: str
             }
             return false
         } else { //user not registered. We register it
-            udpateDiscordUser(user)
+            updateDiscordUser(user)
             return false
             }
 
@@ -179,16 +202,6 @@ function removeEmpty(obj:any) { //removes null properties from an object and sub
     return Array.isArray(obj) ? Object.values(clean) : clean;
   }
 
-async function deepSave(user:BackendlessPerson) {
-    try {
-       let result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( user )
-       .catch( e => writeDiscordLog(filename, 'udpateDiscordUser', 'Trying to save user ' + user.Discord_Handle  +
-                        ' with discordID: ' + user.Discord_ID + ' in DDBB: \n1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But its same record. We UPDATE it\n', e.toString()))
-       return result
-    } catch (error) {
-        throw error
-    }
-}
 
 function mergeQuests (userDDBB: BackendlessPerson, newUser: BackendlessPerson, questName: string):AllQuests[]{ //returns an array of merged questName quests
 	let userToSaveQuests:AllQuests[] = []
@@ -305,8 +318,8 @@ function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessP
 }
 
 
-export async function udpateDiscordUser(user:BackendlessPerson) {
-    let functionName = udpateDiscordUser.name
+export async function updateDiscordUser(user:BackendlessPerson) {
+    let functionName = updateDiscordUser.name
     let result
     let userEmail
     let registeredUser
@@ -363,8 +376,7 @@ export async function udpateDiscordUser(user:BackendlessPerson) {
                    // result = await deepSave(removedUser)
                     result =  await Backendless.Data.of(backendlessUserTable!)
                     .deepSave<BackendlessPerson>( removedUser )
-                    .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle  +
-                    ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg , e.toString()))
+                    .catch( e => writeDiscordLog(filename, functionName, 'Trying to update user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString()))
                 }
             } else { //email !exist in ddbb
                 let msg='email doesnt exist in ddbb'
@@ -375,16 +387,14 @@ export async function udpateDiscordUser(user:BackendlessPerson) {
                     removedUser.objectId =  registeredUser.objectId
                     result =  await Backendless.Data.of(backendlessUserTable!)
                     .deepSave<BackendlessPerson>( removedUser )
-                    .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle  +
-                    ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg , e.toString()))
+                    .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString()))
                     //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
                 } else { //DiscordID !exist in ddbb: Create record
                     let msg = "4 Email Provided. Email !exist in ddbb. DiscordID !exist: We CREATE record"
                     console.log(msg)
                     result =  await Backendless.Data.of(backendlessUserTable!)
                     .deepSave<BackendlessPerson>( removedUser )
-                    .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + userToSave.Discord_Handle  +
-                    ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg , e.toString()))
+                    .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString()))
                     //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
                 }
             }
@@ -396,8 +406,7 @@ export async function udpateDiscordUser(user:BackendlessPerson) {
                 removedUser.objectId =  registeredUser.objectId
                 result =  await Backendless.Data.of(backendlessUserTable!)
                 .deepSave<BackendlessPerson>( removedUser )
-                .catch( e => writeDiscordLog(filename, 'udpateDiscordUser', 'Trying to save user ' + userToSave.Discord_Handle  +
-                ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg , e.toString()))
+                .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString()))
                 //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
             } else { //DiscordID !exist in ddbb: Create record
                 let msg ="6 Email !provided. DiscordID !exists: We CREATE record"
@@ -405,8 +414,7 @@ export async function udpateDiscordUser(user:BackendlessPerson) {
                 //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
                 result =  await Backendless.Data.of(backendlessUserTable!)
                 .deepSave<BackendlessPerson>( removedUser )
-                .catch( e => writeDiscordLog(filename, 'udpateDiscordUser', 'Trying to save user ' + userToSave.Discord_Handle  +
-                ' with discordID: ' + userToSave.Discord_ID + ' in DDBB: \n' + msg , e.toString()))
+                .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString()))
             }
         }
     } catch (error) {
