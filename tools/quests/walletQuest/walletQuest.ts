@@ -8,10 +8,10 @@ import {Modal, TextInputComponent, showModal } from 'discord-modals'
 import {PublicKey} from '@solana/web3.js'
 import web3 from '@solana/web3.js'
 
-import { updateDiscordUser, isSubscribedToQuest } from '../../users/userBackendless';
+import { updateDiscordUser, isSubscribedToQuest, getDiscordServerObjID } from '../../users/userBackendless';
 
 dotenv.config();
-const discordServerObjID = process.env.DISCORD_SERVER_OBJ_ID
+//const discordServerObjID = process.env.DISCORD_SERVER_OBJ_ID
 const walletQuestFields = walletQuestJson as QuestEmbedJson
 const menu = walletQuestFields.menu
 
@@ -98,12 +98,14 @@ async function isSubscribed(): Promise <boolean> {
 }
 
 }
-function modalSubmit(modal:any){
+async function modalSubmit(modal:any){
 
     const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id)
     let isSolAddress = validateSolAddress(firstResponse)
 
     if (isSolAddress) {
+        let discordServerObjID = await getDiscordServerObjID(interactionGLobal.guildId!)
+        console.log('discordServerObjID: ' + discordServerObjID)
         modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
         console.log('User id: ' + interactionGLobal.user.id )
         console.log('User id: ' + interactionGLobal.user.username )
@@ -153,8 +155,8 @@ export class WalletQuest {
         return modal
     }
 
-    public modalQuestSubmit(modal:any){
-        return modalSubmit(modal)
+    public async modalQuestSubmit(modal:any){
+        return await modalSubmit(modal)
     }
     public  isSubscribed(): Promise <boolean>{
         return isSubscribed()

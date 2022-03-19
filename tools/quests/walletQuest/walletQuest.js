@@ -21,7 +21,7 @@ const discord_modals_1 = require("discord-modals");
 const web3_js_1 = require("@solana/web3.js");
 const userBackendless_1 = require("../../users/userBackendless");
 dotenv_1.default.config();
-const discordServerObjID = process.env.DISCORD_SERVER_OBJ_ID;
+//const discordServerObjID = process.env.DISCORD_SERVER_OBJ_ID
 const walletQuestFields = walletQuest_json_1.default;
 const menu = walletQuestFields.menu;
 var interactionGLobal;
@@ -102,33 +102,37 @@ function isSubscribed() {
 }
 function modalSubmit(modal) {
     var _a;
-    const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id);
-    let isSolAddress = validateSolAddress(firstResponse);
-    if (isSolAddress) {
-        modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
-        console.log('User id: ' + interactionGLobal.user.id);
-        console.log('User id: ' + interactionGLobal.user.username);
-        console.log('Guild id: ' + interactionGLobal.guildId);
-        userToSave = {
-            Discord_ID: interactionGLobal.user.id,
-            Discord_Handle: interactionGLobal.user.username,
-            Quests: {
-                Wallet_quests: [{
-                        solana_address: firstResponse,
-                        Discord_Server: {
-                            objectId: discordServerObjID,
-                            server_id: interactionGLobal.guildId,
-                            server_name: (_a = interactionGLobal.guild) === null || _a === void 0 ? void 0 : _a.name
-                        }
-                    }]
-            }
-        };
-        (0, userBackendless_1.updateDiscordUser)(userToSave);
-        //check if user has already joined the wallet quest
-    }
-    else {
-        modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true });
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id);
+        let isSolAddress = validateSolAddress(firstResponse);
+        if (isSolAddress) {
+            let discordServerObjID = yield (0, userBackendless_1.getDiscordServerObjID)(interactionGLobal.guildId);
+            console.log('discordServerObjID: ' + discordServerObjID);
+            modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
+            console.log('User id: ' + interactionGLobal.user.id);
+            console.log('User id: ' + interactionGLobal.user.username);
+            console.log('Guild id: ' + interactionGLobal.guildId);
+            userToSave = {
+                Discord_ID: interactionGLobal.user.id,
+                Discord_Handle: interactionGLobal.user.username,
+                Quests: {
+                    Wallet_quests: [{
+                            solana_address: firstResponse,
+                            Discord_Server: {
+                                objectId: discordServerObjID,
+                                server_id: interactionGLobal.guildId,
+                                server_name: (_a = interactionGLobal.guild) === null || _a === void 0 ? void 0 : _a.name
+                            }
+                        }]
+                }
+            };
+            (0, userBackendless_1.updateDiscordUser)(userToSave);
+            //check if user has already joined the wallet quest
+        }
+        else {
+            modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true });
+        }
+    });
 }
 class WalletQuest {
     init(interaction) {
@@ -152,7 +156,9 @@ class WalletQuest {
         return modal;
     }
     modalQuestSubmit(modal) {
-        return modalSubmit(modal);
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield modalSubmit(modal);
+        });
     }
     isSubscribed() {
         return isSubscribed();
