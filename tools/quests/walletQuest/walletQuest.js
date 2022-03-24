@@ -62,6 +62,7 @@ function init(interaction) {
             console.log('Wallet Quests subscribed: ' + subscribed);
         }
         else {
+            joinQuestButton.setLabel(walletQuestFields.button.label);
         }
     });
 }
@@ -108,7 +109,8 @@ function modalSubmit(modal) {
         if (isSolAddress) {
             let discordServerObjID = yield (0, userBackendless_1.getDiscordServerObjID)(interactionGLobal.guildId);
             console.log('discordServerObjID: ' + discordServerObjID);
-            modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
+            yield modal.deferReply({ ephemeral: true });
+            modal.followUp({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
             console.log('User id: ' + interactionGLobal.user.id);
             console.log('User id: ' + interactionGLobal.user.username);
             console.log('Guild id: ' + interactionGLobal.guildId);
@@ -130,7 +132,8 @@ function modalSubmit(modal) {
             //check if user has already joined the wallet quest
         }
         else {
-            modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true });
+            yield modal.deferReply({ ephemeral: true });
+            modal.followUp({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true });
         }
     });
 }

@@ -57,7 +57,7 @@ async function init(interaction: Interaction,){
         joinQuestButton.setLabel(walletQuestFields.button.label_edit)
         console.log('Wallet Quests subscribed: ' + subscribed)
     }else{
-
+        joinQuestButton.setLabel(walletQuestFields.button.label)
     }
 }
 
@@ -106,7 +106,8 @@ async function modalSubmit(modal:any){
     if (isSolAddress) {
         let discordServerObjID = await getDiscordServerObjID(interactionGLobal.guildId!)
         console.log('discordServerObjID: ' + discordServerObjID)
-        modal.reply({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
+        await modal.deferReply({ ephemeral: true })
+        modal.followUp({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
         console.log('User id: ' + interactionGLobal.user.id )
         console.log('User id: ' + interactionGLobal.user.username )
         console.log('Guild id: ' + interactionGLobal.guildId)
@@ -129,7 +130,8 @@ async function modalSubmit(modal:any){
         //check if user has already joined the wallet quest
 
     }else{
-        modal.reply({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true })
+        await modal.deferReply({ ephemeral: true })
+        modal.followUp({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true })
   }
 
 }

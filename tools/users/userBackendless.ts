@@ -126,19 +126,16 @@ export async function  checkIfDiscordIDRegistered(discordUserId: Snowflake): Pro
     queryBuilder.setRelationsDepth( backendlessRelationshipDepth )
     queryBuilder.setWhereClause("Discord_ID = '" + discordUserId + "'")
 
-
     try {
         result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
         .catch( e => {
             writeDiscordLog(filename, functionName, errMsg , e.toString())
             return result})
-
         return result[0]
     } catch (error) {
         throw error
     }
 }
-
 
 
 async function mergeBackendlessData(user1:BackendlessPerson, user2:BackendlessPerson){
@@ -206,7 +203,6 @@ function removeEmpty(obj:any):any { //removes null properties from an object and
     }
   }
 
-
 function mergeQuests (userDDBB: BackendlessPerson, newUser: BackendlessPerson, questName: string):AllQuests[]{ //returns an array of merged questName quests
 	let userToSaveQuests:AllQuests[] = []
 	let arrayOfMerged = []
@@ -239,7 +235,6 @@ function mergeQuests (userDDBB: BackendlessPerson, newUser: BackendlessPerson, q
     else{
         return userToSaveQuests
     }
-
 }
 
 function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessPerson): BackendlessPerson{
@@ -263,7 +258,6 @@ function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessP
         if(userDDBB.Quests !=  null) {userDDBB_hasQuests = true}
 
         if(userDDBB_hasQuests  && newUser_hasQuests ){
-
             let newUserFirstLevel = {...newUser}
             if(newUser.Quests!.objectId != null){
                 userQuestsObjId = newUser.Quests!.objectId
@@ -307,7 +301,6 @@ function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessP
         		    mergedTwitterQuests.push(userDDBB.Quests!.Twitter_quests![index])
         		}
         	}
-
             userToSaveWalletQuest = {
                 'Discord_ID': userToSaveFirstLevel.Discord_ID,
                 'Quests': {'objectId': userQuestsObjId,'Wallet_quests': mergedWalletQuests} }
@@ -327,16 +320,12 @@ function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessP
             userMergedWithQuests.Quests = userDDBB.Quests //we restore the quests
             return userMergedWithQuests
         }
-
     } catch (err:any) {
-
         writeDiscordLog(filename, functionName, 'Trying to merge user1:  \n' + JSON.stringify(userDDBB) + ' \n \nand user2: \n'+ JSON.stringify(newUser),  err.toString())
         console.log(err)
     }
-
     return userMergedWithQuests
 }
-
 
 export async function updateDiscordUser(user:BackendlessPerson) {
     let functionName = updateDiscordUser.name
@@ -346,7 +335,6 @@ export async function updateDiscordUser(user:BackendlessPerson) {
     let userToSave:BackendlessPerson
     let removedUser = removeEmpty(user)
     try {
-
         if (!user.Discord_ID) {
             throw new Error("Unexpected error: Missing User DiscordID");
             }
@@ -423,12 +411,9 @@ export async function updateDiscordUser(user:BackendlessPerson) {
                 result =  await Backendless.Data.of(backendlessUserTable!)
                 .deepSave<BackendlessPerson>( userToSave )
                 .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(userToSave) + ' in DDBB: \n' + msg , e.toString()))
-
-                //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
             } else { //DiscordID !exist in ddbb: Create record
                 let msg ="6 Email NOT provided. DiscordID !exists: We CREATE record"
                 console.log(msg)
-
                 result =  await Backendless.Data.of(backendlessUserTable!)
                 .deepSave<BackendlessPerson>( removedUser )
                 .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString()))
@@ -438,6 +423,3 @@ export async function updateDiscordUser(user:BackendlessPerson) {
         throw error
     }
 }
-
-
-

@@ -437,7 +437,6 @@ function updateDiscordUser(user) {
                     result = yield backendless_1.default.Data.of(backendlessUserTable)
                         .deepSave(userToSave)
                         .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + JSON.stringify(userToSave) + ' in DDBB: \n' + msg, e.toString()));
-                    //result =  await Backendless.Data.of( backendlessUserTable! ).deepSave<BackendlessPerson>( removedUser )
                 }
                 else { //DiscordID !exist in ddbb: Create record
                     let msg = "6 Email NOT provided. DiscordID !exists: We CREATE record";
