@@ -9,7 +9,7 @@ dotenv.config();
 let clientVar:Client
 
 export function writeDiscordLog(fileName:string, functionName:string, errortype:string, errorText:string){
-    let errorMsg = errortype +'\n' + errorText + '\n' + 'Filename: ' + fileName + '\n' + 'In function: ' + functionName;
+    let errorMsg = errortype +'\n\n' + errorText + '\n\n' + 'Filename: ' + fileName + '\n\n' + 'In function: ' + functionName + '\n\n';
     (clientVar.channels.cache.get(channelLoggerId!) as TextChannel ).send(errorMsg)
     console.log(errorMsg )
 }

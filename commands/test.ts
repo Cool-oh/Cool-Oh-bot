@@ -59,27 +59,31 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
 
 }
  var user3: BackendlessPerson = {
-  email: 'cdelalama2@gmail.com',
+
   First_Name: 'Carlos',
-  Discord_Handle: 'MamaCarlos',
-  Discord_ID: '6239587797379317863',
+  Discord_Handle: 'Mama Carlos',
+  Discord_ID: '623958779737931786111',
   Quests: {
-    Wallet_quests: [{
-      solana_address: 'TestAddress',
+
+    Wallet_quests: [
+
+      {
+
+      solana_address: 'TestAddress123',
       Discord_Server: {
 
         objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
 
       }
     },
-     {solana_address:'solana 1234',
+     {solana_address:'solana123',
       Discord_Server:{
         objectId:'EFE6A18E-95F9-4026-BF79-2C6238C88389'
   }}
 
   ],
     Twitter_quests:[{
-      twitter_handle: '@cdelalamaabc',
+      twitter_handle: '@cdelalama123',
       twitter_id: '95220199',
       Discord_Server: {
         objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
@@ -105,7 +109,7 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
 
 
     //let check = checkIfUserRegistered(8222288)
- 
+
 
     //let result = await udpateDiscordUser(testUser1)
 
@@ -114,7 +118,7 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
     //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
 
     updateDiscordUser(user3)
-   
+
 
       //console.log(userFound.Quests?.Twitter_quests)
      // let questName= 'Wallet_quests'

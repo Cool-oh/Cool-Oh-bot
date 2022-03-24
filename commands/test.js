@@ -44,24 +44,24 @@ function getUserDeep(id, relationsDepth) {
     });
 }
 var user3 = {
-    email: 'cdelalama2@gmail.com',
     First_Name: 'Carlos',
-    Discord_Handle: 'MamaCarlos',
-    Discord_ID: '6239587797379317863',
+    Discord_Handle: 'Mama Carlos',
+    Discord_ID: '623958779737931786111',
     Quests: {
-        Wallet_quests: [{
-                solana_address: 'TestAddress',
+        Wallet_quests: [
+            {
+                solana_address: 'TestAddress123',
                 Discord_Server: {
                     objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
                 }
             },
-            { solana_address: 'solana 1234',
+            { solana_address: 'solana123',
                 Discord_Server: {
                     objectId: 'EFE6A18E-95F9-4026-BF79-2C6238C88389'
                 } }
         ],
         Twitter_quests: [{
-                twitter_handle: '@cdelalamaabc',
+                twitter_handle: '@cdelalama123',
                 twitter_id: '95220199',
                 Discord_Server: {
                     objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'

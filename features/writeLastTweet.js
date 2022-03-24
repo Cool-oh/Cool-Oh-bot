@@ -173,11 +173,11 @@ function backendlessUpdateIfNeeded() {
         let twitterTimeline = yield getAllTweets(twitterID, twitterMaxQuery, databaseLastTweet === null || databaseLastTweet === void 0 ? void 0 : databaseLastTweet.tweet_id);
         if (twitterTimeline.data.meta.result_count == 0) {
             //database is up to date
-            console.log('Database up to date');
+            console.log('Twitter database up to date');
         }
         else {
             //database needs to be updated
-            console.log('Database NOT up to date');
+            console.log('Twitter database NOT up to date');
             console.log('Saving new tweets after tweet ID: ' + (databaseLastTweet === null || databaseLastTweet === void 0 ? void 0 : databaseLastTweet.tweet_id) + ' ' + (databaseLastTweet === null || databaseLastTweet === void 0 ? void 0 : databaseLastTweet.tweet_text));
             saveAllTweetsToBackendless(twitterTimeline);
         }
