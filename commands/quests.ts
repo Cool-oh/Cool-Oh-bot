@@ -101,7 +101,6 @@ export  default {
 
         client.on('modalSubmit', async modal => {
             for (let index = 0; index < optionsList.length; index++) {
-
                 if(modal.customId === questsObjList[index].modal.customId){
                     await questsObjList[index].modalQuestSubmit(modal)  //show quest's modal
                 }
