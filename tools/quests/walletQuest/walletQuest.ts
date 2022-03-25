@@ -1,6 +1,6 @@
 import { Client, ColorResolvable, Interaction,  MessageButton, MessageEmbed, User } from 'discord.js';
 import dotenv from 'dotenv'
-import { BackendlessPerson, QuestEmbedJson } from '../../../interfaces/interfaces';
+import { BackendlessPerson, QuestEmbedJson, WalletQuestIntfc } from '../../../interfaces/interfaces';
 import walletQuestJson from './walletQuest.json'
 import {Modal, TextInputComponent, showModal } from 'discord-modals'
 //import  discordModals   from 'discord-modals//'
@@ -8,29 +8,36 @@ import {Modal, TextInputComponent, showModal } from 'discord-modals'
 import {PublicKey} from '@solana/web3.js'
 import web3 from '@solana/web3.js'
 
-import { updateDiscordUser, isSubscribedToQuest, getDiscordServerObjID } from '../../users/userBackendless';
+import { updateDiscordUser, isSubscribedToQuest, getDiscordServerObjID, checkIfDiscordIDRegistered } from '../../users/userBackendless';
+import { writeDiscordLog } from '../../../features/discordLogger';
 
 dotenv.config();
-//const discordServerObjID = process.env.DISCORD_SERVER_OBJ_ID
+const walletQuestName = process.env.WALLET_QUEST_NAME
 const walletQuestFields = walletQuestJson as QuestEmbedJson
 const menu = walletQuestFields.menu
+const filename = 'walletQuests.ts'
 
-var interactionGLobal:Interaction
+var interactionGlobal:Interaction
 var userToSave: BackendlessPerson
+
+
+const textInputProvideSolana =   new TextInputComponent() // We create a Text Input Component
+.setCustomId(walletQuestFields.modal.componentsList[0].id)
+.setLabel(walletQuestFields.modal.componentsList[0].label)
+.setStyle(walletQuestFields.modal.componentsList[0].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+//.setMinLength(walletQuestFields.modal.componentsList[0].minLenght)
+//.setMaxLength(walletQuestFields.modal.componentsList[0].maxLength)
+.setPlaceholder(walletQuestFields.modal.componentsList[0].placeholder)
+.setRequired(walletQuestFields.modal.componentsList[0].required) // If it's required or not
+
 
 const modal = new Modal() // We create a Modal
 .setCustomId(walletQuestFields.modal.id)
 .setTitle(walletQuestFields.modal.title)
-.addComponents(
-  new TextInputComponent() // We create a Text Input Component
-  .setCustomId(walletQuestFields.modal.componentsList[0].id)
-  .setLabel(walletQuestFields.modal.componentsList[0].label)
-  .setStyle(walletQuestFields.modal.componentsList[0].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-  .setMinLength(walletQuestFields.modal.componentsList[0].minLenght)
-  .setMaxLength(walletQuestFields.modal.componentsList[0].maxLength)
-  .setPlaceholder(walletQuestFields.modal.componentsList[0].placeholder)
-  .setRequired(walletQuestFields.modal.componentsList[0].required) // If it's required or not
-);
+.addComponents(textInputProvideSolana);
+
+
+
 
 const walletQuestEmbed = new MessageEmbed()
 .setColor(walletQuestFields.color as ColorResolvable)
@@ -49,22 +56,45 @@ const joinQuestButton = new MessageButton()
 .setLabel(walletQuestFields.button.label)
 .setStyle(walletQuestFields.button.style)
 
-async function init(interaction: Interaction,){
-    interactionGLobal = interaction
-    let subscribed = await  isSubscribed()
+async function init(interaction: Interaction){
+   let functionName = init.name
 
-    if(subscribed){
-        joinQuestButton.setLabel(walletQuestFields.button.label_edit)
-        console.log('Wallet Quests subscribed: ' + subscribed)
-    }else{
-        joinQuestButton.setLabel(walletQuestFields.button.label)
+   let msg = 'Trying to init the Quest'
+   let userWalletQuest:WalletQuestIntfc|null
+
+   let solanaAddress = ''
+   interactionGlobal = interaction
+   let discordServerID = interactionGlobal.guildId!
+   try {
+       let user = await  checkIfDiscordIDRegistered(interactionGlobal.user.id) as BackendlessPerson
+       if(user != null){
+           userWalletQuest = await isSubscribedToQuest(user, walletQuestName!, discordServerID)
+           if (userWalletQuest != null){
+                solanaAddress = userWalletQuest.solana_address!
+            }
+        }
+        let subscribed = await  isSubscribed()
+
+        if(subscribed){
+            joinQuestButton.setLabel(walletQuestFields.button.label_edit)
+            textInputProvideSolana.setLabel('Edit your solana wallet address:')
+            textInputProvideSolana.setPlaceholder(solanaAddress)
+
+        }else{
+            joinQuestButton.setLabel(walletQuestFields.button.label)
+            textInputProvideSolana.setLabel(walletQuestFields.title)
+            textInputProvideSolana.setPlaceholder(walletQuestFields.modal.componentsList[0].placeholder)
+        }
+    } catch (err:any) {
+        writeDiscordLog(filename, functionName, msg,  err.toString())
+        console.log(err)
     }
 }
 
-function joinQuestButtonClicked(interaction: Interaction, client: Client){
-    interactionGLobal = interaction
+async function joinQuestButtonClicked(interaction: Interaction, client: Client){
+    interactionGlobal = interaction
     if (interaction.isButton()){
-
+        await init(interaction) //we initialize again to make sure the modal has the right solana address
         showModal(modal, {
         client: client, // The showModal() method needs the client to send the modal through the API.
         interaction: interaction // The showModal() method needs the interaction to send the modal with the Interaction ID & Token.
@@ -83,51 +113,55 @@ function validateSolAddress(address:string){
     }
 }
 
-
 async function isSubscribed(): Promise <boolean> {
-    let discordServerID = interactionGLobal.guildId
+
+    let result:WalletQuestIntfc|null
+    let discordServerID = interactionGlobal.guildId
+
     let user:BackendlessPerson = {
-        Discord_ID: interactionGLobal.user.id,
-        Discord_Handle: interactionGLobal.user.username
+        Discord_ID: interactionGlobal.user.id,
+        Discord_Handle: interactionGlobal.user.username
     }
     try {
-        let result = isSubscribedToQuest(user, 'Wallet_quests',  discordServerID!  )
-        return result
+        result = await isSubscribedToQuest(user, walletQuestName!,  discordServerID! )
+        if (result!= null){
+            return true
+        }else{
+            return false
+        }
     } catch (error) {
-        throw error
+    throw error
+    }
 }
 
-}
+
+
 async function modalSubmit(modal:any){
-
+  
     const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id)
     let isSolAddress = validateSolAddress(firstResponse)
 
     if (isSolAddress) {
-        let discordServerObjID = await getDiscordServerObjID(interactionGLobal.guildId!)
+        let discordServerObjID = await getDiscordServerObjID(interactionGlobal.guildId!)
         console.log('discordServerObjID: ' + discordServerObjID)
         await modal.deferReply({ ephemeral: true })
         modal.followUp({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
-        console.log('User id: ' + interactionGLobal.user.id )
-        console.log('User id: ' + interactionGLobal.user.username )
-        console.log('Guild id: ' + interactionGLobal.guildId)
         userToSave = {
-            Discord_ID: interactionGLobal.user.id,
-            Discord_Handle: interactionGLobal.user.username,
+            Discord_ID: interactionGlobal.user.id,
+            Discord_Handle: interactionGlobal.user.username,
             Quests: {
                 Wallet_quests:[{
                     solana_address: firstResponse,
                     Discord_Server: {
                         objectId: discordServerObjID!,
-                        server_id: interactionGLobal.guildId!,
-                        server_name: interactionGLobal.guild?.name!
-                                            }
+                        server_id: interactionGlobal.guildId!,
+                        server_name: interactionGlobal.guild?.name!
+                    }
                 }]
             }
         }
 
         updateDiscordUser(userToSave)
-        //check if user has already joined the wallet quest
 
     }else{
         await modal.deferReply({ ephemeral: true })
@@ -163,4 +197,5 @@ export class WalletQuest {
     public  isSubscribed(): Promise <boolean>{
         return isSubscribed()
     }
+
 }
