@@ -70,17 +70,18 @@ exports.default = {
                             let fixedOptions = buildMessageSelectoptions(optionsList[index].value, optionsList);
                             dropDown.setComponents(component.spliceOptions(0, component.options.length)); //remove all options from menu
                             dropDown.setComponents(component.addOptions(fixedOptions)); //rebuild menu
-                            if (buttonRow.components[0] != null) {
-                                buttonRow.spliceComponents(0, 1); //deletes the previous button
-                            }
                             if (selectedOptions[0].value != optionsList[0].value) { //if its not the intro quest, build the button
                                 yield questsObjList[index].init(interaction);
                                 buttonRow.addComponents(questsObjList[index].joinQuestButton);
                                 componentList = [dropDown, buttonRow];
                             }
+                            else { //if it' the intro quest
+                                yield questsObjList[0].init(interaction);
+                            }
+                            let embed = questsObjList[index].embed;
                             interaction.update({
                                 content: 'Updated',
-                                embeds: [questsObjList[index].embed],
+                                embeds: [embed],
                                 components: componentList,
                             });
                         }
@@ -104,9 +105,10 @@ exports.default = {
             }
         }));
     }),
-    callback: ({ interaction: msgInt, user }) => __awaiter(void 0, void 0, void 0, function* () {
+    callback: ({ interaction: msgInt }) => __awaiter(void 0, void 0, void 0, function* () {
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList); //remove the first item from the option list in the dropdown (INDEX)
-        questsObjList[0].init(msgInt); //we init the Index Quest so we can retrieve the data for the user and display it
+        yield questsObjList[0].init(msgInt); //we init the Index Quest so we can retrieve the data for the user and display it
+        let embedInit = questsObjList[0].embed;
         if (dropDown.components.length > 0) {
             dropDown.setComponents([]);
         }
@@ -118,7 +120,7 @@ exports.default = {
             .addOptions(fixedOptions));
         yield msgInt.reply({
             content: 'Please select what you want me to do',
-            embeds: [questsObjList[0].embed],
+            embeds: [embedInit],
             components: [dropDown],
             ephemeral: true // Only user who invokes the command can see the result
         });

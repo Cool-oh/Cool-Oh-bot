@@ -1,4 +1,13 @@
 import { ColorResolvable, MessageButtonStyleResolvable, Snowflake } from "discord.js";
+export interface Gamification{
+    ddbb_name?: "Gamification_Test"
+    objectId?: string,
+    level?: number,
+    XP?: number,
+    date_published?: Date
+    created?: Date
+}
+
 
 export interface TwitterUser {
     twitterId: number
@@ -60,22 +69,32 @@ export interface DiscordServer {
     updated?: Date
 }
 
+
+
 export interface AllQuests {
-    Discord_Server: DiscordServer
+    Discord_Server?: DiscordServer
     created?: Date,
     objectId?: string,
     ownerId?: string,
     updated?: Date,
+    no_interactions?:number
 }
 
-interface WalletQuest extends AllQuests{
-
-    solana_address: string,
+interface IndexQuest extends AllQuests{
+    Level?:number,
+    XP?: number,
     total_coins_earned?: number,
+
+}
+export interface IndexQuests extends Array<IndexQuest>{}
+
+export interface WalletQuestIntfc extends AllQuests{
+
+    solana_address?: string,
 }
 
 
-export interface WalletQuests extends Array<WalletQuest>{}
+export interface WalletQuests extends Array<WalletQuestIntfc>{}
 
 interface TwitterQuest extends AllQuests{
 
@@ -90,6 +109,7 @@ export interface Quests {
     objectId?: string,
     ownerId?: string,
     updated?: Date,
+    Index_quests?:IndexQuests
     Wallet_quests?:WalletQuests,
     Twitter_quests?: TwitterQuests,
     [key: string]: any
@@ -108,6 +128,7 @@ export interface BackendlessPerson {
     created?: Date,
     updated?: Date
     Quests?: Quests
+    Gamification?:Gamification
 }
 
 export interface QuestEmbedJson{

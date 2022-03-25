@@ -15,11 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestInit = void 0;
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
+const discordLogger_1 = require("../../features/discordLogger");
+const userBackendless_1 = require("../users/userBackendless");
 const questInit_json_1 = __importDefault(require("./questInit.json"));
 dotenv_1.default.config();
+const walletQuestName = process.env.WALLET_QUEST_NAME;
+const filename = 'questInit.ts';
 const questInitFields = questInit_json_1.default;
 const menu = questInitFields.menu;
-var interactionGLobal;
+var interactionGlobal;
 const questInitEmbed = new discord_js_1.MessageEmbed()
     .setColor(questInitFields.color)
     .setTitle(questInitFields.title)
@@ -32,7 +36,39 @@ const questInitEmbed = new discord_js_1.MessageEmbed()
     .setFooter(questInitFields.footer);
 function init(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        interactionGLobal = interaction;
+        let functionName = init.name;
+        let msg = 'Trying to init the Quest';
+        interactionGlobal = interaction;
+        let userWalletQuest;
+        let discordServerID = interactionGlobal.guildId;
+        let solanaAddress = "You didn't provide it yet";
+        try {
+            let user = yield (0, userBackendless_1.checkIfDiscordIDRegistered)(interactionGlobal.user.id);
+            if (user != null) {
+                userWalletQuest = yield (0, userBackendless_1.isSubscribedToQuest)(user, walletQuestName, discordServerID);
+                if (userWalletQuest != null) {
+                    solanaAddress = userWalletQuest.solana_address;
+                }
+                if (user.Gamification != null) {
+                    questInitEmbed.setFields([]); //delete fields first
+                    questInitEmbed.addFields([
+                        questInitFields.fields[0],
+                        questInitFields.fields[1],
+                        { "name": "YOUR LEVEL", "value": String(user.Gamification.level), "inline": false },
+                        { "name": "YOUR COOLS", "value": "0 $COOLs", "inline": false },
+                        { "name": "YOUR EXP", "value": String(user.Gamification.XP) + " EXP", "inline": false },
+                        { "name": "Your Quests", "value": "You aren't doing any quest at the moment", "inline": false },
+                        { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline": false },
+                        questInitFields.fields[7],
+                        questInitFields.fields[8],
+                    ]);
+                }
+            }
+        }
+        catch (err) {
+            (0, discordLogger_1.writeDiscordLog)(filename, functionName, msg, err.toString());
+            console.log(err);
+        }
     });
 }
 function joinQuestButtonClicked(interaction) {
@@ -40,9 +76,30 @@ function joinQuestButtonClicked(interaction) {
 }
 function modalSubmit(modal) {
 }
+function getGamificationData() {
+    return __awaiter(this, void 0, void 0, function* () {
+        let result;
+        let user = {
+            Discord_ID: interactionGlobal.user.id,
+            Discord_Handle: interactionGlobal.user.username
+        };
+        try {
+            return result = yield (0, userBackendless_1.getUserGamification)(user);
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+}
 function isSubscribed() {
     return __awaiter(this, void 0, void 0, function* () {
-        return true;
+        let result = yield getGamificationData();
+        if (result != null) {
+            return true;
+        }
+        else {
+            return false;
+        }
     });
 }
 const joinQuestButton = new discord_js_1.MessageButton();

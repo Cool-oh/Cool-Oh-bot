@@ -1,15 +1,16 @@
 import dotenv from 'dotenv'
 import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
-import { BackendlessPerson, QuestEmbedJson } from '../../../interfaces/interfaces';
+import { BackendlessPerson, QuestEmbedJson, WalletQuestIntfc } from '../../../interfaces/interfaces';
 import twitterQuestJson from './twitterQuest.json'
 import {Modal, TextInputComponent, showModal } from 'discord-modals'
 import { isSubscribedToQuest } from '../../users/userBackendless';
 
 dotenv.config();
+const twitterQuestName = process.env.TWITTER_QUEST_NAME
 
 const twitterQuestFields = twitterQuestJson as QuestEmbedJson
 const menu = twitterQuestFields.menu
-var interactionGLobal:Interaction
+var interactionGlobal:Interaction
 
 const twitterQuestEmbed = new MessageEmbed()
 .setColor(twitterQuestFields.color as ColorResolvable)
@@ -43,7 +44,7 @@ const modal = new Modal() // We create a Modal
 );
 
 async function init(interaction: Interaction,){
-    interactionGLobal = interaction
+    interactionGlobal = interaction
     let subscribed = await isSubscribed()
     if(subscribed){
         joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
@@ -66,15 +67,20 @@ function joinQuestButtonClicked(interaction:Interaction, client: Client){
 
 async function isSubscribed(): Promise <boolean> {
 
-    let discordServerID = interactionGLobal.guildId
+    let result:WalletQuestIntfc|null
+    let discordServerID = interactionGlobal.guildId
 
     let user:BackendlessPerson = {
-        Discord_ID: interactionGLobal.user.id,
-        Discord_Handle: interactionGLobal.user.username
+        Discord_ID: interactionGlobal.user.id,
+        Discord_Handle: interactionGlobal.user.username
     }
     try {
-        let result = isSubscribedToQuest(user, 'Twitter_quests',  discordServerID!  )
-        return result
+        result = await isSubscribedToQuest(user, twitterQuestName!,  discordServerID! )
+        if (result!= null){
+            return true
+        }else{
+            return false
+        }
     } catch (error) {
     throw error
     }
@@ -87,6 +93,8 @@ async function modalSubmit(modal: any){
     modal.followUp({ content: 'Congrats! Powered by discord-modals.' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
  
 }
+
+
 
 export class TwitterQuest {
     public get embed(): MessageEmbed{
@@ -114,5 +122,7 @@ export class TwitterQuest {
     public  isSubscribed(): Promise <boolean>{
         return isSubscribed()
     }
+
+
 
 }

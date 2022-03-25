@@ -19,9 +19,10 @@ const twitterQuest_json_1 = __importDefault(require("./twitterQuest.json"));
 const discord_modals_1 = require("discord-modals");
 const userBackendless_1 = require("../../users/userBackendless");
 dotenv_1.default.config();
+const twitterQuestName = process.env.TWITTER_QUEST_NAME;
 const twitterQuestFields = twitterQuest_json_1.default;
 const menu = twitterQuestFields.menu;
-var interactionGLobal;
+var interactionGlobal;
 const twitterQuestEmbed = new discord_js_1.MessageEmbed()
     .setColor(twitterQuestFields.color)
     .setTitle(twitterQuestFields.title)
@@ -51,7 +52,7 @@ const modal = new discord_modals_1.Modal() // We create a Modal
 );
 function init(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
-        interactionGLobal = interaction;
+        interactionGlobal = interaction;
         let subscribed = yield isSubscribed();
         if (subscribed) {
             joinQuestButton.setLabel(twitterQuestFields.button.label_edit);
@@ -71,14 +72,20 @@ function joinQuestButtonClicked(interaction, client) {
 }
 function isSubscribed() {
     return __awaiter(this, void 0, void 0, function* () {
-        let discordServerID = interactionGLobal.guildId;
+        let result;
+        let discordServerID = interactionGlobal.guildId;
         let user = {
-            Discord_ID: interactionGLobal.user.id,
-            Discord_Handle: interactionGLobal.user.username
+            Discord_ID: interactionGlobal.user.id,
+            Discord_Handle: interactionGlobal.user.username
         };
         try {
-            let result = (0, userBackendless_1.isSubscribedToQuest)(user, 'Twitter_quests', discordServerID);
-            return result;
+            result = yield (0, userBackendless_1.isSubscribedToQuest)(user, twitterQuestName, discordServerID);
+            if (result != null) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
         catch (error) {
             throw error;

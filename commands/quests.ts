@@ -69,17 +69,18 @@ export  default {
                         let fixedOptions = buildMessageSelectoptions(optionsList[index].value, optionsList)
                         dropDown.setComponents(component.spliceOptions(0,component.options.length)) //remove all options from menu
                         dropDown.setComponents(component.addOptions(fixedOptions!)) //rebuild menu
-                        if( buttonRow.components[0] != null){
-                            buttonRow.spliceComponents(0,1) //deletes the previous button
-                        }
+   
                         if(selectedOptions[0].value != optionsList[0].value){ //if its not the intro quest, build the button
                             await questsObjList[index].init(interaction)
                             buttonRow.addComponents(questsObjList[index].joinQuestButton)
                             componentList = [dropDown,buttonRow]
+                        }else{  //if it' the intro quest
+                            await questsObjList[0].init(interaction)
                         }
+                        let embed = questsObjList[index].embed
                         interaction.update({
                             content: 'Updated',
-                            embeds: [questsObjList[index].embed],
+                            embeds: [embed],
                             components: componentList,
                        })
                     }
@@ -111,10 +112,11 @@ export  default {
 
     },
 
-    callback: async ({ interaction: msgInt, user}) => {
+    callback: async ({ interaction: msgInt}) => {
 
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList) //remove the first item from the option list in the dropdown (INDEX)
-        questsObjList[0].init(msgInt) //we init the Index Quest so we can retrieve the data for the user and display it
+        await questsObjList[0].init(msgInt) //we init the Index Quest so we can retrieve the data for the user and display it
+        let embedInit = questsObjList[0].embed
         if(dropDown.components.length > 0){
             dropDown.setComponents([])
             }
@@ -129,7 +131,7 @@ export  default {
         )
         await msgInt.reply({
           content: 'Please select what you want me to do',
-          embeds: [questsObjList[0].embed],
+          embeds: [embedInit],
           components: [dropDown],
           ephemeral: true // Only user who invokes the command can see the result
       })

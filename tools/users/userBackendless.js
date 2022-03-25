@@ -12,13 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
+exports.getUserGamification = exports.updateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
 const _ = require("lodash");
 const filename = 'userBackendless.ts';
 dotenv_1.default.config();
+const walletQuestName = process.env.WALLET_QUEST_NAME;
+const twitterQuestName = process.env.TWITTER_QUEST_NAME;
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE;
 const backendlessDiscordServersTable = process.env.BACKENDLESS_DISCORDSERVERS_TABLE;
 const backendlessRelationshipDepth = Number(process.env.BACKENDLESS_RELATIONSHIP_DEPTH);
@@ -68,49 +70,38 @@ function getObject(object, searchString) {
 }
 function isSubscribedToQuest(user, questName, discordServerID) {
     return __awaiter(this, void 0, void 0, function* () {
+        let resultFound;
         try {
             let isUserRegistered = yield checkIfDiscordIDRegistered(user.Discord_ID);
             if (isUserRegistered) { //user is registered
                 if (isUserRegistered.Quests) { //the user has quests
                     if (isUserRegistered.Quests[questName]) { //If user is subscribed to the quest we are looking for
-                        let resultFound = getObject(isUserRegistered.Quests[questName], discordServerID);
-                        if (resultFound) {
-                            return true;
+                        resultFound = getObject(isUserRegistered.Quests[questName], discordServerID);
+                        if (resultFound != null) {
+                            for (let index = 0; index < isUserRegistered.Quests[questName].length; index++) {
+                                if (isUserRegistered.Quests[questName][index].Discord_Server.server_id == resultFound.server_id) {
+                                    return isUserRegistered.Quests[questName][index]; //we return the quest that matches the server id and the nameQuest
+                                }
+                            }
                         }
-                        else { //If user is not subscribed to the quest we are looking for
-                            return false;
+                        else {
+                            return null;
                         }
                     }
                 }
-                else { //the user is not doing any quest
-                    return false;
+                else { //user not registered. We register it
+                    updateDiscordUser(user);
+                    return null;
                 }
-                return false;
-            }
-            else { //user not registered. We register it
-                updateDiscordUser(user);
-                return false;
             }
         }
         catch (error) {
             throw error;
         }
+        return null;
     });
 }
 exports.isSubscribedToQuest = isSubscribedToQuest;
-function getUserDeep(userID, relationsDepth) {
-    return __awaiter(this, void 0, void 0, function* () {
-        var queryBuilder = backendless_1.default.DataQueryBuilder.create();
-        queryBuilder.setRelationsDepth(relationsDepth);
-        try {
-            let result = yield backendless_1.default.Data.of(backendlessUserTable).findById(userID, queryBuilder);
-            return result;
-        }
-        catch (error) {
-            throw error;
-        }
-    });
-}
 function checkIfEmailRegistered(email) {
     return __awaiter(this, void 0, void 0, function* () {
         let result;
@@ -118,7 +109,7 @@ function checkIfEmailRegistered(email) {
         let errMsg = 'Error checking if email ' + email + 'is registered in the DDBB';
         var whereClause = "email='" + email + "'";
         var queryBuilder = backendless_1.default.DataQueryBuilder.create().setWhereClause(whereClause);
-        queryBuilder.setRelationsDepth(3);
+        queryBuilder.setRelationsDepth(backendlessRelationshipDepth);
         try {
             result = yield backendless_1.default.Data.of(backendlessUserTable).find(queryBuilder)
                 .catch(e => {
@@ -299,10 +290,10 @@ function mergeUsersWithQuests(userDDBB, newUser) {
                 userDDBBHasTwitterQuests = true;
             }
             if (userDDBBHasWalletQuests && newUserHasWalletQuests) {
-                mergedWalletQuests = mergeQuests(userDDBB, newUser, 'Wallet_quests');
+                mergedWalletQuests = mergeQuests(userDDBB, newUser, walletQuestName);
             }
             if (userDDBBHasTwitterQuests && newUserHasTwitterQuests) {
-                mergedTwitterQuests = mergeQuests(userDDBB, newUser, 'Twitter_quests');
+                mergedTwitterQuests = mergeQuests(userDDBB, newUser, twitterQuestName);
             }
             if (!userDDBBHasWalletQuests && newUserHasWalletQuests) {
                 for (let index = 0; index < newUser.Quests.Wallet_quests.length; index++) {
@@ -326,11 +317,11 @@ function mergeUsersWithQuests(userDDBB, newUser) {
             }
             userToSaveWalletQuest = {
                 'Discord_ID': userToSaveFirstLevel.Discord_ID,
-                'Quests': { 'objectId': userQuestsObjId, 'Wallet_quests': mergedWalletQuests }
+                'Quests': { 'objectId': userQuestsObjId, [walletQuestName]: mergedWalletQuests }
             };
             userToSaveTwitterQuest = {
                 'Discord_ID': userToSaveFirstLevel.Discord_ID,
-                'Quests': { 'objectId': userQuestsObjId, 'Twitter_quests': mergedTwitterQuests }
+                'Quests': { 'objectId': userQuestsObjId, [twitterQuestName]: mergedTwitterQuests }
             };
             userMergedWithQuests = _.merge(userToSaveFirstLevel, userToSaveWalletQuest, userToSaveTwitterQuest);
             return userMergedWithQuests;
@@ -453,3 +444,24 @@ function updateDiscordUser(user) {
     });
 }
 exports.updateDiscordUser = updateDiscordUser;
+function getUserGamification(user) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let isUserRegistered = yield checkIfDiscordIDRegistered(user.Discord_ID);
+            if (isUserRegistered) { //user is registered
+                if (isUserRegistered.Gamification) { //the user has gamification data
+                    return isUserRegistered.Gamification;
+                }
+            }
+            else {
+                updateDiscordUser(user);
+                return null;
+            }
+            return null;
+        }
+        catch (error) {
+            return null;
+        }
+    });
+}
+exports.getUserGamification = getUserGamification;

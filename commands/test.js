@@ -48,6 +48,10 @@ var user3 = {
     First_Name: 'Carlos',
     Discord_Handle: 'Mama',
     Discord_ID: '623958779737931786',
+    Gamification: {
+        XP: 100,
+        level: 2
+    },
     Quests: {
         Wallet_quests: [
             {
@@ -85,9 +89,12 @@ exports.default = {
         //console.log(userFound)
         //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
         (0, userBackendless_1.updateDiscordUser)(user3);
-        //console.log(userFound.Quests?.Twitter_quests)
-        // let questName= 'Wallet_quests'
-        // let result = await isSubscribedToQuest(testUser1, questName , '854262020781113355')
-        //console.log('Is subscribed to '+ questName + ': ' + result)
+        let result = yield (0, userBackendless_1.getUserGamification)(user3);
+        if (result != null) {
+            console.log('User:\n' + JSON.stringify(result));
+        }
+        else {
+            console.log('User doesnt have gamification');
+        }
     }),
 };

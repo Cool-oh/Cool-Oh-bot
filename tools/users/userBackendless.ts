@@ -1,13 +1,15 @@
 import {Snowflake } from 'discord.js';
 import Backendless from 'backendless'
 import dotenv from 'dotenv'
-import { BackendlessPerson, AllQuests, WalletQuests, TwitterQuests, DiscordServer} from '../../interfaces/interfaces';
+import { BackendlessPerson, AllQuests, WalletQuests, TwitterQuests, DiscordServer, Gamification, Quests, WalletQuestIntfc} from '../../interfaces/interfaces';
 import {writeDiscordLog} from '../../features/discordLogger';
+import { WalletQuest } from '../quests/walletQuest/walletQuest';
 const _ = require("lodash");
 const filename='userBackendless.ts'
 
 dotenv.config();
-
+const walletQuestName = process.env.WALLET_QUEST_NAME
+const twitterQuestName = process.env.TWITTER_QUEST_NAME
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE
 const backendlessDiscordServersTable = process.env.BACKENDLESS_DISCORDSERVERS_TABLE
 const backendlessRelationshipDepth = Number(process.env.BACKENDLESS_RELATIONSHIP_DEPTH)
@@ -47,7 +49,7 @@ export async function getDiscordServerObjID(serverId:string):Promise<string>{
 
 }
 
- function getObject(object:object, searchString:string) { //finds if the string is a property of the object. If it is, it returns the subobject
+ function getObject(object:object, searchString:string):any { //finds if the string is a property of the object. If it is, it returns the subobject
     var result;
     if (!object || typeof object !== 'object') return;
     Object.values(object).some(v => {
@@ -57,47 +59,41 @@ export async function getDiscordServerObjID(serverId:string):Promise<string>{
     return result;
 }
 
-export async function isSubscribedToQuest(user:BackendlessPerson, questName: string, discordServerID:string): Promise <boolean> {//userID is the objectID in backendless for the user
 
+export async function isSubscribedToQuest(user:BackendlessPerson, questName: string, discordServerID:string): Promise <AllQuests|null> {//userID is the objectID in backendless for the user
 
+    let resultFound
     try {
         let isUserRegistered = await checkIfDiscordIDRegistered(user.Discord_ID)
         if (isUserRegistered) { //user is registered
             if (isUserRegistered.Quests) { //the user has quests
                if(isUserRegistered.Quests[questName] ){ //If user is subscribed to the quest we are looking for
-                   let resultFound = getObject(isUserRegistered.Quests[questName],  discordServerID)
-                   if(resultFound)
-                   {
-                   return true
-
-               }else{//If user is not subscribed to the quest we are looking for
-                   return false
-               }
-             }
-            } else {//the user is not doing any quest
-                return false
+                   resultFound = getObject(isUserRegistered.Quests[questName],  discordServerID)
+                   if (resultFound != null) {
+                       for (let index = 0; index < isUserRegistered.Quests[questName].length; index++) {
+                           if (isUserRegistered.Quests[questName][index].Discord_Server.server_id == resultFound.server_id) {
+                            return isUserRegistered.Quests[questName][index] //we return the quest that matches the server id and the nameQuest
+                           }
+                       }
+                   }else{
+                    return null
+                   }
+                }
             }
-            return false
-        } else { //user not registered. We register it
+       else { //user not registered. We register it
             updateDiscordUser(user)
-            return false
+            return null
             }
-
+        }
     } catch (error) {
         throw error
     }
+
+        return null
+
+
 }
-async function getUserDeep(userID:string, relationsDepth: number): Promise<BackendlessPerson>  {
 
-    var queryBuilder = Backendless.DataQueryBuilder.create();
-    queryBuilder.setRelationsDepth( relationsDepth );
-    try {
-        let result = await Backendless.Data.of( backendlessUserTable! ).findById<BackendlessPerson>( userID, queryBuilder )
-        return result
-    } catch (error) {
-        throw error
-    }
-  }
 
 export async function checkIfEmailRegistered(email: string) : Promise<BackendlessPerson>{
     let result:BackendlessPerson[]
@@ -105,7 +101,7 @@ export async function checkIfEmailRegistered(email: string) : Promise<Backendles
     let errMsg = 'Error checking if email ' + email + 'is registered in the DDBB'
     var whereClause = "email='" + email + "'";
     var queryBuilder = Backendless.DataQueryBuilder.create().setWhereClause( whereClause );
-    queryBuilder.setRelationsDepth( 3 );
+    queryBuilder.setRelationsDepth( backendlessRelationshipDepth );
     try {
         result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
         .catch( e => {
@@ -276,10 +272,10 @@ function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessP
         	if (userDDBB.Quests!.Twitter_quests !=  null) {userDDBBHasTwitterQuests = true}
 
         	if (userDDBBHasWalletQuests &&  newUserHasWalletQuests){
-        	    mergedWalletQuests = mergeQuests( userDDBB, newUser, 'Wallet_quests') as WalletQuests
+        	    mergedWalletQuests = mergeQuests( userDDBB, newUser, walletQuestName!) as WalletQuests
         	}
         	if (userDDBBHasTwitterQuests &&  newUserHasTwitterQuests){
-        	    mergedTwitterQuests = mergeQuests(userDDBB, newUser, 'Twitter_quests') as TwitterQuests
+        	    mergedTwitterQuests = mergeQuests(userDDBB, newUser, twitterQuestName!) as TwitterQuests
         	}
         	if(!userDDBBHasWalletQuests && newUserHasWalletQuests){
         	    for (let index = 0; index < newUser.Quests!.Wallet_quests!.length; index++) {
@@ -303,10 +299,10 @@ function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessP
         	}
             userToSaveWalletQuest = {
                 'Discord_ID': userToSaveFirstLevel.Discord_ID,
-                'Quests': {'objectId': userQuestsObjId,'Wallet_quests': mergedWalletQuests} }
+                'Quests': {'objectId': userQuestsObjId, [walletQuestName!]: mergedWalletQuests} }
             userToSaveTwitterQuest  ={
                 'Discord_ID': userToSaveFirstLevel.Discord_ID,
-                'Quests': {'objectId': userQuestsObjId,'Twitter_quests': mergedTwitterQuests} }
+                'Quests': {'objectId': userQuestsObjId, [twitterQuestName!]: mergedTwitterQuests} }
             userMergedWithQuests = _.merge(userToSaveFirstLevel, userToSaveWalletQuest, userToSaveTwitterQuest)
 
             return userMergedWithQuests
@@ -421,5 +417,25 @@ export async function updateDiscordUser(user:BackendlessPerson) {
         }
     } catch (error) {
         throw error
+    }
+}
+
+export async function getUserGamification(user:BackendlessPerson):Promise<Gamification | null>
+ {
+    try {
+        let isUserRegistered = await checkIfDiscordIDRegistered(user.Discord_ID)
+        if (isUserRegistered) { //user is registered
+            if (isUserRegistered.Gamification) { //the user has gamification data
+                return isUserRegistered.Gamification
+            }
+
+        } else{
+            updateDiscordUser(user)
+            return null
+        }
+        return null
+
+    } catch (error) {
+        return null
     }
 }

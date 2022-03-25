@@ -1,13 +1,16 @@
 import { ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
 import dotenv from 'dotenv'
-import { QuestEmbedJson } from '../../interfaces/interfaces';
+import { writeDiscordLog } from '../../features/discordLogger';
+import { BackendlessPerson, Gamification, QuestEmbedJson,  WalletQuestIntfc } from '../../interfaces/interfaces';
+import { checkIfDiscordIDRegistered, getUserGamification, isSubscribedToQuest } from '../users/userBackendless';
 import questInitJson from './questInit.json'
 
 dotenv.config();
-
+const walletQuestName = process.env.WALLET_QUEST_NAME
+const filename = 'questInit.ts'
 const questInitFields = questInitJson as QuestEmbedJson
 const menu = questInitFields.menu
-var interactionGLobal:Interaction
+var interactionGlobal:Interaction
 
 const questInitEmbed = new MessageEmbed()
 .setColor(questInitFields.color as ColorResolvable)
@@ -21,10 +24,41 @@ const questInitEmbed = new MessageEmbed()
 .setFooter(questInitFields.footer)
 
 
-async function init(interaction: Interaction,){
-    interactionGLobal = interaction
+async function init(interaction: Interaction){
+    let functionName = init.name
+    let msg = 'Trying to init the Quest'
+    interactionGlobal = interaction
+    let userWalletQuest:WalletQuestIntfc|null
+    let discordServerID = interactionGlobal.guildId!
+    let solanaAddress = "You didn't provide it yet"
 
+    try {
+        let user = await  checkIfDiscordIDRegistered(interactionGlobal.user.id) as BackendlessPerson
+        if(user != null){
+            userWalletQuest = await isSubscribedToQuest(user, walletQuestName!, discordServerID)
+            if (userWalletQuest != null){
+                solanaAddress = userWalletQuest.solana_address!
+            }
+            if (user.Gamification != null) {
+                questInitEmbed.setFields([])//delete fields first
+                questInitEmbed.addFields([
+                    questInitFields.fields[0],
+                    questInitFields.fields[1],
+                    { "name": "YOUR LEVEL", "value": String(user.Gamification.level) , "inline":false },
+                    { "name": "YOUR COOLS", "value": "0 $COOLs", "inline":false},
+                    {"name": "YOUR EXP", "value": String(user.Gamification.XP) + " EXP", "inline":false},
+                    { "name": "Your Quests", "value": "You aren't doing any quest at the moment", "inline":false},
+                    { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline":false},
+                    questInitFields.fields[7],
+                    questInitFields.fields[8],])
+            }
+        }
+    } catch (err:any) {
+        writeDiscordLog(filename, functionName, msg,  err.toString())
+        console.log(err)
+    }
 }
+
 
 function joinQuestButtonClicked(interaction:Interaction){
     console.log("Clicked!")
@@ -32,21 +66,38 @@ function joinQuestButtonClicked(interaction:Interaction){
 function modalSubmit(modal:any){
 
 }
-async function isSubscribed(): Promise <boolean> {
 
+async function getGamificationData():Promise<Gamification | null>{
+    let result
+    let user:BackendlessPerson = {
+        Discord_ID: interactionGlobal.user.id,
+        Discord_Handle: interactionGlobal.user.username
+    }
+    try {
+        return result = await getUserGamification(user)
+    } catch (error) {
+        throw error
+    }
+}
+async function isSubscribed(): Promise <boolean> {
+    let result = await getGamificationData()
+    if (result != null) {
         return true
+    } else {
+        return false
+    }
 
 }
-
 const joinQuestButton = new MessageButton()
 
 export class QuestInit {
-    public async init(interaction: Interaction,){
+    public async init(interaction: Interaction){
         return await init (interaction)
     }
     public get embed(): MessageEmbed{
         return questInitEmbed
     }
+
     public get joinQuestButton(): MessageButton{
         return joinQuestButton
     }

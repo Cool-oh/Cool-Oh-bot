@@ -43,8 +43,8 @@
             "id": "textinput_init_quest",
             "label": "",
             "style": "SHORT",
-            "minLenght": 4,
-            "maxLength": 10,
+            "minLenght": 0,
+            "maxLength": 60,
             "placeholder": "",
             "required": true
             }]
