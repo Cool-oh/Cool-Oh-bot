@@ -42,9 +42,25 @@ function init(interaction) {
         let userWalletQuest;
         let discordServerID = interactionGlobal.guildId;
         let solanaAddress = "You didn't provide it yet";
+        let userQuestsSubscribed = "You aren't doing any quest at the moment";
+        const words = ["created", "___class", "ownerId", "updated", "objectId", "Index_quests"];
         try {
             let user = yield (0, userBackendless_1.checkIfDiscordIDRegistered)(interactionGlobal.user.id);
             if (user != null) {
+                let userQuestsNames = (0, userBackendless_1.getAllUserQuestsNames)(user);
+                if ((userQuestsNames === null || userQuestsNames === void 0 ? void 0 : userQuestsNames.length) !== 0 && userQuestsNames !== null) {
+                    if (userQuestsNames.length == 1) {
+                        userQuestsSubscribed = 'You are subscribed to the following quest: \n';
+                    }
+                    else {
+                        userQuestsSubscribed = 'You are subscribed to the following quests: \n';
+                    }
+                    for (let index = 0; index < userQuestsNames.length; index++) {
+                        if (!words.some(word => userQuestsNames[index].includes(word))) { //If it doesnt include any of the words in variable words[]
+                            userQuestsSubscribed += '     ' + userQuestsNames[index] + '\n';
+                        }
+                    }
+                }
                 userWalletQuest = yield (0, userBackendless_1.isSubscribedToQuest)(user, walletQuestName, discordServerID);
                 if (userWalletQuest != null) {
                     solanaAddress = userWalletQuest.solana_address;
@@ -57,7 +73,7 @@ function init(interaction) {
                         { "name": "YOUR LEVEL", "value": String(user.Gamification.level), "inline": false },
                         { "name": "YOUR COOLS", "value": "0 $COOLs", "inline": false },
                         { "name": "YOUR EXP", "value": String(user.Gamification.XP) + " EXP", "inline": false },
-                        { "name": "Your Quests", "value": "You aren't doing any quest at the moment", "inline": false },
+                        { "name": "Your Quests", "value": userQuestsSubscribed, "inline": false },
                         { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline": false },
                         questInitFields.fields[7],
                         questInitFields.fields[8],

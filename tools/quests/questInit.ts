@@ -2,7 +2,7 @@ import { ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'disco
 import dotenv from 'dotenv'
 import { writeDiscordLog } from '../../features/discordLogger';
 import { BackendlessPerson, Gamification, QuestEmbedJson,  WalletQuestIntfc } from '../../interfaces/interfaces';
-import { checkIfDiscordIDRegistered, getUserGamification, isSubscribedToQuest } from '../users/userBackendless';
+import { checkIfDiscordIDRegistered, getAllUserQuestsNames, getUserGamification, isSubscribedToQuest } from '../users/userBackendless';
 import questInitJson from './questInit.json'
 
 dotenv.config();
@@ -31,10 +31,27 @@ async function init(interaction: Interaction){
     let userWalletQuest:WalletQuestIntfc|null
     let discordServerID = interactionGlobal.guildId!
     let solanaAddress = "You didn't provide it yet"
+    let userQuestsSubscribed = "You aren't doing any quest at the moment"
+    const words = ["created", "___class", "ownerId", "updated", "objectId", "Index_quests"];
+
 
     try {
         let user = await  checkIfDiscordIDRegistered(interactionGlobal.user.id) as BackendlessPerson
         if(user != null){
+            let userQuestsNames = getAllUserQuestsNames(user)
+            if(userQuestsNames?.length !== 0 &&  userQuestsNames !== null){
+                if(userQuestsNames.length == 1){ userQuestsSubscribed = 'You are subscribed to the following quest: \n'}
+                else{ userQuestsSubscribed = 'You are subscribed to the following quests: \n'}
+                for (let index = 0; index < userQuestsNames.length; index++) {
+
+                    if(!words.some(word => userQuestsNames![index].includes(word))){ //If it doesnt include any of the words in variable words[]
+                        userQuestsSubscribed += '     ' + userQuestsNames[index] + '\n'
+
+                    }
+
+
+                }
+            }
             userWalletQuest = await isSubscribedToQuest(user, walletQuestName!, discordServerID)
             if (userWalletQuest != null){
                 solanaAddress = userWalletQuest.solana_address!
@@ -46,8 +63,8 @@ async function init(interaction: Interaction){
                     questInitFields.fields[1],
                     { "name": "YOUR LEVEL", "value": String(user.Gamification.level) , "inline":false },
                     { "name": "YOUR COOLS", "value": "0 $COOLs", "inline":false},
-                    {"name": "YOUR EXP", "value": String(user.Gamification.XP) + " EXP", "inline":false},
-                    { "name": "Your Quests", "value": "You aren't doing any quest at the moment", "inline":false},
+                    { "name": "YOUR EXP", "value": String(user.Gamification.XP) + " EXP", "inline":false},
+                    { "name": "Your Quests", "value": userQuestsSubscribed, "inline":false},
                     { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline":false},
                     questInitFields.fields[7],
                     questInitFields.fields[8],])

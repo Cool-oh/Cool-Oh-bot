@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserGamification = exports.updateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
+exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
@@ -465,3 +465,24 @@ function getUserGamification(user) {
     });
 }
 exports.getUserGamification = getUserGamification;
+function getAllUserQuestsNames(user) {
+    let temp;
+    let result = [];
+    const words = ["created", "___class", "ownerId", "updated", "objectId", "Index_quests"];
+    if (user.Quests != null) {
+        temp = Object.keys(user.Quests);
+        for (let index = 0; index < temp.length; index++) {
+            if (!words.some(word => temp[index].includes(word))) { //If it doesnt include any of the words in variable words[]
+                if (user.Quests[temp[index]].length != 0) { //user has this quest
+                    result.push(temp[index]);
+                    console.log(user.Quests[temp[index]]);
+                }
+            }
+        }
+        return result;
+    }
+    else {
+        return null;
+    }
+}
+exports.getAllUserQuestsNames = getAllUserQuestsNames;

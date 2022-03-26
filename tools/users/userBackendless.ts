@@ -439,3 +439,30 @@ export async function getUserGamification(user:BackendlessPerson):Promise<Gamifi
         return null
     }
 }
+
+export function getAllUserQuestsNames(user:BackendlessPerson):String[]|null {
+    let temp:string[]
+    let result:string[]=[]
+    const words = ["created", "___class", "ownerId", "updated", "objectId", "Index_quests"];
+    
+    if(user.Quests != null){
+        temp = Object.keys(user.Quests)
+        for (let index = 0; index < temp.length; index++) {
+
+            if(!words.some(word => temp![index].includes(word))){ //If it doesnt include any of the words in variable words[]
+                if(user.Quests[temp![index]].length !=0){ //user has this quest
+                    
+                    result.push(temp![index])
+                    console.log(user.Quests[temp![index]])
+                }
+                
+
+            }
+        }
+
+
+	    return result
+    }else{
+        return null
+    }
+}
