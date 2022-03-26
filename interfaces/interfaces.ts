@@ -1,6 +1,10 @@
 import { ColorResolvable, MessageButtonStyleResolvable, Snowflake } from "discord.js";
+import dotenv from 'dotenv'
+dotenv.config();
+
+const gamificationDDBB_name = process.env.BACKENDLESS_GAMIFICATION_TABLE
 export interface Gamification{
-    ddbb_name?: "Gamification_Test"
+    ddbb_name?: "Gamification_Xibstar_Test"
     objectId?: string,
     level?: number,
     XP?: number,

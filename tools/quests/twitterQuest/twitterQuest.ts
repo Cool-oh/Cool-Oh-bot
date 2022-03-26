@@ -57,7 +57,6 @@ async function init(interaction: Interaction,){
 function joinQuestButtonClicked(interaction:Interaction, client: Client){
 
     if (interaction.isButton()){
-
         showModal(modal, {
         client: client, // The showModal() method needs the client to send the modal through the API.
         interaction: interaction // The showModal() method needs the interaction to send the modal with the Interaction ID & Token.

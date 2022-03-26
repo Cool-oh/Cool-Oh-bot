@@ -36,11 +36,9 @@ function buildMessageSelectoptions(optionToDelete: string,  options:MessageSelec
 }
 
 export  default {
-    category: 'Configuration',
-    description: 'Adds a role to the auto role message',
+    category: 'Quests',
+    description: 'Launches the quests menu',
     permissions: ['ADMINISTRATOR'],
-    minArgs: 0,
-    expectedArgs: '<help> <user_stats> <join_quest> <leave_quest>',
     slash: true,
     testOnly: true,
     guildOnly: true,
@@ -69,7 +67,7 @@ export  default {
                         let fixedOptions = buildMessageSelectoptions(optionsList[index].value, optionsList)
                         dropDown.setComponents(component.spliceOptions(0,component.options.length)) //remove all options from menu
                         dropDown.setComponents(component.addOptions(fixedOptions!)) //rebuild menu
-   
+
                         if(selectedOptions[0].value != optionsList[0].value){ //if its not the intro quest, build the button
                             await questsObjList[index].init(interaction)
                             buttonRow.addComponents(questsObjList[index].joinQuestButton)
@@ -78,7 +76,11 @@ export  default {
                             await questsObjList[0].init(interaction)
                         }
                         let embed = questsObjList[index].embed
-                        interaction.update({
+                        await interaction.deferReply({ //We defer the reply in case it takes more than 3 seconds to reply
+                            ephemeral: true // Only user who invokes the command can see the result
+
+                        })
+                        interaction.editReply({
                             content: 'Updated',
                             embeds: [embed],
                             components: componentList,
@@ -90,7 +92,6 @@ export  default {
         if(interaction.isButton()){
             for (let index = 0; index < optionsList.length; index++) {
                 if(interaction.customId == questsObjList[index].joinQuestButton.customId){
-                    //checkIfUserRegistered(user)
                     questsObjList[index].joinQuestButtonClicked(interaction, client)
                     }
                 }
@@ -129,11 +130,15 @@ export  default {
             .setPlaceholder('Select the quest...')
             .addOptions(fixedOptions)
         )
-        await msgInt.reply({
+        await msgInt.deferReply({ //We defer the reply in case it takes more than 3 seconds to reply
+            ephemeral: true // Only user who invokes the command can see the result
+
+        })
+        await msgInt.editReply({
           content: 'Please select what you want me to do',
           embeds: [embedInit],
           components: [dropDown],
-          ephemeral: true // Only user who invokes the command can see the result
+
       })
     }
 } as ICommand

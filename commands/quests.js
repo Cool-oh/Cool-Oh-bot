@@ -42,11 +42,9 @@ function buildMessageSelectoptions(optionToDelete, options) {
     return menuArray;
 }
 exports.default = {
-    category: 'Configuration',
-    description: 'Adds a role to the auto role message',
+    category: 'Quests',
+    description: 'Launches the quests menu',
     permissions: ['ADMINISTRATOR'],
-    minArgs: 0,
-    expectedArgs: '<help> <user_stats> <join_quest> <leave_quest>',
     slash: true,
     testOnly: true,
     guildOnly: true,
@@ -79,7 +77,10 @@ exports.default = {
                                 yield questsObjList[0].init(interaction);
                             }
                             let embed = questsObjList[index].embed;
-                            interaction.update({
+                            yield interaction.deferReply({
+                                ephemeral: true // Only user who invokes the command can see the result
+                            });
+                            interaction.editReply({
                                 content: 'Updated',
                                 embeds: [embed],
                                 components: componentList,
@@ -91,7 +92,6 @@ exports.default = {
             if (interaction.isButton()) {
                 for (let index = 0; index < optionsList.length; index++) {
                     if (interaction.customId == questsObjList[index].joinQuestButton.customId) {
-                        //checkIfUserRegistered(user)
                         questsObjList[index].joinQuestButtonClicked(interaction, client);
                     }
                 }
@@ -118,11 +118,13 @@ exports.default = {
             .setMaxValues(1)
             .setPlaceholder('Select the quest...')
             .addOptions(fixedOptions));
-        yield msgInt.reply({
+        yield msgInt.deferReply({
+            ephemeral: true // Only user who invokes the command can see the result
+        });
+        yield msgInt.editReply({
             content: 'Please select what you want me to do',
             embeds: [embedInit],
             components: [dropDown],
-            ephemeral: true // Only user who invokes the command can see the result
         });
     })
 };

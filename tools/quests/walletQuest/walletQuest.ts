@@ -67,6 +67,7 @@ async function init(interaction: Interaction){
    let discordServerID = interactionGlobal.guildId!
    try {
        let user = await  checkIfDiscordIDRegistered(interactionGlobal.user.id) as BackendlessPerson
+
        if(user != null){
            userWalletQuest = await isSubscribedToQuest(user, walletQuestName!, discordServerID)
            if (userWalletQuest != null){
@@ -82,7 +83,7 @@ async function init(interaction: Interaction){
 
         }else{
             joinQuestButton.setLabel(walletQuestFields.button.label)
-            textInputProvideSolana.setLabel(walletQuestFields.title)
+            textInputProvideSolana.setLabel(walletQuestFields.modal.componentsList[0].label)
             textInputProvideSolana.setPlaceholder(walletQuestFields.modal.componentsList[0].placeholder)
         }
     } catch (err:any) {
@@ -137,7 +138,7 @@ async function isSubscribed(): Promise <boolean> {
 
 
 async function modalSubmit(modal:any){
-  
+
     const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id)
     let isSolAddress = validateSolAddress(firstResponse)
 

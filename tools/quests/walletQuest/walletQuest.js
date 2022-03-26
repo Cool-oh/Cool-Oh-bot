@@ -79,7 +79,7 @@ function init(interaction) {
             }
             else {
                 joinQuestButton.setLabel(walletQuestFields.button.label);
-                textInputProvideSolana.setLabel(walletQuestFields.title);
+                textInputProvideSolana.setLabel(walletQuestFields.modal.componentsList[0].label);
                 textInputProvideSolana.setPlaceholder(walletQuestFields.modal.componentsList[0].placeholder);
             }
         }
