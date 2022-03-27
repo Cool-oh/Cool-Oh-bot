@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
+exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
@@ -209,6 +209,7 @@ function removeEmpty(obj) {
         (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to remove null propreties from object: ' + JSON.stringify(obj), err.toString());
     }
 }
+exports.removeEmpty = removeEmpty;
 function mergeQuests(userDDBB, newUser, questName) {
     let userToSaveQuests = [];
     let arrayOfMerged = [];

@@ -1,3 +1,4 @@
+import { Modal } from 'discord-modals';
 import { ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
 import dotenv from 'dotenv'
 import { writeDiscordLog } from '../../features/discordLogger';
@@ -11,6 +12,8 @@ const filename = 'questInit.ts'
 const questInitFields = questInitJson as QuestEmbedJson
 const menu = questInitFields.menu
 var interactionGlobal:Interaction
+const  modal = new Modal()
+modal.setCustomId('')
 
 const questInitEmbed = new MessageEmbed()
 .setColor(questInitFields.color as ColorResolvable)
@@ -24,7 +27,20 @@ const questInitEmbed = new MessageEmbed()
 .setFooter(questInitFields.footer)
 
 
+function titleCase(str:string) {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+        // You do not need to check if i is larger than splitStr length, as your for does that for you
+        // Assign it back to the array
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    // Directly return the joined string
+    return splitStr.join(' ');
+ }
+
 async function init(interaction: Interaction){
+    let modal = new Modal()
+    modal.customId = ''
     let functionName = init.name
     let msg = 'Trying to init the Quest'
     interactionGlobal = interaction
@@ -45,7 +61,10 @@ async function init(interaction: Interaction){
                 for (let index = 0; index < userQuestsNames.length; index++) {
 
                     if(!words.some(word => userQuestsNames![index].includes(word))){ //If it doesnt include any of the words in variable words[]
-                        userQuestsSubscribed += '     ' + userQuestsNames[index] + '\n'
+                        let tempString = userQuestsNames[index].replace(/_/g, ' ')
+                        tempString = tempString.slice(0, -1)
+                        tempString = titleCase(tempString)
+                        userQuestsSubscribed += '.     ' + tempString + '\n'
 
                     }
 
@@ -126,7 +145,8 @@ export class QuestInit {
         joinQuestButtonClicked(interaction)
     }
     public get modal(){
-        return {"modal": {"customId": ""}}
+
+        return modal
     }
     public modalQuestSubmit(modal:any){
         modalSubmit(modal)

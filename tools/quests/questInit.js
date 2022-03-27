@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.QuestInit = void 0;
+const discord_modals_1 = require("discord-modals");
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
@@ -24,6 +25,8 @@ const filename = 'questInit.ts';
 const questInitFields = questInit_json_1.default;
 const menu = questInitFields.menu;
 var interactionGlobal;
+const modal = new discord_modals_1.Modal();
+modal.setCustomId('');
 const questInitEmbed = new discord_js_1.MessageEmbed()
     .setColor(questInitFields.color)
     .setTitle(questInitFields.title)
@@ -34,8 +37,20 @@ const questInitEmbed = new discord_js_1.MessageEmbed()
     .addFields(questInitFields.fields)
     .setImage(questInitFields.image)
     .setFooter(questInitFields.footer);
+function titleCase(str) {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+        // You do not need to check if i is larger than splitStr length, as your for does that for you
+        // Assign it back to the array
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    // Directly return the joined string
+    return splitStr.join(' ');
+}
 function init(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
+        let modal = new discord_modals_1.Modal();
+        modal.customId = '';
         let functionName = init.name;
         let msg = 'Trying to init the Quest';
         interactionGlobal = interaction;
@@ -57,7 +72,10 @@ function init(interaction) {
                     }
                     for (let index = 0; index < userQuestsNames.length; index++) {
                         if (!words.some(word => userQuestsNames[index].includes(word))) { //If it doesnt include any of the words in variable words[]
-                            userQuestsSubscribed += '     ' + userQuestsNames[index] + '\n';
+                            let tempString = userQuestsNames[index].replace(/_/g, ' ');
+                            tempString = tempString.slice(0, -1);
+                            tempString = titleCase(tempString);
+                            userQuestsSubscribed += '.     ' + tempString + '\n';
                         }
                     }
                 }
@@ -138,7 +156,7 @@ class QuestInit {
         joinQuestButtonClicked(interaction);
     }
     get modal() {
-        return { "modal": { "customId": "" } };
+        return modal;
     }
     modalQuestSubmit(modal) {
         modalSubmit(modal);

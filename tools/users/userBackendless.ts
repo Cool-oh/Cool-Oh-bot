@@ -184,7 +184,7 @@ async function mergeBackendlessData(user1:BackendlessPerson, user2:BackendlessPe
     return userResult
 }
 
-function removeEmpty(obj:any):any { //removes null properties from an object and subobjects
+export function removeEmpty(obj:any):any { //removes null properties from an object and subobjects
     let functionName = removeEmpty.name
     try {
         var clean:any = Object.fromEntries(

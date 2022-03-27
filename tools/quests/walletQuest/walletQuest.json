@@ -37,8 +37,35 @@
     "modal": {
         "id":"wallet_quest_modal",
         "title": "Wallet Quest Form",
-        "componentsList": [{
-            "id": "textinput_wallet_quest",
+        "componentsList": [
+        {
+            "id": "textinput_wq_first_name",
+            "label": "What's your first name?",
+            "style": "SHORT",
+            "minLenght": 0,
+            "maxLength": 60,
+            "placeholder": "Elon",
+            "required": false
+        },
+        {
+            "id": "textinput_wq_lastname_name",
+            "label": "What's your last name?",
+            "style": "SHORT",
+            "minLenght": 0,
+            "maxLength": 60,
+            "placeholder": "Musk",
+            "required": false
+        },
+        {
+            "id": "textinput_wq_email",
+            "label": "Please provide your email address",
+            "style": "SHORT",
+            "minLenght": 0,
+            "maxLength": 60,
+            "placeholder": "elon@tesla.com",
+            "required": false
+        },{
+            "id": "textinput_wq",
             "label": "Please provide your Solana wallet address",
             "style": "SHORT",
             "minLenght": 0,

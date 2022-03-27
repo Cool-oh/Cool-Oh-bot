@@ -17,6 +17,7 @@ const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
 const walletQuest_json_1 = __importDefault(require("./walletQuest.json"));
 const discord_modals_1 = require("discord-modals");
+const email_validator_1 = require("email-validator");
 //import  discordModals   from 'discord-modals//'
 const web3_js_1 = require("@solana/web3.js");
 const userBackendless_1 = require("../../users/userBackendless");
@@ -28,18 +29,44 @@ const menu = walletQuestFields.menu;
 const filename = 'walletQuests.ts';
 var interactionGlobal;
 var userToSave;
-const textInputProvideSolana = new discord_modals_1.TextInputComponent() // We create a Text Input Component
+var userFirstName = walletQuestFields.modal.componentsList[0].placeholder;
+var userLastName = walletQuestFields.modal.componentsList[1].placeholder;
+var userEmail = walletQuestFields.modal.componentsList[2].placeholder;
+var solanaAddress = walletQuestFields.modal.componentsList[3].placeholder;
+// We create a Text Input Component FIRST NAME
+const textInputFirstName = new discord_modals_1.TextInputComponent()
     .setCustomId(walletQuestFields.modal.componentsList[0].id)
     .setLabel(walletQuestFields.modal.componentsList[0].label)
     .setStyle(walletQuestFields.modal.componentsList[0].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-    //.setMinLength(walletQuestFields.modal.componentsList[0].minLenght)
-    //.setMaxLength(walletQuestFields.modal.componentsList[0].maxLength)
-    .setPlaceholder(walletQuestFields.modal.componentsList[0].placeholder)
+    .setPlaceholder(userFirstName)
     .setRequired(walletQuestFields.modal.componentsList[0].required); // If it's required or not
+// We create a Text Input Component LAST NAME
+const textInputLastName = new discord_modals_1.TextInputComponent()
+    .setCustomId(walletQuestFields.modal.componentsList[1].id)
+    .setLabel(walletQuestFields.modal.componentsList[1].label)
+    .setStyle(walletQuestFields.modal.componentsList[1].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+    .setPlaceholder(userLastName)
+    .setRequired(walletQuestFields.modal.componentsList[1].required); // If it's required or not
+// We create a Text Input Component EMAIL
+const textInputEmail = new discord_modals_1.TextInputComponent()
+    .setCustomId(walletQuestFields.modal.componentsList[2].id)
+    .setLabel(walletQuestFields.modal.componentsList[2].label)
+    .setStyle(walletQuestFields.modal.componentsList[2].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+    .setPlaceholder(userEmail)
+    .setRequired(walletQuestFields.modal.componentsList[2].required); // If it's required or not
+// We create a Text Input Component SOLANA ADDRESS
+const textInputProvideSolana = new discord_modals_1.TextInputComponent() // We create a Text Input Component
+    .setCustomId(walletQuestFields.modal.componentsList[3].id)
+    .setLabel(walletQuestFields.modal.componentsList[3].label)
+    .setStyle(walletQuestFields.modal.componentsList[3].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+    .setMinLength(walletQuestFields.modal.componentsList[3].minLenght)
+    .setMaxLength(walletQuestFields.modal.componentsList[3].maxLength)
+    .setPlaceholder(solanaAddress)
+    .setRequired(walletQuestFields.modal.componentsList[3].required); // If it's required or not
 const modal = new discord_modals_1.Modal() // We create a Modal
     .setCustomId(walletQuestFields.modal.id)
     .setTitle(walletQuestFields.modal.title)
-    .addComponents(textInputProvideSolana);
+    .addComponents(textInputFirstName, textInputLastName, textInputEmail, textInputProvideSolana);
 const walletQuestEmbed = new discord_js_1.MessageEmbed()
     .setColor(walletQuestFields.color)
     .setTitle(walletQuestFields.title)
@@ -60,7 +87,6 @@ function init(interaction) {
         let functionName = init.name;
         let msg = 'Trying to init the Quest';
         let userWalletQuest;
-        let solanaAddress = '';
         interactionGlobal = interaction;
         let discordServerID = interactionGlobal.guildId;
         try {
@@ -70,17 +96,27 @@ function init(interaction) {
                 if (userWalletQuest != null) {
                     solanaAddress = userWalletQuest.solana_address;
                 }
+                if (user.First_Name != null) {
+                    userFirstName = user.First_Name;
+                }
+                if (user.Last_Name != null) {
+                    userLastName = user.Last_Name;
+                }
+                if (user.email != null) {
+                    userEmail = user.email;
+                }
             }
             let subscribed = yield isSubscribed();
             if (subscribed) {
                 joinQuestButton.setLabel(walletQuestFields.button.label_edit);
                 textInputProvideSolana.setLabel('Edit your solana wallet address:');
+                textInputFirstName.setPlaceholder(userFirstName);
+                textInputLastName.setPlaceholder(userLastName);
+                textInputEmail.setPlaceholder(userEmail);
                 textInputProvideSolana.setPlaceholder(solanaAddress);
             }
             else {
                 joinQuestButton.setLabel(walletQuestFields.button.label);
-                textInputProvideSolana.setLabel(walletQuestFields.modal.componentsList[0].label);
-                textInputProvideSolana.setPlaceholder(walletQuestFields.modal.componentsList[0].placeholder);
             }
         }
         catch (err) {
@@ -89,11 +125,16 @@ function init(interaction) {
         }
     });
 }
+function refreshData(interaction) {
+    return __awaiter(this, void 0, void 0, function* () {
+    });
+}
 function joinQuestButtonClicked(interaction, client) {
     return __awaiter(this, void 0, void 0, function* () {
         interactionGlobal = interaction;
         if (interaction.isButton()) {
-            yield init(interaction); //we initialize again to make sure the modal has the right solana address
+            yield init(interaction); //we initialize again to make sure the modal has the right data from DDBB
+            yield refreshData(interaction);
             (0, discord_modals_1.showModal)(modal, {
                 client: client,
                 interaction: interaction // The showModal() method needs the interaction to send the modal with the Interaction ID & Token.
@@ -136,19 +177,49 @@ function isSubscribed() {
 function modalSubmit(modal) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const firstResponse = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id);
-        let isSolAddress = validateSolAddress(firstResponse);
-        if (isSolAddress) {
+        let isEmailValid;
+        let firstNameMsg = 'Not provided';
+        let lastNameMsg = 'Not provided';
+        let emailMsg = 'Not provided';
+        const modalFirstName = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id);
+        const modalLastName = modal.getTextInputValue(walletQuestFields.modal.componentsList[1].id);
+        const modalEmail = modal.getTextInputValue(walletQuestFields.modal.componentsList[2].id);
+        const modalSolanaAddress = modal.getTextInputValue(walletQuestFields.modal.componentsList[3].id);
+        if (modalFirstName != null) {
+            modalFirstName.trim();
+            firstNameMsg = modalFirstName;
+        }
+        if (modalLastName != null) {
+            modalLastName.trim();
+            lastNameMsg = modalLastName;
+        }
+        if (modalEmail != null) {
+            modalEmail.trim();
+            isEmailValid = (0, email_validator_1.validate)(modalEmail);
+            emailMsg = modalEmail;
+        }
+        else {
+            isEmailValid = true;
+        }
+        if (modalSolanaAddress != null) {
+            modalSolanaAddress.trim();
+        }
+        let isSolAddress = validateSolAddress(modalSolanaAddress);
+        if (isSolAddress && isEmailValid) {
             let discordServerObjID = yield (0, userBackendless_1.getDiscordServerObjID)(interactionGlobal.guildId);
             console.log('discordServerObjID: ' + discordServerObjID);
             yield modal.deferReply({ ephemeral: true });
-            modal.followUp({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: ' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
+            modal.followUp({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: \nName: ' + firstNameMsg
+                    + '\nLast Name: ' + lastNameMsg + '\nEmail: ' + emailMsg + '\nSolana address: ' + `\`\`\`${modalSolanaAddress}\`\`\``, ephemeral: true });
             userToSave = {
+                First_Name: modalFirstName,
+                Last_Name: modalLastName,
+                email: modalEmail,
                 Discord_ID: interactionGlobal.user.id,
                 Discord_Handle: interactionGlobal.user.username,
                 Quests: {
                     Wallet_quests: [{
-                            solana_address: firstResponse,
+                            solana_address: modalSolanaAddress,
                             Discord_Server: {
                                 objectId: discordServerObjID,
                                 server_id: interactionGlobal.guildId,
@@ -161,7 +232,18 @@ function modalSubmit(modal) {
         }
         else {
             yield modal.deferReply({ ephemeral: true });
-            modal.followUp({ content: 'This is not a valid Solana address!! Try again! ', ephemeral: true });
+            let msg = "";
+            console.log('Is solana: ' + isSolAddress);
+            if (!isSolAddress) {
+                msg = 'This is not a valid Solana address!! Try again! ';
+            }
+            if (!isEmailValid) {
+                msg = 'This is not a valid Solana address!! Try again! ';
+            }
+            if (!isEmailValid && !isSolAddress) {
+                msg = 'This is not a valid Solana address!! Your email is also not valid!! Try again! ';
+            }
+            modal.followUp({ content: msg, ephemeral: true });
         }
     });
 }

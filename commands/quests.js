@@ -124,7 +124,7 @@ exports.default = {
         yield msgInt.editReply({
             content: 'Please select what you want me to do',
             embeds: [embedInit],
-            components: [dropDown],
+            components: [dropDown]
         });
     })
 };
