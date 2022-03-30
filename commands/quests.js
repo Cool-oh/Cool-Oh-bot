@@ -106,6 +106,9 @@ exports.default = {
         }));
     }),
     callback: ({ interaction: msgInt }) => __awaiter(void 0, void 0, void 0, function* () {
+        yield msgInt.deferReply({
+            ephemeral: true // Only user who invokes the command can see the result
+        });
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList); //remove the first item from the option list in the dropdown (INDEX)
         yield questsObjList[0].init(msgInt); //we init the Index Quest so we can retrieve the data for the user and display it
         let embedInit = questsObjList[0].embed;
@@ -118,9 +121,6 @@ exports.default = {
             .setMaxValues(1)
             .setPlaceholder('Select the quest...')
             .addOptions(fixedOptions));
-        yield msgInt.deferReply({
-            ephemeral: true // Only user who invokes the command can see the result
-        });
         yield msgInt.editReply({
             content: 'Please select what you want me to do',
             embeds: [embedInit],

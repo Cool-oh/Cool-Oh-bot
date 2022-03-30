@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import Backendless from 'backendless'
 import {BackendlessPerson, DatabaseCount} from '../interfaces/interfaces'
 import {getBackendlessLastTweet} from '../features/writeLastTweet'
-import { checkIfEmailRegistered, getUserGamification, isSubscribedToQuest, updateDiscordUser, } from '../tools/users/userBackendless';
+import { checkIfEmailRegistered, getGamificationsData, getUserGamification, isSubscribedToQuest, updateDiscordUser, } from '../tools/users/userBackendless';
 import { first } from 'lodash';
 import {writeDiscordLog} from '../features/discordLogger';
 
@@ -63,11 +63,14 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
   First_Name: 'Carlos',
   Discord_Handle: 'Mama',
   Discord_ID: '623958779737931786',
-  Gamification: {
+  Gamifications: [{
+    Discord_Server:{
+      objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
+    },
     XP: 100,
-    level:2
- 
-  },
+    level:2,
+    tokens: 89
+  }],
   Quests: {
 
     Wallet_quests: [
@@ -122,15 +125,15 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
     //console.log(userFound)
     //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
 
-    updateDiscordUser(user3)
+    //updateDiscordUser(user3)
     let result = await getUserGamification(user3)
+    let result2 = await getGamificationsData(user3, '912751335479345253')
 
-    
 
-    if(result != null)
+    if(result2 != null)
     {
-      
-      console.log('User:\n' + JSON.stringify(result))
+
+      console.log('User:\n' + JSON.stringify(result2))
 
     }else{
       console.log('User doesnt have gamification')

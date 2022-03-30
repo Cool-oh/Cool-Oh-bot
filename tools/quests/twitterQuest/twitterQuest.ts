@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
 import { BackendlessPerson, QuestEmbedJson, WalletQuestIntfc } from '../../../interfaces/interfaces';
 import twitterQuestJson from './twitterQuest.json'
-import {Modal, TextInputComponent, showModal } from 'discord-modals'
+import {Modal, TextInputComponent, showModal, TextInputStyle } from 'discord-modals'
 import { isSubscribedToQuest } from '../../users/userBackendless';
 
 dotenv.config();
@@ -36,7 +36,7 @@ const modal = new Modal() // We create a Modal
   new TextInputComponent() // We create a Text Input Component
   .setCustomId(twitterQuestFields.modal.componentsList[0].id)
   .setLabel(twitterQuestFields.modal.componentsList[0].label)
-  .setStyle(twitterQuestFields.modal.componentsList[0].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+  .setStyle(twitterQuestFields.modal.componentsList[0].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
   .setMinLength(twitterQuestFields.modal.componentsList[0].minLenght)
   .setMaxLength(twitterQuestFields.modal.componentsList[0].maxLength)
   .setPlaceholder(twitterQuestFields.modal.componentsList[0].placeholder)

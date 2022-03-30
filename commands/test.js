@@ -48,10 +48,14 @@ var user3 = {
     First_Name: 'Carlos',
     Discord_Handle: 'Mama',
     Discord_ID: '623958779737931786',
-    Gamification: {
-        XP: 100,
-        level: 2
-    },
+    Gamifications: [{
+            Discord_Server: {
+                objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
+            },
+            XP: 100,
+            level: 2,
+            tokens: 89
+        }],
     Quests: {
         Wallet_quests: [
             {
@@ -88,10 +92,11 @@ exports.default = {
         //let userFound = await  getUserDeep('AEC160F2-7A04-4A4B-8A41-2A0B3830267B', 3) as BackendlessPerson
         //console.log(userFound)
         //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
-        (0, userBackendless_1.updateDiscordUser)(user3);
+        //updateDiscordUser(user3)
         let result = yield (0, userBackendless_1.getUserGamification)(user3);
-        if (result != null) {
-            console.log('User:\n' + JSON.stringify(result));
+        let result2 = yield (0, userBackendless_1.getGamificationsData)(user3, '912751335479345253');
+        if (result2 != null) {
+            console.log('User:\n' + JSON.stringify(result2));
         }
         else {
             console.log('User doesnt have gamification');

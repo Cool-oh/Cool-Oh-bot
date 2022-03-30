@@ -114,6 +114,10 @@ export  default {
     },
 
     callback: async ({ interaction: msgInt}) => {
+        await msgInt.deferReply({ //We defer the reply in case it takes more than 3 seconds to reply
+            ephemeral: true // Only user who invokes the command can see the result
+
+        })
 
         let fixedOptions = buildMessageSelectoptions(optionsList[0].value, optionsList) //remove the first item from the option list in the dropdown (INDEX)
         await questsObjList[0].init(msgInt) //we init the Index Quest so we can retrieve the data for the user and display it
@@ -130,10 +134,7 @@ export  default {
             .setPlaceholder('Select the quest...')
             .addOptions(fixedOptions)
         )
-        await msgInt.deferReply({ //We defer the reply in case it takes more than 3 seconds to reply
-            ephemeral: true // Only user who invokes the command can see the result
 
-        })
         await msgInt.editReply({
           content: 'Please select what you want me to do',
           embeds: [embedInit],

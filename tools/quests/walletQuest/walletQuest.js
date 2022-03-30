@@ -29,6 +29,11 @@ const menu = walletQuestFields.menu;
 const filename = 'walletQuests.ts';
 var interactionGlobal;
 var userToSave;
+var user;
+var subscribed; //If the user is subscribed to this quest
+var userXp;
+var userLevel;
+var userTokens;
 var userFirstName = walletQuestFields.modal.componentsList[0].placeholder;
 var userLastName = walletQuestFields.modal.componentsList[1].placeholder;
 var userEmail = walletQuestFields.modal.componentsList[2].placeholder;
@@ -90,7 +95,7 @@ function init(interaction) {
         interactionGlobal = interaction;
         let discordServerID = interactionGlobal.guildId;
         try {
-            let user = yield (0, userBackendless_1.checkIfDiscordIDRegistered)(interactionGlobal.user.id);
+            user = (yield (0, userBackendless_1.checkIfDiscordIDRegistered)(interactionGlobal.user.id));
             if (user != null) {
                 userWalletQuest = yield (0, userBackendless_1.isSubscribedToQuest)(user, walletQuestName, discordServerID);
                 if (userWalletQuest != null) {
@@ -105,8 +110,10 @@ function init(interaction) {
                 if (user.email != null) {
                     userEmail = user.email;
                 }
+                if (user.Gamifications != null) {
+                }
             }
-            let subscribed = yield isSubscribed();
+            subscribed = yield isSubscribed();
             if (subscribed) {
                 joinQuestButton.setLabel(walletQuestFields.button.label_edit);
                 textInputProvideSolana.setLabel('Edit your solana wallet address:');
@@ -175,12 +182,13 @@ function isSubscribed() {
     });
 }
 function modalSubmit(modal) {
-    var _a;
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let isEmailValid;
         let firstNameMsg = 'Not provided';
         let lastNameMsg = 'Not provided';
         let emailMsg = 'Not provided';
+        let questMsg = 'OK! You are now on the Wallet quest!!. This is the information I got from you: ';
         const modalFirstName = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id);
         const modalLastName = modal.getTextInputValue(walletQuestFields.modal.componentsList[1].id);
         const modalEmail = modal.getTextInputValue(walletQuestFields.modal.componentsList[2].id);
@@ -207,9 +215,11 @@ function modalSubmit(modal) {
         let isSolAddress = validateSolAddress(modalSolanaAddress);
         if (isSolAddress && isEmailValid) {
             let discordServerObjID = yield (0, userBackendless_1.getDiscordServerObjID)(interactionGlobal.guildId);
-            console.log('discordServerObjID: ' + discordServerObjID);
+            if (subscribed) {
+                questMsg = "You edited the Wallet Quest. This is the information I'll be editing: ";
+            }
             yield modal.deferReply({ ephemeral: true });
-            modal.followUp({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: \nName: ' + firstNameMsg
+            modal.followUp({ content: questMsg + '\nName: ' + firstNameMsg
                     + '\nLast Name: ' + lastNameMsg + '\nEmail: ' + emailMsg + '\nSolana address: ' + `\`\`\`${modalSolanaAddress}\`\`\``, ephemeral: true });
             userToSave = {
                 First_Name: modalFirstName,
@@ -226,7 +236,14 @@ function modalSubmit(modal) {
                                 server_name: (_a = interactionGlobal.guild) === null || _a === void 0 ? void 0 : _a.name
                             }
                         }]
-                }
+                },
+                Gamifications: [{
+                        Discord_Server: {
+                            objectId: discordServerObjID,
+                            server_id: interactionGlobal.guildId,
+                            server_name: (_b = interactionGlobal.guild) === null || _b === void 0 ? void 0 : _b.name
+                        }
+                    }]
             };
             (0, userBackendless_1.updateDiscordUser)(userToSave);
         }

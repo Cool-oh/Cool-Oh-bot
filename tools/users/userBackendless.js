@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
+exports.getGamificationsData = exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
@@ -476,7 +476,6 @@ function getAllUserQuestsNames(user) {
             if (!words.some(word => temp[index].includes(word))) { //If it doesnt include any of the words in variable words[]
                 if (user.Quests[temp[index]].length != 0) { //user has this quest
                     result.push(temp[index]);
-                    console.log(user.Quests[temp[index]]);
                 }
             }
         }
@@ -487,3 +486,26 @@ function getAllUserQuestsNames(user) {
     }
 }
 exports.getAllUserQuestsNames = getAllUserQuestsNames;
+function getGamificationsData(user, serverId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let functionName = getGamificationsData.name;
+        let errMsg = 'Trying to get gamification data from discord userID: ' + user.Discord_ID + ' in server with serverId: ' + serverId + ' in DDBB';
+        let result;
+        var queryBuilder = backendless_1.default.DataQueryBuilder.create();
+        queryBuilder.setRelationsDepth(backendlessRelationshipDepth);
+        queryBuilder.setWhereClause("Gamifications.Discord_server.server_id='" + serverId + "'");
+        console.log("Gamifications.Discord_server.server_id='" + serverId + "'");
+        try {
+            result = yield backendless_1.default.Data.of(backendlessUserTable).find(queryBuilder)
+                .catch(e => {
+                (0, discordLogger_1.writeDiscordLog)(filename, functionName, errMsg, e.toString());
+                return result;
+            });
+            return result[0].Gamifications[0];
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+}
+exports.getGamificationsData = getGamificationsData;

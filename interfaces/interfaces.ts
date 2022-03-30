@@ -2,16 +2,25 @@ import { ColorResolvable, MessageButtonStyleResolvable, Snowflake } from "discor
 import dotenv from 'dotenv'
 dotenv.config();
 
-const gamificationDDBB_name = process.env.BACKENDLESS_GAMIFICATION_TABLE
 export interface Gamification{
     ddbb_name?: "Gamification_Xibstar_Test"
     objectId?: string,
     level?: number,
     XP?: number,
     date_published?: Date
-    created?: Date
+    created?: Date,
+    tokens?:number
 }
-
+export interface Gamifications{
+    ddbb_name?: "Gamifications_Test"
+    objectId?: string,
+    level?: number,
+    XP?: number,
+    date_published?: Date
+    created?: Date,
+    tokens?:number,
+    Discord_Server:DiscordServer
+}
 
 export interface TwitterUser {
     twitterId: number
@@ -65,18 +74,19 @@ export interface DatabaseCount {
     class: string
 }
 export interface DiscordServer {
-    objectId: string,
+    objectId?: string,
     created?: Date,
     ownerId?: string,
     server_id?: string,
     server_name?: string,
-    updated?: Date
+    updated?: Date,
+    token_type?:string
 }
 
 
 
 export interface AllQuests {
-    Discord_Server?: DiscordServer
+    Discord_Server: DiscordServer
     created?: Date,
     objectId?: string,
     ownerId?: string,
@@ -132,7 +142,8 @@ export interface BackendlessPerson {
     created?: Date,
     updated?: Date
     Quests?: Quests
-    Gamification?:Gamification
+    Gamification?:Gamification,
+    Gamifications?:Gamifications[]
 }
 
 export interface QuestEmbedJson{

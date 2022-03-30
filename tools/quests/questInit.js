@@ -25,6 +25,7 @@ const filename = 'questInit.ts';
 const questInitFields = questInit_json_1.default;
 const menu = questInitFields.menu;
 var interactionGlobal;
+var userGamificationsData;
 const modal = new discord_modals_1.Modal();
 modal.setCustomId('');
 const questInitEmbed = new discord_js_1.MessageEmbed()
@@ -83,14 +84,15 @@ function init(interaction) {
                 if (userWalletQuest != null) {
                     solanaAddress = userWalletQuest.solana_address;
                 }
-                if (user.Gamification != null) {
+                if (user.Gamifications != null) {
+                    userGamificationsData = yield (0, userBackendless_1.getGamificationsData)(user, discordServerID);
                     questInitEmbed.setFields([]); //delete fields first
                     questInitEmbed.addFields([
                         questInitFields.fields[0],
                         questInitFields.fields[1],
-                        { "name": "YOUR LEVEL", "value": String(user.Gamification.level), "inline": false },
+                        { "name": "YOUR LEVEL", "value": String(user.Gamifications[0].level), "inline": false },
                         { "name": "YOUR COOLS", "value": "0 $COOLs", "inline": false },
-                        { "name": "YOUR EXP", "value": String(user.Gamification.XP) + " EXP", "inline": false },
+                        { "name": "YOUR EXP", "value": String(user.Gamifications[0].XP) + " EXP", "inline": false },
                         { "name": "Your Quests", "value": userQuestsSubscribed, "inline": false },
                         { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline": false },
                         questInitFields.fields[7],

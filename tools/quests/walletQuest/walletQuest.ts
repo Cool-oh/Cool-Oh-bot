@@ -20,6 +20,11 @@ const filename = 'walletQuests.ts'
 
 var interactionGlobal:Interaction
 var userToSave: BackendlessPerson
+var user:BackendlessPerson
+var subscribed:boolean  //If the user is subscribed to this quest
+var userXp:number
+var userLevel:number
+var userTokens:number
 
 var userFirstName:string = walletQuestFields.modal.componentsList[0].placeholder
 var userLastName:string = walletQuestFields.modal.componentsList[1].placeholder
@@ -93,7 +98,7 @@ async function init(interaction: Interaction){
    interactionGlobal = interaction
    let discordServerID = interactionGlobal.guildId!
    try {
-       let user = await  checkIfDiscordIDRegistered(interactionGlobal.user.id) as BackendlessPerson
+       user = await  checkIfDiscordIDRegistered(interactionGlobal.user.id) as BackendlessPerson
 
        if(user != null){
            userWalletQuest = await isSubscribedToQuest(user, walletQuestName!, discordServerID)
@@ -103,8 +108,13 @@ async function init(interaction: Interaction){
             if(user.First_Name != null){userFirstName =user.First_Name }
             if(user.Last_Name != null){userLastName =user.Last_Name }
             if(user.email != null){userEmail =user.email }
+            if(user.Gamifications != null){
+
+
+
+            }
         }
-        let subscribed = await  isSubscribed()
+        subscribed = await  isSubscribed()
 
         if(subscribed){
             joinQuestButton.setLabel(walletQuestFields.button.label_edit)
@@ -174,9 +184,10 @@ async function isSubscribed(): Promise <boolean> {
 
 async function modalSubmit(modal:ModalSubmitInteraction){
     let isEmailValid:boolean
-    let firstNameMsg:string ='Not provided'
-    let lastNameMsg:string ='Not provided'
-    let emailMsg:string ='Not provided'
+    let firstNameMsg ='Not provided'
+    let lastNameMsg ='Not provided'
+    let emailMsg ='Not provided'
+    let questMsg = 'OK! You are now on the Wallet quest!!. This is the information I got from you: '
 
     const modalFirstName = modal.getTextInputValue(walletQuestFields.modal.componentsList[0].id)
     const modalLastName = modal.getTextInputValue(walletQuestFields.modal.componentsList[1].id)
@@ -203,9 +214,13 @@ async function modalSubmit(modal:ModalSubmitInteraction){
 
     if (isSolAddress && isEmailValid) {
         let discordServerObjID = await getDiscordServerObjID(interactionGlobal.guildId!)
-        console.log('discordServerObjID: ' + discordServerObjID)
+
+        if(subscribed){
+            questMsg = "You edited the Wallet Quest. This is the information I'll be editing: "
+
+        }
         await modal.deferReply({ ephemeral: true })
-        modal.followUp({ content: 'OK! You are now on the Wallet quest!!. This is the information I got from you: \nName: ' + firstNameMsg
+        modal.followUp({ content: questMsg + '\nName: '+ firstNameMsg
         + '\nLast Name: ' + lastNameMsg + '\nEmail: '+ emailMsg +'\nSolana address: ' +  `\`\`\`${modalSolanaAddress}\`\`\``, ephemeral: true })
         userToSave = {
             First_Name: modalFirstName,
@@ -222,7 +237,14 @@ async function modalSubmit(modal:ModalSubmitInteraction){
                         server_name: interactionGlobal.guild?.name!
                     }
                 }]
-            }
+            },
+            Gamifications:[{
+                Discord_Server:{
+                    objectId: discordServerObjID!,
+                    server_id: interactionGlobal.guildId!,
+                    server_name: interactionGlobal.guild?.name!
+                }
+            }]
         }
 
         updateDiscordUser(userToSave)
