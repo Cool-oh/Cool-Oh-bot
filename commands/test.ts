@@ -4,14 +4,17 @@ import dotenv from 'dotenv'
 import Backendless from 'backendless'
 import {BackendlessPerson, DatabaseCount} from '../interfaces/interfaces'
 import {getBackendlessLastTweet} from '../features/writeLastTweet'
-import { checkIfEmailRegistered, getGamificationsData, getUserGamification, isSubscribedToQuest, updateDiscordUser, } from '../tools/users/userBackendless';
+import { checkIfDiscordIDRegistered, checkIfEmailRegistered, getGamificationsData, getUserGamification, isSubscribedToQuest, isSubscribedToQuest2, updateDiscordUser, } from '../tools/users/userBackendless';
 import { first } from 'lodash';
 import {writeDiscordLog} from '../features/discordLogger';
+import { json } from 'express';
 
 dotenv.config();
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE
 const backendlessTable = process.env.BACKENDLESS_TWITTER_TABLE
 const iconDatabaseStats = process.env.ICON_DATABASE_STATS
+const walletQuestName = process.env.WALLET_QUEST_NAME
+
 
 
 Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API_KEY!);
@@ -68,8 +71,8 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
       objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
     },
     XP: 100,
-    level:2,
-    tokens: 89
+    Level:2,
+    Tokens: 89
   }],
   Quests: {
 
@@ -126,17 +129,20 @@ async function getUserDeep(id:string, relationsDepth: number): Promise<Backendle
     //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
 
     //updateDiscordUser(user3)
-    let result = await getUserGamification(user3)
-    let result2 = await getGamificationsData(user3, '912751335479345253')
-
-
-    if(result2 != null)
+   // let result = await getUserGamification(user3)
+    //let result2 = await getGamificationsData(user3, '912751335479345253')
+    let result =  isSubscribedToQuest2(user3, walletQuestName!,'912751335479345253' )
+    console.log('isSubscribedToQuest2: \n' + JSON.stringify(isSubscribedToQuest2 ))
+    if(result)
     {
 
-      console.log('User:\n' + JSON.stringify(result2))
+      console.log('User:\n' + JSON.stringify(result))
 
     }else{
       console.log('User doesnt have gamification')
     }
-  },
+  }
+
+
+
 } as ICommand

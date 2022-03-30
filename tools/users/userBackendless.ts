@@ -59,8 +59,34 @@ export async function getDiscordServerObjID(serverId:string):Promise<string>{
     return result;
 }
 
+export function isSubscribedToQuest2(user:BackendlessPerson, questName: string, discordServerID:string): AllQuests|null {
+    let resultFound
+    try {
+            if (user.Quests) { //the user has quests
+               if(user.Quests[questName] ){ //If user is subscribed to the quest we are looking for
+                console.log('User has wallet quest\n')
+                   resultFound = getObject(user.Quests[questName],  discordServerID)
+                   console.log('resultFound:\n' + JSON.stringify(resultFound))
+                   if (resultFound) {
+                    console.log('Inside Result\n')
+                       for (let index = 0; index < user.Quests[questName].length; index++) {
+                           if (user.Quests[questName][index].Discord_Server.server_id == resultFound.server_id) {
+                            return user.Quests[questName][index] //we return the quest that matches the server id and the nameQuest
+                           }
+                       }
+                   }else{
+                    return null
+                   }
+                }
+            }
 
-export async function isSubscribedToQuest(user:BackendlessPerson, questName: string, discordServerID:string): Promise <AllQuests|null> {//userID is the objectID in backendless for the user
+    } catch (error) {
+        throw error
+    }
+        return null
+}
+
+export async function isSubscribedToQuest(user:BackendlessPerson, questName: string, discordServerID:string): Promise <AllQuests|null> {
 
     let resultFound
     try {
@@ -114,7 +140,7 @@ export async function checkIfEmailRegistered(email: string) : Promise<Backendles
     }
 }
 
-export async function  checkIfDiscordIDRegistered(discordUserId: Snowflake): Promise<BackendlessPerson> {
+export async function  checkIfDiscordIDRegistered(discordUserId: Snowflake): Promise<BackendlessPerson|null> {
     let functionName = checkIfDiscordIDRegistered.name
     let errMsg = 'Trying to find discord user ID: ' + discordUserId + ' in DDBB'
     let result:BackendlessPerson[]
@@ -336,9 +362,9 @@ export async function updateDiscordUser(user:BackendlessPerson) {
             }
         if(user.email){//email provided
             userEmail = await checkIfEmailRegistered(user.email)
-            if (userEmail !== undefined) {//if email exists in ddbb
+            if (userEmail !== null) {//if email exists in ddbb
                 registeredUser = await checkIfDiscordIDRegistered(user.Discord_ID)
-                if (registeredUser !== undefined) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
+                if (registeredUser !== null) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
                     console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.")
                     if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
                         let msg = "1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same record. We UPDATE it"
@@ -381,7 +407,7 @@ export async function updateDiscordUser(user:BackendlessPerson) {
                 let msg='email doesnt exist in ddbb'
                 console.log(msg)
                 registeredUser = await checkIfDiscordIDRegistered(user.Discord_ID)
-                if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
+                if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                     let msg = "3 Email Provided. Email doesnt exist in ddbb. DiscordID exists: We UPDATE record."
                     console.log(msg)
                     removedUser.objectId =  registeredUser.objectId
@@ -399,7 +425,7 @@ export async function updateDiscordUser(user:BackendlessPerson) {
             }
         }else{ //email not provided
             let registeredUser = await checkIfDiscordIDRegistered(user.Discord_ID)
-            if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
+            if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                 let msg = "5 Email NOT provided. DiscordID exists: We UPDATE record"
                 console.log(msg)
                 removedUser.objectId =  registeredUser.objectId
@@ -460,7 +486,7 @@ export function getAllUserQuestsNames(user:BackendlessPerson):String[]|null {
         return null
     }
 }
-export async  function getGamificationsData(user:BackendlessPerson, serverId: string):Promise<Gamifications|undefined> {
+export async  function getGamificationsData(user:BackendlessPerson, serverId: string):Promise<Gamifications | null> {
     let functionName = getGamificationsData.name
     let errMsg = 'Trying to get gamification data from discord userID: '+ user.Discord_ID + ' in server with serverId: '+ serverId + ' in DDBB'
     let result:BackendlessPerson[]
@@ -476,10 +502,18 @@ export async  function getGamificationsData(user:BackendlessPerson, serverId: st
 
             return result
         })
-
-        return result[0].Gamifications![0]
+        if(result != null ){
+            if (result[0].Gamifications != null){
+                console.log("Gamifications: \n" + JSON.stringify(result[0].Gamifications[0]) )
+                return result[0].Gamifications[0]
+            }
+            return null
+        } else {
+            return null
+        }
 
     } catch (error) {
         throw error
     }
 }
+

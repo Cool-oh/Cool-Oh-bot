@@ -3,7 +3,7 @@ import { ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'disco
 import dotenv from 'dotenv'
 import { writeDiscordLog } from '../../features/discordLogger';
 import { BackendlessPerson, Gamification, Gamifications, QuestEmbedJson,  WalletQuestIntfc } from '../../interfaces/interfaces';
-import { checkIfDiscordIDRegistered, getAllUserQuestsNames, getGamificationsData, getUserGamification, isSubscribedToQuest } from '../users/userBackendless';
+import { checkIfDiscordIDRegistered, getAllUserQuestsNames, getGamificationsData, getUserGamification, isSubscribedToQuest, isSubscribedToQuest2 } from '../users/userBackendless';
 import questInitJson from './questInit.json'
 
 dotenv.config();
@@ -12,7 +12,10 @@ const filename = 'questInit.ts'
 const questInitFields = questInitJson as QuestEmbedJson
 const menu = questInitFields.menu
 var interactionGlobal:Interaction
-var userGamificationsData:Gamifications|undefined
+var userGamificationsData:Gamifications|null
+var userXP:number = 0
+var userLevel: number = 0
+var userTokens:number = 0
 const  modal = new Modal()
 modal.setCustomId('')
 
@@ -72,19 +75,24 @@ async function init(interaction: Interaction){
 
                 }
             }
-            userWalletQuest = await isSubscribedToQuest(user, walletQuestName!, discordServerID)
+            userWalletQuest = await isSubscribedToQuest2(user, walletQuestName!, discordServerID)
             if (userWalletQuest != null){
                 solanaAddress = userWalletQuest.solana_address!
             }
             if (user.Gamifications != null) {
                 userGamificationsData = await getGamificationsData(user, discordServerID )
+                if(userGamificationsData != null){
+                    userLevel = userGamificationsData.Level!
+                    userXP = userGamificationsData.XP!
+                    userTokens = userGamificationsData.Tokens!
+                }
                 questInitEmbed.setFields([])//delete fields first
                 questInitEmbed.addFields([
                     questInitFields.fields[0],
                     questInitFields.fields[1],
-                    { "name": "YOUR LEVEL", "value": String(user.Gamifications[0].level) , "inline":false },
-                    { "name": "YOUR COOLS", "value": "0 $COOLs", "inline":false},
-                    { "name": "YOUR EXP", "value": String(user.Gamifications[0].XP) + " EXP", "inline":false},
+                    { "name": "YOUR LEVEL", "value": String(userLevel) , "inline":false },
+                    { "name": "YOUR COOLS", "value": String(userTokens)+ " $COOLs", "inline":false},
+                    { "name": "YOUR EXP", "value": String(userXP) + " EXP", "inline":false},
                     { "name": "Your Quests", "value": userQuestsSubscribed, "inline":false},
                     { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline":false},
                     questInitFields.fields[7],

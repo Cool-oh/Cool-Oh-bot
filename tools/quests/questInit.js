@@ -26,6 +26,9 @@ const questInitFields = questInit_json_1.default;
 const menu = questInitFields.menu;
 var interactionGlobal;
 var userGamificationsData;
+var userXP = 0;
+var userLevel = 0;
+var userTokens = 0;
 const modal = new discord_modals_1.Modal();
 modal.setCustomId('');
 const questInitEmbed = new discord_js_1.MessageEmbed()
@@ -80,19 +83,24 @@ function init(interaction) {
                         }
                     }
                 }
-                userWalletQuest = yield (0, userBackendless_1.isSubscribedToQuest)(user, walletQuestName, discordServerID);
+                userWalletQuest = yield (0, userBackendless_1.isSubscribedToQuest2)(user, walletQuestName, discordServerID);
                 if (userWalletQuest != null) {
                     solanaAddress = userWalletQuest.solana_address;
                 }
                 if (user.Gamifications != null) {
                     userGamificationsData = yield (0, userBackendless_1.getGamificationsData)(user, discordServerID);
+                    if (userGamificationsData != null) {
+                        userLevel = userGamificationsData.Level;
+                        userXP = userGamificationsData.XP;
+                        userTokens = userGamificationsData.Tokens;
+                    }
                     questInitEmbed.setFields([]); //delete fields first
                     questInitEmbed.addFields([
                         questInitFields.fields[0],
                         questInitFields.fields[1],
-                        { "name": "YOUR LEVEL", "value": String(user.Gamifications[0].level), "inline": false },
-                        { "name": "YOUR COOLS", "value": "0 $COOLs", "inline": false },
-                        { "name": "YOUR EXP", "value": String(user.Gamifications[0].XP) + " EXP", "inline": false },
+                        { "name": "YOUR LEVEL", "value": String(userLevel), "inline": false },
+                        { "name": "YOUR COOLS", "value": String(userTokens) + " $COOLs", "inline": false },
+                        { "name": "YOUR EXP", "value": String(userXP) + " EXP", "inline": false },
                         { "name": "Your Quests", "value": userQuestsSubscribed, "inline": false },
                         { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline": false },
                         questInitFields.fields[7],

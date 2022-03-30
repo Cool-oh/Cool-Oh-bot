@@ -109,9 +109,6 @@ async function init(interaction: Interaction){
             if(user.Last_Name != null){userLastName =user.Last_Name }
             if(user.email != null){userEmail =user.email }
             if(user.Gamifications != null){
-
-
-
             }
         }
         subscribed = await  isSubscribed()
@@ -137,6 +134,7 @@ async function refreshData(interaction: Interaction) {
 }
 
 async function joinQuestButtonClicked(interaction: Interaction, client: Client){
+
     interactionGlobal = interaction
     if (interaction.isButton()){
         await init(interaction) //we initialize again to make sure the modal has the right data from DDBB
@@ -183,6 +181,7 @@ async function isSubscribed(): Promise <boolean> {
 
 
 async function modalSubmit(modal:ModalSubmitInteraction){
+    await modal.deferReply({ ephemeral: true })
     let isEmailValid:boolean
     let firstNameMsg ='Not provided'
     let lastNameMsg ='Not provided'
@@ -219,7 +218,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
             questMsg = "You edited the Wallet Quest. This is the information I'll be editing: "
 
         }
-        await modal.deferReply({ ephemeral: true })
+
         modal.followUp({ content: questMsg + '\nName: '+ firstNameMsg
         + '\nLast Name: ' + lastNameMsg + '\nEmail: '+ emailMsg +'\nSolana address: ' +  `\`\`\`${modalSolanaAddress}\`\`\``, ephemeral: true })
         userToSave = {
@@ -249,7 +248,6 @@ async function modalSubmit(modal:ModalSubmitInteraction){
 
         updateDiscordUser(userToSave)
     }else{
-        await modal.deferReply({ ephemeral: true })
         let msg = ""
         console.log('Is solana: ' + isSolAddress)
 

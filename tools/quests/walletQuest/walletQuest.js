@@ -184,6 +184,7 @@ function isSubscribed() {
 function modalSubmit(modal) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
+        yield modal.deferReply({ ephemeral: true });
         let isEmailValid;
         let firstNameMsg = 'Not provided';
         let lastNameMsg = 'Not provided';
@@ -218,7 +219,6 @@ function modalSubmit(modal) {
             if (subscribed) {
                 questMsg = "You edited the Wallet Quest. This is the information I'll be editing: ";
             }
-            yield modal.deferReply({ ephemeral: true });
             modal.followUp({ content: questMsg + '\nName: ' + firstNameMsg
                     + '\nLast Name: ' + lastNameMsg + '\nEmail: ' + emailMsg + '\nSolana address: ' + `\`\`\`${modalSolanaAddress}\`\`\``, ephemeral: true });
             userToSave = {
@@ -248,7 +248,6 @@ function modalSubmit(modal) {
             (0, userBackendless_1.updateDiscordUser)(userToSave);
         }
         else {
-            yield modal.deferReply({ ephemeral: true });
             let msg = "";
             console.log('Is solana: ' + isSolAddress);
             if (!isSolAddress) {

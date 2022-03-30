@@ -14,11 +14,11 @@ export interface Gamification{
 export interface Gamifications{
     ddbb_name?: "Gamifications_Test"
     objectId?: string,
-    level?: number,
+    Level?: number,
     XP?: number,
     date_published?: Date
     created?: Date,
-    tokens?:number,
+    Tokens?:number,
     Discord_Server:DiscordServer
 }
 

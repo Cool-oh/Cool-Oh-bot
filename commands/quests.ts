@@ -47,7 +47,12 @@ export  default {
                                 // to whenever an interaction is created
         await discordModals(client);
         client.on('interactionCreate', async interaction => {
-                if (interaction.isSelectMenu()){
+
+            if (interaction.isSelectMenu()){
+                await interaction.deferReply({ //We defer the reply in case it takes more than 3 seconds to reply
+                    ephemeral: true // Only user who invokes the command can see the result
+
+                })
                 const {customId, values} = interaction
                 const component = interaction.component as MessageSelectMenu
                 const selectedOptions = component.options.filter((option) => { //we run this function for each individual option for this component
@@ -76,10 +81,7 @@ export  default {
                             await questsObjList[0].init(interaction)
                         }
                         let embed = questsObjList[index].embed
-                        await interaction.deferReply({ //We defer the reply in case it takes more than 3 seconds to reply
-                            ephemeral: true // Only user who invokes the command can see the result
 
-                        })
                         interaction.editReply({
                             content: 'Updated',
                             embeds: [embed],
@@ -90,6 +92,7 @@ export  default {
             }
         }
         if(interaction.isButton()){
+
             for (let index = 0; index < optionsList.length; index++) {
                 if(interaction.customId == questsObjList[index].joinQuestButton.customId){
                     questsObjList[index].joinQuestButtonClicked(interaction, client)

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGamificationsData = exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.getDiscordServerObjID = void 0;
+exports.getGamificationsData = exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.isSubscribedToQuest2 = exports.getDiscordServerObjID = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
@@ -68,6 +68,34 @@ function getObject(object, searchString) {
     });
     return result;
 }
+function isSubscribedToQuest2(user, questName, discordServerID) {
+    let resultFound;
+    try {
+        if (user.Quests) { //the user has quests
+            if (user.Quests[questName]) { //If user is subscribed to the quest we are looking for
+                console.log('User has wallet quest\n');
+                resultFound = getObject(user.Quests[questName], discordServerID);
+                console.log('resultFound:\n' + JSON.stringify(resultFound));
+                if (resultFound) {
+                    console.log('Inside Result\n');
+                    for (let index = 0; index < user.Quests[questName].length; index++) {
+                        if (user.Quests[questName][index].Discord_Server.server_id == resultFound.server_id) {
+                            return user.Quests[questName][index]; //we return the quest that matches the server id and the nameQuest
+                        }
+                    }
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+    }
+    catch (error) {
+        throw error;
+    }
+    return null;
+}
+exports.isSubscribedToQuest2 = isSubscribedToQuest2;
 function isSubscribedToQuest(user, questName, discordServerID) {
     return __awaiter(this, void 0, void 0, function* () {
         let resultFound;
@@ -356,9 +384,9 @@ function updateDiscordUser(user) {
             }
             if (user.email) { //email provided
                 userEmail = yield checkIfEmailRegistered(user.email);
-                if (userEmail !== undefined) { //if email exists in ddbb
+                if (userEmail !== null) { //if email exists in ddbb
                     registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
-                    if (registeredUser !== undefined) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
+                    if (registeredUser !== null) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
                         console.log("1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb.");
                         if (userEmail.objectId == registeredUser.objectId) { //is it the same record? DiscordID & Email are in the same record
                             let msg = "1.1 Email Provided. Email exists in ddbb. DiscordID exists in ddbb. But it's same record. We UPDATE it";
@@ -401,7 +429,7 @@ function updateDiscordUser(user) {
                     let msg = 'email doesnt exist in ddbb';
                     console.log(msg);
                     registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
-                    if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
+                    if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                         let msg = "3 Email Provided. Email doesnt exist in ddbb. DiscordID exists: We UPDATE record.";
                         console.log(msg);
                         removedUser.objectId = registeredUser.objectId;
@@ -421,7 +449,7 @@ function updateDiscordUser(user) {
             }
             else { //email not provided
                 let registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
-                if (registeredUser !== undefined) { //DiscordID exists in ddbb: Update record
+                if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                     let msg = "5 Email NOT provided. DiscordID exists: We UPDATE record";
                     console.log(msg);
                     removedUser.objectId = registeredUser.objectId;
@@ -501,7 +529,16 @@ function getGamificationsData(user, serverId) {
                 (0, discordLogger_1.writeDiscordLog)(filename, functionName, errMsg, e.toString());
                 return result;
             });
-            return result[0].Gamifications[0];
+            if (result != null) {
+                if (result[0].Gamifications != null) {
+                    console.log("Gamifications: \n" + JSON.stringify(result[0].Gamifications[0]));
+                    return result[0].Gamifications[0];
+                }
+                return null;
+            }
+            else {
+                return null;
+            }
         }
         catch (error) {
             throw error;

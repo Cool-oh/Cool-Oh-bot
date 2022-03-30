@@ -94,9 +94,9 @@ function isSubscribed() {
 }
 function modalSubmit(modal) {
     return __awaiter(this, void 0, void 0, function* () {
+        yield modal.deferReply({ ephemeral: true });
         const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id);
         //modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``)
-        yield modal.deferReply({ ephemeral: true });
         modal.followUp({ content: 'Congrats! Powered by discord-modals.' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
     });
 }

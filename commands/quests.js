@@ -53,6 +53,9 @@ exports.default = {
         yield (0, _1.default)(client);
         client.on('interactionCreate', (interaction) => __awaiter(void 0, void 0, void 0, function* () {
             if (interaction.isSelectMenu()) {
+                yield interaction.deferReply({
+                    ephemeral: true // Only user who invokes the command can see the result
+                });
                 const { customId, values } = interaction;
                 const component = interaction.component;
                 const selectedOptions = component.options.filter((option) => {
@@ -77,9 +80,6 @@ exports.default = {
                                 yield questsObjList[0].init(interaction);
                             }
                             let embed = questsObjList[index].embed;
-                            yield interaction.deferReply({
-                                ephemeral: true // Only user who invokes the command can see the result
-                            });
                             interaction.editReply({
                                 content: 'Updated',
                                 embeds: [embed],

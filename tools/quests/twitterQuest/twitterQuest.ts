@@ -57,6 +57,7 @@ async function init(interaction: Interaction,){
 function joinQuestButtonClicked(interaction:Interaction, client: Client){
 
     if (interaction.isButton()){
+
         showModal(modal, {
         client: client, // The showModal() method needs the client to send the modal through the API.
         interaction: interaction // The showModal() method needs the interaction to send the modal with the Interaction ID & Token.
@@ -86,11 +87,11 @@ async function isSubscribed(): Promise <boolean> {
 }
 
 async function modalSubmit(modal: any){
+    await modal.deferReply({ ephemeral: true })
     const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
     //modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``)
-    await modal.deferReply({ ephemeral: true })
     modal.followUp({ content: 'Congrats! Powered by discord-modals.' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
- 
+
 }
 
 

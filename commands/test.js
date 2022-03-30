@@ -19,6 +19,7 @@ dotenv_1.default.config();
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE;
 const backendlessTable = process.env.BACKENDLESS_TWITTER_TABLE;
 const iconDatabaseStats = process.env.ICON_DATABASE_STATS;
+const walletQuestName = process.env.WALLET_QUEST_NAME;
 backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
 let testUser1 = {
     Discord_Handle: 'MamaCarlos55',
@@ -53,8 +54,8 @@ var user3 = {
                 objectId: '9EE60E1D-EE6B-45E0-BCA8-FF5D07B916AF'
             },
             XP: 100,
-            level: 2,
-            tokens: 89
+            Level: 2,
+            Tokens: 89
         }],
     Quests: {
         Wallet_quests: [
@@ -93,13 +94,15 @@ exports.default = {
         //console.log(userFound)
         //console.log(JSON.stringify(userFound.Quests.Twitter_quests[0].twitter_handle))
         //updateDiscordUser(user3)
-        let result = yield (0, userBackendless_1.getUserGamification)(user3);
-        let result2 = yield (0, userBackendless_1.getGamificationsData)(user3, '912751335479345253');
-        if (result2 != null) {
-            console.log('User:\n' + JSON.stringify(result2));
+        // let result = await getUserGamification(user3)
+        //let result2 = await getGamificationsData(user3, '912751335479345253')
+        let result = (0, userBackendless_1.isSubscribedToQuest2)(user3, walletQuestName, '912751335479345253');
+        console.log('isSubscribedToQuest2: \n' + JSON.stringify(userBackendless_1.isSubscribedToQuest2));
+        if (result) {
+            console.log('User:\n' + JSON.stringify(result));
         }
         else {
             console.log('User doesnt have gamification');
         }
-    }),
+    })
 };
