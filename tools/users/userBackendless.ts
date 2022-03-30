@@ -1,7 +1,7 @@
 import {Snowflake } from 'discord.js';
 import Backendless from 'backendless'
 import dotenv from 'dotenv'
-import { BackendlessPerson, AllQuests, WalletQuests, TwitterQuests, DiscordServer, Gamification, Quests, WalletQuestIntfc} from '../../interfaces/interfaces';
+import { BackendlessPerson, AllQuests, WalletQuests, TwitterQuests, DiscordServer, Gamification, Quests, WalletQuestIntfc, Gamifications} from '../../interfaces/interfaces';
 import {writeDiscordLog} from '../../features/discordLogger';
 import { WalletQuest } from '../quests/walletQuest/walletQuest';
 const _ = require("lodash");
@@ -444,25 +444,42 @@ export function getAllUserQuestsNames(user:BackendlessPerson):String[]|null {
     let temp:string[]
     let result:string[]=[]
     const words = ["created", "___class", "ownerId", "updated", "objectId", "Index_quests"];
-    
+
     if(user.Quests != null){
         temp = Object.keys(user.Quests)
         for (let index = 0; index < temp.length; index++) {
 
             if(!words.some(word => temp![index].includes(word))){ //If it doesnt include any of the words in variable words[]
                 if(user.Quests[temp![index]].length !=0){ //user has this quest
-                    
                     result.push(temp![index])
-                    console.log(user.Quests[temp![index]])
                 }
-                
-
             }
         }
-
-
 	    return result
     }else{
         return null
+    }
+}
+export async  function getGamificationsData(user:BackendlessPerson, serverId: string):Promise<Gamifications|undefined> {
+    let functionName = getGamificationsData.name
+    let errMsg = 'Trying to get gamification data from discord userID: '+ user.Discord_ID + ' in server with serverId: '+ serverId + ' in DDBB'
+    let result:BackendlessPerson[]
+    var queryBuilder = Backendless.DataQueryBuilder.create()
+    queryBuilder.setRelationsDepth( backendlessRelationshipDepth )
+
+    queryBuilder.setWhereClause("Gamifications.Discord_server.server_id='" + serverId + "'")
+    console.log("Gamifications.Discord_server.server_id='" + serverId + "'")
+    try {
+        result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
+        .catch( e => {
+            writeDiscordLog(filename, functionName, errMsg, e.toString())
+
+            return result
+        })
+
+        return result[0].Gamifications![0]
+
+    } catch (error) {
+        throw error
     }
 }

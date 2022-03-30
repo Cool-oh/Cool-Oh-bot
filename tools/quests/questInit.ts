@@ -2,8 +2,8 @@ import { Modal } from 'discord-modals';
 import { ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
 import dotenv from 'dotenv'
 import { writeDiscordLog } from '../../features/discordLogger';
-import { BackendlessPerson, Gamification, QuestEmbedJson,  WalletQuestIntfc } from '../../interfaces/interfaces';
-import { checkIfDiscordIDRegistered, getAllUserQuestsNames, getUserGamification, isSubscribedToQuest } from '../users/userBackendless';
+import { BackendlessPerson, Gamification, Gamifications, QuestEmbedJson,  WalletQuestIntfc } from '../../interfaces/interfaces';
+import { checkIfDiscordIDRegistered, getAllUserQuestsNames, getGamificationsData, getUserGamification, isSubscribedToQuest } from '../users/userBackendless';
 import questInitJson from './questInit.json'
 
 dotenv.config();
@@ -12,6 +12,7 @@ const filename = 'questInit.ts'
 const questInitFields = questInitJson as QuestEmbedJson
 const menu = questInitFields.menu
 var interactionGlobal:Interaction
+var userGamificationsData:Gamifications|undefined
 const  modal = new Modal()
 modal.setCustomId('')
 
@@ -75,14 +76,15 @@ async function init(interaction: Interaction){
             if (userWalletQuest != null){
                 solanaAddress = userWalletQuest.solana_address!
             }
-            if (user.Gamification != null) {
+            if (user.Gamifications != null) {
+                userGamificationsData = await getGamificationsData(user, discordServerID )
                 questInitEmbed.setFields([])//delete fields first
                 questInitEmbed.addFields([
                     questInitFields.fields[0],
                     questInitFields.fields[1],
-                    { "name": "YOUR LEVEL", "value": String(user.Gamification.level) , "inline":false },
+                    { "name": "YOUR LEVEL", "value": String(user.Gamifications[0].level) , "inline":false },
                     { "name": "YOUR COOLS", "value": "0 $COOLs", "inline":false},
-                    { "name": "YOUR EXP", "value": String(user.Gamification.XP) + " EXP", "inline":false},
+                    { "name": "YOUR EXP", "value": String(user.Gamifications[0].XP) + " EXP", "inline":false},
                     { "name": "Your Quests", "value": userQuestsSubscribed, "inline":false},
                     { "name": "YOUR SOLANA ADRESS", "value": solanaAddress, "inline":false},
                     questInitFields.fields[7],
