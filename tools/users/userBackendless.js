@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGamificationsData = exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.isSubscribedToQuest2 = exports.getDiscordServerObjID = void 0;
+exports.getGamificationsData = exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.createBackendlessUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.isSubscribedToQuest2 = exports.getDiscordServerObjID = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
@@ -73,11 +73,8 @@ function isSubscribedToQuest2(user, questName, discordServerID) {
     try {
         if (user.Quests) { //the user has quests
             if (user.Quests[questName]) { //If user is subscribed to the quest we are looking for
-                console.log('User has wallet quest\n');
                 resultFound = getObject(user.Quests[questName], discordServerID);
-                console.log('resultFound:\n' + JSON.stringify(resultFound));
                 if (resultFound) {
-                    console.log('Inside Result\n');
                     for (let index = 0; index < user.Quests[questName].length; index++) {
                         if (user.Quests[questName][index].Discord_Server.server_id == resultFound.server_id) {
                             return user.Quests[questName][index]; //we return the quest that matches the server id and the nameQuest
@@ -100,6 +97,7 @@ function isSubscribedToQuest(user, questName, discordServerID) {
     return __awaiter(this, void 0, void 0, function* () {
         let resultFound;
         try {
+            console.log('Result from check id: ');
             let isUserRegistered = yield checkIfDiscordIDRegistered(user.Discord_ID);
             if (isUserRegistered) { //user is registered
                 if (isUserRegistered.Quests) { //the user has quests
@@ -144,7 +142,12 @@ function checkIfEmailRegistered(email) {
                 (0, discordLogger_1.writeDiscordLog)(filename, functionName, errMsg, e.toString());
                 return result;
             });
-            return result[0];
+            if (!result[0]) { //user not found
+                return null;
+            }
+            else { //user found
+                return result[0];
+            }
         }
         catch (error) {
             throw error;
@@ -166,7 +169,12 @@ function checkIfDiscordIDRegistered(discordUserId) {
                 (0, discordLogger_1.writeDiscordLog)(filename, functionName, errMsg, e.toString());
                 return result;
             });
-            return result[0];
+            if (!result[0]) { //user not found
+                return null;
+            }
+            else { //user found
+                return result[0];
+            }
         }
         catch (error) {
             throw error;
@@ -370,6 +378,42 @@ function mergeUsersWithQuests(userDDBB, newUser) {
     }
     return userMergedWithQuests;
 }
+function createBackendlessUser(user) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let functionName = updateDiscordUser.name;
+        let result1;
+        let result2;
+        let removedUser = removeEmpty(user);
+        let msg = "Error trying to create user in ddbb";
+        try {
+            if (user.Gamifications) {
+                console.log('Inside Gamifications\n');
+                let queryBuilder = backendless_1.default.DataQueryBuilder.create();
+                queryBuilder.setRelationsDepth(backendlessRelationshipDepth);
+                queryBuilder.setWhereClause("server_id='" + user.Gamifications[0].Discord_Server.server_id + "'");
+                console.log('Server id: ' + user.Gamifications[0].Discord_Server.server_id);
+                result1 = yield backendless_1.default.Data.of(backendlessDiscordServersTable)
+                    .find(queryBuilder)
+                    .catch(e => {
+                    (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg, e.toString());
+                    return result1;
+                });
+                if (result1[0] != null) {
+                    console.log('Inside Result1\n');
+                    console.log('result1 User to save: \n' + JSON.stringify(result1));
+                    removedUser.Gamifications[0].Discord_Server.objectId = result1[0].objectId; //if the server exists, we copy the ddbb object id
+                }
+            }
+            console.log('User to save: \n' + JSON.stringify(removedUser));
+            result2 = yield backendless_1.default.Data.of(backendlessUserTable)
+                .deepSave(removedUser)
+                .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg, e.toString()));
+        }
+        catch (error) {
+        }
+    });
+}
+exports.createBackendlessUser = createBackendlessUser;
 function updateDiscordUser(user) {
     return __awaiter(this, void 0, void 0, function* () {
         let functionName = updateDiscordUser.name;
@@ -384,6 +428,7 @@ function updateDiscordUser(user) {
             }
             if (user.email) { //email provided
                 userEmail = yield checkIfEmailRegistered(user.email);
+                console.log('\nuserEmail:\n' + userEmail);
                 if (userEmail !== null) { //if email exists in ddbb
                     registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
                     if (registeredUser !== null) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
@@ -448,7 +493,9 @@ function updateDiscordUser(user) {
                 }
             }
             else { //email not provided
+                console.log('ID2: ' + user.Discord_ID);
                 let registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
+                console.log('registeredUser:\n' + registeredUser);
                 if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                     let msg = "5 Email NOT provided. DiscordID exists: We UPDATE record";
                     console.log(msg);
@@ -521,8 +568,7 @@ function getGamificationsData(user, serverId) {
         let result;
         var queryBuilder = backendless_1.default.DataQueryBuilder.create();
         queryBuilder.setRelationsDepth(backendlessRelationshipDepth);
-        queryBuilder.setWhereClause("Gamifications.Discord_server.server_id='" + serverId + "'");
-        console.log("Gamifications.Discord_server.server_id='" + serverId + "'");
+        queryBuilder.setWhereClause("Discord_ID='" + user.Discord_ID + "' AND Gamifications.Discord_server.server_id='" + serverId + "'");
         try {
             result = yield backendless_1.default.Data.of(backendlessUserTable).find(queryBuilder)
                 .catch(e => {
@@ -531,7 +577,6 @@ function getGamificationsData(user, serverId) {
             });
             if (result != null) {
                 if (result[0].Gamifications != null) {
-                    console.log("Gamifications: \n" + JSON.stringify(result[0].Gamifications[0]));
                     return result[0].Gamifications[0];
                 }
                 return null;

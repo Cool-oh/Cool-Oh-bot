@@ -9,6 +9,7 @@
     },
     "description": "Some description here",
     "thumbnail": "https://github.com/Cool-oh/Cool-Oh-bot/blob/main/images/solana_logo.png?raw=true",
+    "tokenPrize": 40,
     "fields": [
         { "name": "Welcome to your first quest!!", "value": "On your first quest, we ask you to provide us with your solana wallet address.", "inline":false },
         { "name": "\u200B", "value": "\u200B", "inline":false  },

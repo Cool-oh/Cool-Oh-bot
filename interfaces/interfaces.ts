@@ -157,6 +157,7 @@ export interface QuestEmbedJson{
     },
     description: string,
     thumbnail: string,
+    tokenPrize:number,
     fields:
         { name: string, value: string,  inline: boolean}[],
     image: string,

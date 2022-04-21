@@ -64,11 +64,8 @@ export function isSubscribedToQuest2(user:BackendlessPerson, questName: string, 
     try {
             if (user.Quests) { //the user has quests
                if(user.Quests[questName] ){ //If user is subscribed to the quest we are looking for
-                console.log('User has wallet quest\n')
                    resultFound = getObject(user.Quests[questName],  discordServerID)
-                   console.log('resultFound:\n' + JSON.stringify(resultFound))
                    if (resultFound) {
-                    console.log('Inside Result\n')
                        for (let index = 0; index < user.Quests[questName].length; index++) {
                            if (user.Quests[questName][index].Discord_Server.server_id == resultFound.server_id) {
                             return user.Quests[questName][index] //we return the quest that matches the server id and the nameQuest
@@ -90,6 +87,7 @@ export async function isSubscribedToQuest(user:BackendlessPerson, questName: str
 
     let resultFound
     try {
+        console.log('Result from check id: ')
         let isUserRegistered = await checkIfDiscordIDRegistered(user.Discord_ID)
         if (isUserRegistered) { //user is registered
             if (isUserRegistered.Quests) { //the user has quests
@@ -121,7 +119,7 @@ export async function isSubscribedToQuest(user:BackendlessPerson, questName: str
 }
 
 
-export async function checkIfEmailRegistered(email: string) : Promise<BackendlessPerson>{
+export async function checkIfEmailRegistered(email: string) : Promise<BackendlessPerson|null> {
     let result:BackendlessPerson[]
     let functionName = checkIfEmailRegistered.name
     let errMsg = 'Error checking if email ' + email + 'is registered in the DDBB'
@@ -134,7 +132,12 @@ export async function checkIfEmailRegistered(email: string) : Promise<Backendles
             writeDiscordLog(filename, functionName, errMsg, e.toString())
             return result
         })
-        return result[0]
+            if(!result[0]){  //user not found
+                return null
+            }else { //user found
+                return result[0]
+            }
+
     } catch (error) {
         throw error
     }
@@ -153,7 +156,13 @@ export async function  checkIfDiscordIDRegistered(discordUserId: Snowflake): Pro
         .catch( e => {
             writeDiscordLog(filename, functionName, errMsg , e.toString())
             return result})
-        return result[0]
+              if(!result[0]){  //user not found
+                return null
+            }else { //user found
+                return result[0]
+            }
+
+
     } catch (error) {
         throw error
     }
@@ -349,6 +358,43 @@ function mergeUsersWithQuests(userDDBB: BackendlessPerson, newUser: BackendlessP
     return userMergedWithQuests
 }
 
+
+export async function createBackendlessUser (user:BackendlessPerson){
+    let functionName = updateDiscordUser.name
+    let result1:DiscordServer[]
+    let result2:BackendlessPerson|void
+    let removedUser = removeEmpty(user)
+    let msg ="Error trying to create user in ddbb"
+    try {
+        if(user.Gamifications){
+            console.log('Inside Gamifications\n')
+            let queryBuilder = Backendless.DataQueryBuilder.create()
+            queryBuilder.setRelationsDepth( backendlessRelationshipDepth )
+            queryBuilder.setWhereClause("server_id='" + user.Gamifications[0].Discord_Server.server_id + "'")
+
+            console.log('Server id: ' +  user.Gamifications[0].Discord_Server.server_id)
+
+
+            result1 =  await Backendless.Data.of( backendlessDiscordServersTable! )
+            .find<DiscordServer>( queryBuilder )
+            .catch( e => {writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString())
+                return result1})
+            if (result1[0] != null)
+            {
+                console.log('Inside Result1\n')
+                console.log('result1 User to save: \n' + JSON.stringify(result1))
+                removedUser.Gamifications[0].Discord_Server.objectId = result1[0].objectId //if the server exists, we copy the ddbb object id
+            }
+
+        }
+        console.log('User to save: \n' + JSON.stringify(removedUser))
+        result2 =  await Backendless.Data.of(backendlessUserTable!)
+                .deepSave<BackendlessPerson>( removedUser )
+                .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(removedUser) + ' in DDBB: \n' + msg , e.toString()))
+    } catch (error) {
+
+    }
+}
 export async function updateDiscordUser(user:BackendlessPerson) {
     let functionName = updateDiscordUser.name
     let result
@@ -362,6 +408,7 @@ export async function updateDiscordUser(user:BackendlessPerson) {
             }
         if(user.email){//email provided
             userEmail = await checkIfEmailRegistered(user.email)
+            console.log('\nuserEmail:\n' + userEmail)
             if (userEmail !== null) {//if email exists in ddbb
                 registeredUser = await checkIfDiscordIDRegistered(user.Discord_ID)
                 if (registeredUser !== null) { //DiscordID exists in db: Problem. We update with the new data. Assume new data is better
@@ -424,12 +471,14 @@ export async function updateDiscordUser(user:BackendlessPerson) {
                 }
             }
         }else{ //email not provided
+            console.log('ID2: ' + user.Discord_ID)
             let registeredUser = await checkIfDiscordIDRegistered(user.Discord_ID)
+            console.log('registeredUser:\n' + registeredUser)
             if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                 let msg = "5 Email NOT provided. DiscordID exists: We UPDATE record"
                 console.log(msg)
-                removedUser.objectId =  registeredUser.objectId
-                userToSave = mergeUsersWithQuests(registeredUser, removedUser)
+                removedUser.objectId =  registeredUser!.objectId
+                userToSave = mergeUsersWithQuests(registeredUser!, removedUser)
                 result =  await Backendless.Data.of(backendlessUserTable!)
                 .deepSave<BackendlessPerson>( userToSave )
                 .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(userToSave) + ' in DDBB: \n' + msg , e.toString()))
@@ -493,8 +542,8 @@ export async  function getGamificationsData(user:BackendlessPerson, serverId: st
     var queryBuilder = Backendless.DataQueryBuilder.create()
     queryBuilder.setRelationsDepth( backendlessRelationshipDepth )
 
-    queryBuilder.setWhereClause("Gamifications.Discord_server.server_id='" + serverId + "'")
-    console.log("Gamifications.Discord_server.server_id='" + serverId + "'")
+    queryBuilder.setWhereClause( "Discord_ID='" + user.Discord_ID +  "' AND Gamifications.Discord_server.server_id='" + serverId + "'")
+
     try {
         result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
         .catch( e => {
@@ -504,8 +553,7 @@ export async  function getGamificationsData(user:BackendlessPerson, serverId: st
         })
         if(result != null ){
             if (result[0].Gamifications != null){
-                console.log("Gamifications: \n" + JSON.stringify(result[0].Gamifications[0]) )
-                return result[0].Gamifications[0]
+                  return result[0].Gamifications[0]
             }
             return null
         } else {

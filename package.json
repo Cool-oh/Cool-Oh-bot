@@ -12,10 +12,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@solana/web3.js": "^1.36.0",
+    "@solana/web3.js": "^1.39.1",
     "axios": "^0.26.1",
-    "backendless": "^6.3.8",
-    "discord-modals": "^1.3.2",
+    "backendless": "^6.3.10",
+    "discord-modals": "^1.3.5",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
     "email-validator": "^2.0.4",
