@@ -17,8 +17,8 @@ const buttonRow = new MessageActionRow()
 const initQuest = new QuestInit()
 const walletQuest =new WalletQuest()
 const twitterQuest = new TwitterQuest()
-//const questsObjList = [initQuest, walletQuest, twitterQuest]
-const questsObjList = [initQuest, walletQuest,]
+const questsObjList = [initQuest, walletQuest, twitterQuest]
+//const questsObjList = [initQuest, walletQuest,]
 const optionsList: MessageSelectOptionData[] = []
 
 var firstInteraction:  CommandInteraction<CacheType>
@@ -72,21 +72,21 @@ export  default {
                         if(selectedOptions[0].value == optionsList[index].value){
 
                             if( buttonRow.components[0] != null){
-                                buttonRow.spliceComponents(0,1) //deletes the previous button
+                                buttonRow.spliceComponents(0,1) //deletes the previous button 
                             }
                             let fixedOptions = buildMessageSelectoptions(optionsList[index].value, optionsList)
                             dropDown.setComponents(component.spliceOptions(0,component.options.length)) //remove all options from menu
                             dropDown.setComponents(component.addOptions(fixedOptions!)) //rebuild menu
 
                             if(selectedOptions[0].value != optionsList[0].value){ //if its not the intro quest, build the button
-                                let button = await questsObjList[index].drawButton(interaction)
+                                let button = await questsObjList[index].drawButton(firstInteraction)
                                 buttonRow.addComponents(button)
                                 componentList = [dropDown,buttonRow]
                             }else{  //if it's the intro quest
                                 console.log('Its the intro quest\n')
-                                await questsObjList[0].embedRedraw(interaction)
+                                await questsObjList[0].embedRedraw(firstInteraction)
                             }
-                            let embed = await  questsObjList[index].embedRedraw(interaction)
+                            let embed = await  questsObjList[index].embedRedraw(firstInteraction)
 
                             interaction.deferUpdate()
 
