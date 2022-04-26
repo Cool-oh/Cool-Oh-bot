@@ -3,31 +3,24 @@ import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } fro
 import { BackendlessPerson, QuestEmbedJson, WalletQuestIntfc } from '../../../interfaces/interfaces';
 import twitterQuestJson from './twitterQuest.json'
 import {Modal, TextInputComponent, showModal, TextInputStyle } from 'discord-modals'
-import { isSubscribedToQuest } from '../../users/userBackendless';
+import { checkIfDiscordIDRegistered, isSubscribedToQuest, isSubscribedToQuest2 } from '../../users/userBackendless';
+import { writeDiscordLog } from '../../../features/discordLogger';
+import { usersEmail, usersFirstName, usersLastName, usersLevel } from '../questInit';
 
 dotenv.config();
+const filename = 'twitterQuests.ts'
 const twitterQuestName = process.env.TWITTER_QUEST_NAME
+
 
 const twitterQuestFields = twitterQuestJson as QuestEmbedJson
 const menu = twitterQuestFields.menu
-var interactionGlobal:Interaction
+//var interactionGlobal:Interaction
+var subscribed:boolean  //If the user is subscribed to this quest
 
-const twitterQuestEmbed = new MessageEmbed()
-.setColor(twitterQuestFields.color as ColorResolvable)
-.setTitle(twitterQuestFields.title)
-.setURL(twitterQuestFields.url)
-.setAuthor(twitterQuestFields.author)
-.setDescription(twitterQuestFields.description)
-.setThumbnail(twitterQuestFields.thumbnail)
-.addFields(twitterQuestFields.fields)
-.setImage(twitterQuestFields.image)
-.setFooter(twitterQuestFields.footer)
 
-const joinQuestButton = new MessageButton()
-.setCustomId(twitterQuestFields.button.customId) //our own name for our button in our code to detect which button the user clicked on
-.setEmoji(twitterQuestFields.button.emoji)   //CTRL+i :emojisense:
-.setLabel(twitterQuestFields.button.label)
-.setStyle(twitterQuestFields.button.style)
+
+
+
 
 const modal = new Modal() // We create a Modal
 .setCustomId(twitterQuestFields.modal.id)
@@ -42,9 +35,9 @@ const modal = new Modal() // We create a Modal
   .setPlaceholder(twitterQuestFields.modal.componentsList[0].placeholder)
   .setRequired(twitterQuestFields.modal.componentsList[0].required) // If it's required or not
 );
-
+/*
 async function init(interaction: Interaction,){
-    interactionGlobal = interaction
+    //interactionGlobal = interaction
     let subscribed = await isSubscribed()
     if(subscribed){
         joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
@@ -52,6 +45,77 @@ async function init(interaction: Interaction,){
     }else{
 
     }
+}*/
+
+async function drawButton(interaction: Interaction): Promise<MessageButton>{
+
+    let userID = interaction.user.id
+    const joinQuestButton = new MessageButton()
+    .setCustomId(twitterQuestFields.button.customId) //our own name for our button in our code to detect which button the user clicked on
+    .setEmoji(twitterQuestFields.button.emoji)   //CTRL+i :emojisense:
+    .setLabel(twitterQuestFields.button.label)
+    .setStyle(twitterQuestFields.button.style)
+
+    subscribed = await  isSubscribed(interaction)
+
+    if(subscribed){
+        joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
+    }else{
+        if(usersLevel.get(userID) < twitterQuestFields.gamification.levelRequired){
+            console.log('User level: ' + usersLevel.get(userID))
+            console.log('Level required: ' + twitterQuestFields.gamification.levelRequired)
+            joinQuestButton.setLabel('You need to be L'+ twitterQuestFields.gamification.levelRequired)
+            .setDisabled(true)
+            .setStyle('DANGER')
+        }else{
+            joinQuestButton.setLabel(twitterQuestFields.button.label)
+        }
+
+    }
+    return joinQuestButton
+}
+
+async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
+    let functionName = embedRedraw.name
+    let msg = 'Trying to init the Quest'
+    let userTwitterQuest:WalletQuestIntfc|null
+    let discordServerID = interaction.guildId!
+    let userID = interaction.user.id
+
+    const twitterQuestEmbed = new MessageEmbed()
+    .setColor(twitterQuestFields.color as ColorResolvable)
+    .setTitle(twitterQuestFields.title)
+    .setURL(twitterQuestFields.url)
+    .setAuthor(twitterQuestFields.author)
+    .setDescription(twitterQuestFields.description)
+    .setThumbnail(twitterQuestFields.thumbnail)
+    .addFields(twitterQuestFields.fields)
+    .setImage(twitterQuestFields.image)
+    .setFooter(twitterQuestFields.footer)
+
+
+    try {
+        let user = await  checkIfDiscordIDRegistered(interaction.user.id) as BackendlessPerson
+        if(user != null){
+            userTwitterQuest = isSubscribedToQuest2(user, twitterQuestName!, discordServerID)
+            if (userTwitterQuest != null){
+                twitterQuestEmbed.setDescription('You are alreday subscribed to this quest. Click the button below to edit it.')
+            }
+            if(user.First_Name != null){usersFirstName.set(userID,user.First_Name) }
+            if(user.Last_Name != null){usersLastName.set(userID,user.Last_Name )  }
+            if(user.email != null){usersEmail.set(userID, user.email) }
+            if(user.Gamifications != null){
+                 //TODO ?
+             }
+         }
+
+          return twitterQuestEmbed
+     } catch (err:any) {
+         writeDiscordLog(filename, functionName, msg,  err.toString())
+         console.log(err)
+         throw err
+     }
+
 }
 
 function joinQuestButtonClicked(interaction:Interaction, client: Client){
@@ -65,14 +129,14 @@ function joinQuestButtonClicked(interaction:Interaction, client: Client){
 
     }}
 
-async function isSubscribed(): Promise <boolean> {
+async function isSubscribed(interaction:Interaction): Promise <boolean> {
 
     let result:WalletQuestIntfc|null
-    let discordServerID = interactionGlobal.guildId
+    let discordServerID = interaction.guildId
 
     let user:BackendlessPerson = {
-        Discord_ID: interactionGlobal.user.id,
-        Discord_Handle: interactionGlobal.user.username
+        Discord_ID: interaction.user.id,
+        Discord_Handle: interaction.user.username
     }
     try {
         result = await isSubscribedToQuest(user, twitterQuestName!,  discordServerID! )
@@ -97,21 +161,29 @@ async function modalSubmit(modal: any){
 
 
 export class TwitterQuest {
+    /*
+    public async init(interaction: Interaction,){
+        return await init (interaction)
+    }
     public get embed(): MessageEmbed{
         return twitterQuestEmbed
     }
-    public get joinQuestButton(): MessageButton{
-        return joinQuestButton
+
+*/
+    public  get joinQuestButtonLabel():string{
+        return twitterQuestFields.button.customId
     }
     public get menu(){
 
         return menu
     }
-    public async init(interaction: Interaction,){
-        return await init (interaction)
-    }
+
     public joinQuestButtonClicked(interaction:Interaction, client: Client ){
         joinQuestButtonClicked(interaction, client)
+    }
+
+    public get modalCustomID():string{
+        return twitterQuestFields.modal.id
     }
     public async  modalQuestSubmit(modal:any){
        await  modalSubmit(modal)
@@ -119,10 +191,13 @@ export class TwitterQuest {
     public get modal(){
         return modal
     }
-    public  isSubscribed(): Promise <boolean>{
-        return isSubscribed()
+       public embedRedraw(interaction: Interaction) {
+		return embedRedraw(interaction);
     }
 
+    public async drawButton(interaction: Interaction){
+        return await drawButton(interaction)
+    }
 
 
 }

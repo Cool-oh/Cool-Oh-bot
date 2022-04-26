@@ -95,6 +95,8 @@ function isSubscribedToQuest2(user, questName, discordServerID) {
 exports.isSubscribedToQuest2 = isSubscribedToQuest2;
 function isSubscribedToQuest(user, questName, discordServerID) {
     return __awaiter(this, void 0, void 0, function* () {
+        let functionName = isSubscribedToQuest.name;
+        let errMsg = 'Error trying to see if the user is subscribed to quest ' + questName;
         let resultFound;
         try {
             console.log('Result from check id: ');
@@ -122,6 +124,7 @@ function isSubscribedToQuest(user, questName, discordServerID) {
             }
         }
         catch (error) {
+            (0, discordLogger_1.writeDiscordLog)(filename, functionName, errMsg, error.toString());
             throw error;
         }
         return null;
@@ -387,11 +390,9 @@ function createBackendlessUser(user) {
         let msg = "Error trying to create user in ddbb";
         try {
             if (user.Gamifications) {
-                console.log('Inside Gamifications\n');
                 let queryBuilder = backendless_1.default.DataQueryBuilder.create();
                 queryBuilder.setRelationsDepth(backendlessRelationshipDepth);
                 queryBuilder.setWhereClause("server_id='" + user.Gamifications[0].Discord_Server.server_id + "'");
-                console.log('Server id: ' + user.Gamifications[0].Discord_Server.server_id);
                 result1 = yield backendless_1.default.Data.of(backendlessDiscordServersTable)
                     .find(queryBuilder)
                     .catch(e => {
@@ -399,8 +400,6 @@ function createBackendlessUser(user) {
                     return result1;
                 });
                 if (result1[0] != null) {
-                    console.log('Inside Result1\n');
-                    console.log('result1 User to save: \n' + JSON.stringify(result1));
                     removedUser.Gamifications[0].Discord_Server.objectId = result1[0].objectId; //if the server exists, we copy the ddbb object id
                 }
             }

@@ -84,6 +84,8 @@ export function isSubscribedToQuest2(user:BackendlessPerson, questName: string, 
 }
 
 export async function isSubscribedToQuest(user:BackendlessPerson, questName: string, discordServerID:string): Promise <AllQuests|null> {
+    let functionName = isSubscribedToQuest.name
+    let errMsg = 'Error trying to see if the user is subscribed to quest ' + questName
 
     let resultFound
     try {
@@ -109,7 +111,8 @@ export async function isSubscribedToQuest(user:BackendlessPerson, questName: str
             return null
             }
         }
-    } catch (error) {
+    } catch (error:any) {
+        writeDiscordLog(filename, functionName, errMsg, error.toString())
         throw error
     }
 
@@ -367,13 +370,9 @@ export async function createBackendlessUser (user:BackendlessPerson){
     let msg ="Error trying to create user in ddbb"
     try {
         if(user.Gamifications){
-            console.log('Inside Gamifications\n')
             let queryBuilder = Backendless.DataQueryBuilder.create()
             queryBuilder.setRelationsDepth( backendlessRelationshipDepth )
             queryBuilder.setWhereClause("server_id='" + user.Gamifications[0].Discord_Server.server_id + "'")
-
-            console.log('Server id: ' +  user.Gamifications[0].Discord_Server.server_id)
-
 
             result1 =  await Backendless.Data.of( backendlessDiscordServersTable! )
             .find<DiscordServer>( queryBuilder )
@@ -381,8 +380,6 @@ export async function createBackendlessUser (user:BackendlessPerson){
                 return result1})
             if (result1[0] != null)
             {
-                console.log('Inside Result1\n')
-                console.log('result1 User to save: \n' + JSON.stringify(result1))
                 removedUser.Gamifications[0].Discord_Server.objectId = result1[0].objectId //if the server exists, we copy the ddbb object id
             }
 

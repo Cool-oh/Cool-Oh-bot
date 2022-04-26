@@ -30,49 +30,12 @@ var userTokens: number = 0;
 const modal = new Modal();
 modal.setCustomId("");
 
-/*
-
-function embedReset() {
-	questInitEmbed
-		.setFields([]) //delete fields first
-		.setColor(questInitFields.color as ColorResolvable)
-		.setTitle(questInitFields.title)
-		.setURL(questInitFields.url)
-		.setAuthor(questInitFields.author)
-		.setDescription(questInitFields.description)
-		.setThumbnail(questInitFields.thumbnail)
-		.addFields(questInitFields.fields)
-		.setImage(questInitFields.image)
-		.setFooter(questInitFields.footer);
-}*/
-
 
 async function  init(interaction: Interaction) {
 
-
-	//embedReset();
 	return await embedRedraw(interaction);
 }
-/*
-async function  init2(interaction: Interaction) {
 
-
-	//embedReset();
-	return await embedRedraw2(interaction);
-}
-async function embedRedraw2(interaction: Interaction):Promise <MessageEmbed> {
-	let userId=interaction.user.id
-	try {
-		let user = await checkIfDiscordIDRegistered(userId)
-	} catch (error) {
-
-	}
-
-
-
-
-}
-*/
 async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
     let userId=interaction.user.id
     let questEmbed = new MessageEmbed()
@@ -85,11 +48,10 @@ async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
 	.addFields(questInitFields.fields)
 	.setImage(questInitFields.image)
 	.setFooter(questInitFields.footer);
-	let functionName = init.name;
+	let functionName = embedRedraw.name;
 	let msg = "Trying to init the Quest";
 	let userWalletQuest: WalletQuestIntfc | null;
 	let discordServerID = interaction.guildId!;
-    //usersSolanaAddress.set(userId, "You didn't provide it yet")
 	let solanaAddressText = "You didn't provide it yet"
 	let userQuestsSubscribed = "You aren't doing any quest at the moment";
 	const words = [
@@ -100,6 +62,17 @@ async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
 		"objectId",
 		"Index_quests",
 	];
+
+	let newUser:BackendlessPerson = {
+	Discord_ID:interaction.user.id,
+	Discord_Handle:interaction.user.username,
+	Gamifications: [{
+		Discord_Server: {
+		server_id: interaction.guildId!,
+		server_name: interaction.guild?.name
+			}
+		}]
+	}
 
 	try {
 		let user = await checkIfDiscordIDRegistered(userId)
@@ -125,13 +98,11 @@ async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
 			}
 			userWalletQuest = await isSubscribedToQuest2(user,walletQuestName!,discordServerID);
 
-           // console.log('userWalletQuest: \n' + JSON.stringify(userWalletQuest))
-		    console.log('user: \n' + JSON.stringify(user))
 			if (userWalletQuest != null) {
 				usersSolanaAddress.set(userId,userWalletQuest.solana_address!)
 				solanaAddressText = userWalletQuest.solana_address!
 			}
-			if (user.Gamifications != null) {
+			if (user.Gamifications?.length !== 0) {
 				userGamificationsData = await getGamificationsData(user, discordServerID);
 				if (userGamificationsData != null) {
                     usersLevel.set(userId, userGamificationsData.Level!)
@@ -150,20 +121,14 @@ async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
 					questInitFields.fields[7],
 					questInitFields.fields[8],
 				])
+
+			}else{ //If the user in the DDBB doesnt have a gamifications table
+				//createBackendlessUser(newUser)
 			}
 
             return questEmbed
 		}else {
-            let newUser:BackendlessPerson = {
-                 Discord_ID:interaction.user.id,
-				 Discord_Handle:interaction.user.username,
-                 Gamifications: [{
-                     Discord_Server: {
-                         server_id: interaction.guildId!,
-                         server_name: interaction.guild?.name
-                     }
-                 }]
-            }
+
             createBackendlessUser(newUser)
             return questEmbed
         }
@@ -190,33 +155,16 @@ async function getGamificationData(): Promise<Gamification | null> {
 		throw error;
 	}
 }
-async function isSubscribed(): Promise<boolean> {
-	let result = await getGamificationData();
-	if (result != null) {
-		return true;
-	} else {
-		return false;
-	}
-}
-const joinQuestButton = new MessageButton();
+
 
 export class QuestInit {
     public async init(interaction:Interaction){
         return await init (interaction)
     }
 
-    /*
-	public get embed(): MessageEmbed {
-		return questInitEmbed;
-	}*/
-
-	public get joinQuestButton(): MessageButton {
-		return joinQuestButton;
-	}
 	public get menu() {
 		return menu;
 	}
-
 	public joinQuestButtonClicked(interaction: Interaction) {
 		joinQuestButtonClicked(interaction);
 	}
@@ -226,26 +174,17 @@ export class QuestInit {
 	public modalQuestSubmit(modal: any) {
 		modalSubmit(modal);
 	}
-	public isSubscribed(): Promise<boolean> {
-		return isSubscribed();
-	}/*
-	public embedReset() {
-		return embedReset();
-	}*/
 
 	public embedRedraw(interaction: Interaction) {
 		return embedRedraw(interaction);
-
     }
     public drawButton(interaction: Interaction){
         let dummyButton = new MessageButton()
         return dummyButton
     }
-
     public  get joinQuestButtonLabel():string{
         return ''
     }
-
     public get modalCustomID():string{
         return ''
     }

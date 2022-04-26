@@ -18,7 +18,6 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const walletQuest_json_1 = __importDefault(require("./walletQuest.json"));
 const discord_modals_1 = require("discord-modals");
 const email_validator_1 = require("email-validator");
-//import  discordModals   from 'discord-modals//'
 const web3_js_1 = require("@solana/web3.js");
 const userBackendless_1 = require("../../users/userBackendless");
 const discordLogger_1 = require("../../../features/discordLogger");
@@ -29,105 +28,53 @@ const walletQuestFields = walletQuest_json_1.default;
 const walletQuestTokenPrize = walletQuestFields.tokenPrize;
 const menu = walletQuestFields.menu;
 const filename = 'walletQuests.ts';
-//var interactionGlobal:Interaction
 var userToSave;
-//var user:BackendlessPerson
 var subscribed; //If the user is subscribed to this quest
-var userXp;
-var userLevel;
-var userTokens;
 /*
-// We create a Text Input Component FIRST NAME
-const textInputFirstName =   new TextInputComponent()
-.setCustomId(walletQuestFields.modal.componentsList[0].id)
-.setLabel(walletQuestFields.modal.componentsList[0].label)
-.setStyle(walletQuestFields.modal.componentsList[0].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setPlaceholder(userFirstName)
-.setRequired(walletQuestFields.modal.componentsList[0].required) // If it's required or not
 
-// We create a Text Input Component LAST NAME
-const textInputLastName =   new TextInputComponent()
-.setCustomId(walletQuestFields.modal.componentsList[1].id)
-.setLabel(walletQuestFields.modal.componentsList[1].label)
-.setStyle(walletQuestFields.modal.componentsList[1].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setPlaceholder(userLastName)
-.setRequired(walletQuestFields.modal.componentsList[1].required) // If it's required or not
+async function init(interaction: Interaction){
+    let functionName = init.name
+    let msg = 'Trying to init the Wallet Quest'
+    try {
+        await refreshData(interaction)
+     } catch (err:any) {
+         writeDiscordLog(filename, functionName, msg,  err.toString())
+         console.log(err)
+     }
+ }*/
+/*
+ async function refreshData(interaction: Interaction) {
+    let functionName = refreshData.name
+    let msg = 'Trying to refresh user gobal data'
+    let userWalletQuest:WalletQuestIntfc|null
+    let userId=interaction.user.id
+    let discordServerID = interaction.guildId!
+    let subscribed = false
+    try {
+       let user = await  checkIfDiscordIDRegistered(userId)
 
-// We create a Text Input Component EMAIL
-const textInputEmail=   new TextInputComponent()
-.setCustomId(walletQuestFields.modal.componentsList[2].id)
-.setLabel(walletQuestFields.modal.componentsList[2].label)
-.setStyle(walletQuestFields.modal.componentsList[2].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setPlaceholder(userEmail)
-.setRequired(walletQuestFields.modal.componentsList[2].required) // If it's required or not
+       if(user != null){
+        userWalletQuest = await isSubscribedToQuest(user, walletQuestName!, discordServerID)
+        if (userWalletQuest != null){
+            subscribed = true
+            usersSolanaAddress.set(userId, userWalletQuest.solana_address!)}
+         if(user.First_Name != null){
+            usersFirstName.set(userId, user.First_Name)}
+         if(user.Last_Name != null){
+            usersLastName.set(userId, user.Last_Name) }
+         if(user.email != null){
+            usersEmail.set(userId,user.email) }
+         if(user.Gamifications != null){
+         }
+     }
+     usersIsSubscribed.set(userId, subscribed)
 
-// We create a Text Input Component SOLANA ADDRESS
-const textInputProvideSolana =   new TextInputComponent() // We create a Text Input Component
-.setCustomId(walletQuestFields.modal.componentsList[3].id)
-.setLabel(walletQuestFields.modal.componentsList[3].label)
-.setStyle(walletQuestFields.modal.componentsList[3].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setMinLength(walletQuestFields.modal.componentsList[3].minLenght)
-.setMaxLength(walletQuestFields.modal.componentsList[3].maxLength)
-.setPlaceholder(solanaAddress)
-.setRequired(walletQuestFields.modal.componentsList[3].required) // If it's required or not
+     } catch (err:any) {
+         writeDiscordLog(filename, functionName, msg,  err.toString())
+         console.log(err)
+     }
 
-
-const modal = new Modal() // We create a Modal
-.setCustomId(walletQuestFields.modal.id)
-.setTitle(walletQuestFields.modal.title)
-.addComponents(textInputFirstName, textInputLastName, textInputEmail, textInputProvideSolana);
-
-
-*/
-function init(interaction) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let functionName = init.name;
-        let msg = 'Trying to init the Wallet Quest';
-        try {
-            yield refreshData(interaction);
-        }
-        catch (err) {
-            (0, discordLogger_1.writeDiscordLog)(filename, functionName, msg, err.toString());
-            console.log(err);
-        }
-    });
-}
-function refreshData(interaction) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let functionName = refreshData.name;
-        let msg = 'Trying to refresh user gobal data';
-        let userWalletQuest;
-        let userId = interaction.user.id;
-        let discordServerID = interaction.guildId;
-        let subscribed = false;
-        try {
-            let user = yield (0, userBackendless_1.checkIfDiscordIDRegistered)(userId);
-            if (user != null) {
-                userWalletQuest = yield (0, userBackendless_1.isSubscribedToQuest)(user, walletQuestName, discordServerID);
-                if (userWalletQuest != null) {
-                    subscribed = true;
-                    questInit_1.usersSolanaAddress.set(userId, userWalletQuest.solana_address);
-                }
-                if (user.First_Name != null) {
-                    questInit_1.usersFirstName.set(userId, user.First_Name);
-                }
-                if (user.Last_Name != null) {
-                    questInit_1.usersLastName.set(userId, user.Last_Name);
-                }
-                if (user.email != null) {
-                    questInit_1.usersEmail.set(userId, user.email);
-                }
-                if (user.Gamifications != null) {
-                }
-            }
-            questInit_1.usersIsSubscribed.set(userId, subscribed);
-        }
-        catch (err) {
-            (0, discordLogger_1.writeDiscordLog)(filename, functionName, msg, err.toString());
-            console.log(err);
-        }
-    });
-}
+}*/
 function drawModal(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         // We create a Text Input Component FIRST NAME
@@ -198,11 +145,6 @@ function drawButton(interaction) {
         subscribed = yield isSubscribed(interaction);
         if (subscribed) {
             joinQuestButton.setLabel(walletQuestFields.button.label_edit);
-            // textInputProvideSolana.setLabel('Edit your solana wallet address:')
-            //textInputFirstName.setPlaceholder(userFirstName)
-            // textInputLastName.setPlaceholder(userLastName)
-            // textInputEmail.setPlaceholder(userEmail)
-            // textInputProvideSolana.setPlaceholder(solanaAddress)
         }
         else {
             joinQuestButton.setLabel(walletQuestFields.button.label);
@@ -307,6 +249,16 @@ function isSubscribed(interaction) {
         }
     });
 }
+function userLevelUp(userID) {
+    let userXP = questInit_1.usersXP.get(userID);
+    userXP += walletQuestTokenPrize;
+    questInit_1.usersXP.set(userID, userXP);
+    let userLevel = 1;
+    questInit_1.usersLevel.set(userID, userLevel);
+    let userTokens = questInit_1.usersTokens.get(userID);
+    userTokens += walletQuestTokenPrize;
+    questInit_1.usersTokens.set(userID, userTokens);
+}
 function modalSubmit(modal) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
@@ -344,15 +296,17 @@ function modalSubmit(modal) {
         }
         let isSolAddress = validateSolAddress(modalSolanaAddress);
         if (isSolAddress && isEmailValid) {
+            questInit_1.usersEmail.set(userID, modalEmail);
+            questInit_1.usersSolanaAddress.set(userID, modalSolanaAddress);
             let discordServerObjID = yield (0, userBackendless_1.getDiscordServerObjID)(modal.guildId);
             if (subscribed) {
                 questMsg = "You edited the Wallet Quest. This is the information I'll be editing: ";
             }
-            else { //Give EXP points
-                userXp += walletQuestTokenPrize;
-                userLevel = 1;
-                userTokens += walletQuestTokenPrize;
+            else { //Give EXP points, tokens, and levelup
+                userLevelUp(userID);
             }
+            console.log('usersLevel.get(userID): ' + questInit_1.usersLevel.get(userID));
+            console.log('usersXP.get(userID): ' + questInit_1.usersXP.get(userID));
             modal.followUp({ content: questMsg + '\nName: ' + firstNameMsg
                     + '\nLast Name: ' + lastNameMsg + '\nEmail: ' + emailMsg + '\nSolana address: ' + `\`\`\`${modalSolanaAddress}\`\`\``, ephemeral: true });
             userToSave = {
@@ -372,10 +326,13 @@ function modalSubmit(modal) {
                         }]
                 },
                 Gamifications: [{
+                        Level: questInit_1.usersLevel.get(userID),
+                        XP: questInit_1.usersXP.get(userID),
+                        Tokens: questInit_1.usersTokens.get(userID),
                         Discord_Server: {
                             objectId: discordServerObjID,
                             server_id: modal.guildId,
-                            server_name: (_b = modal.guild) === null || _b === void 0 ? void 0 : _b.name
+                            server_name: (_b = modal.guild) === null || _b === void 0 ? void 0 : _b.name,
                         }
                     }]
             };
@@ -397,16 +354,15 @@ function modalSubmit(modal) {
     });
 }
 class WalletQuest {
-    init(interaction) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield init(interaction);
-        });
+    /*
+    public async init(interaction:Interaction){
+        return await init (interaction)
+    }*/
+    get menu() {
+        return menu;
     }
     get joinQuestButtonLabel() {
         return walletQuestFields.button.customId;
-    }
-    get menu() {
-        return menu;
     }
     joinQuestButtonClicked(interaction, client) {
         joinQuestButtonClicked(interaction, client);
@@ -418,9 +374,6 @@ class WalletQuest {
         return __awaiter(this, void 0, void 0, function* () {
             return yield modalSubmit(modal);
         });
-    }
-    isSubscribed(interaction) {
-        return isSubscribed(interaction);
     }
     embedRedraw(interaction) {
         return embedRedraw(interaction);

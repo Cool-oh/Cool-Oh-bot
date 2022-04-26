@@ -24,8 +24,8 @@ const buttonRow = new discord_js_1.MessageActionRow();
 const initQuest = new questInit_1.QuestInit();
 const walletQuest = new walletQuest_1.WalletQuest();
 const twitterQuest = new twitterQuest_1.TwitterQuest();
-//const questsObjList = [initQuest, walletQuest, twitterQuest]
-const questsObjList = [initQuest, walletQuest,];
+const questsObjList = [initQuest, walletQuest, twitterQuest];
+//const questsObjList = [initQuest, walletQuest,]
 const optionsList = [];
 var firstInteraction;
 for (let index = 0; index < questsObjList.length; index++) {
@@ -65,21 +65,21 @@ exports.default = {
                         for (let index = 0; index < optionsList.length; index++) {
                             if (selectedOptions[0].value == optionsList[index].value) {
                                 if (buttonRow.components[0] != null) {
-                                    buttonRow.spliceComponents(0, 1); //deletes the previous button
+                                    buttonRow.spliceComponents(0, 1); //deletes the previous button 
                                 }
                                 let fixedOptions = buildMessageSelectoptions(optionsList[index].value, optionsList);
                                 dropDown.setComponents(component.spliceOptions(0, component.options.length)); //remove all options from menu
                                 dropDown.setComponents(component.addOptions(fixedOptions)); //rebuild menu
                                 if (selectedOptions[0].value != optionsList[0].value) { //if its not the intro quest, build the button
-                                    let button = yield questsObjList[index].drawButton(interaction);
+                                    let button = yield questsObjList[index].drawButton(firstInteraction);
                                     buttonRow.addComponents(button);
                                     componentList = [dropDown, buttonRow];
                                 }
                                 else { //if it's the intro quest
                                     console.log('Its the intro quest\n');
-                                    yield questsObjList[0].embedRedraw(interaction);
+                                    yield questsObjList[0].embedRedraw(firstInteraction);
                                 }
-                                let embed = yield questsObjList[index].embedRedraw(interaction);
+                                let embed = yield questsObjList[index].embedRedraw(firstInteraction);
                                 interaction.deferUpdate();
                                 firstInteraction.editReply({
                                     content: 'Updated',

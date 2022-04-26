@@ -2,17 +2,12 @@ import { Client, ColorResolvable, Interaction,  MessageButton, MessageEmbed, Use
 import dotenv from 'dotenv'
 import { BackendlessPerson, QuestEmbedJson, WalletQuestIntfc } from '../../../interfaces/interfaces';
 import walletQuestJson from './walletQuest.json'
-import {Modal, TextInputComponent, showModal, TextInputStyles, TextInputStyle, ModalSubmitInteraction } from 'discord-modals'
+import {Modal, TextInputComponent, showModal, TextInputStyle, ModalSubmitInteraction } from 'discord-modals'
 import {validate} from 'email-validator'
-//import  discordModals   from 'discord-modals//'
-
 import {PublicKey} from '@solana/web3.js'
-import web3 from '@solana/web3.js'
-
 import { updateDiscordUser, isSubscribedToQuest, getDiscordServerObjID, checkIfDiscordIDRegistered, isSubscribedToQuest2 } from '../../users/userBackendless';
 import { writeDiscordLog } from '../../../features/discordLogger';
-import {usersFirstName, usersLastName, usersEmail, usersSolanaAddress, usersIsSubscribed} from '../../quests/questInit'
-import { concat } from 'lodash';
+import {usersFirstName, usersLastName, usersEmail, usersSolanaAddress, usersIsSubscribed, usersXP, usersLevel, usersTokens} from '../../quests/questInit'
 
 dotenv.config();
 const walletQuestName = process.env.WALLET_QUEST_NAME
@@ -21,58 +16,9 @@ const walletQuestTokenPrize = walletQuestFields.tokenPrize
 const menu = walletQuestFields.menu
 const filename = 'walletQuests.ts'
 
-//var interactionGlobal:Interaction
 var userToSave: BackendlessPerson
-//var user:BackendlessPerson
 var subscribed:boolean  //If the user is subscribed to this quest
-var userXp:number
-var userLevel:number
-var userTokens:number
-
-
 /*
-// We create a Text Input Component FIRST NAME
-const textInputFirstName =   new TextInputComponent()
-.setCustomId(walletQuestFields.modal.componentsList[0].id)
-.setLabel(walletQuestFields.modal.componentsList[0].label)
-.setStyle(walletQuestFields.modal.componentsList[0].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setPlaceholder(userFirstName)
-.setRequired(walletQuestFields.modal.componentsList[0].required) // If it's required or not
-
-// We create a Text Input Component LAST NAME
-const textInputLastName =   new TextInputComponent()
-.setCustomId(walletQuestFields.modal.componentsList[1].id)
-.setLabel(walletQuestFields.modal.componentsList[1].label)
-.setStyle(walletQuestFields.modal.componentsList[1].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setPlaceholder(userLastName)
-.setRequired(walletQuestFields.modal.componentsList[1].required) // If it's required or not
-
-// We create a Text Input Component EMAIL
-const textInputEmail=   new TextInputComponent()
-.setCustomId(walletQuestFields.modal.componentsList[2].id)
-.setLabel(walletQuestFields.modal.componentsList[2].label)
-.setStyle(walletQuestFields.modal.componentsList[2].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setPlaceholder(userEmail)
-.setRequired(walletQuestFields.modal.componentsList[2].required) // If it's required or not
-
-// We create a Text Input Component SOLANA ADDRESS
-const textInputProvideSolana =   new TextInputComponent() // We create a Text Input Component
-.setCustomId(walletQuestFields.modal.componentsList[3].id)
-.setLabel(walletQuestFields.modal.componentsList[3].label)
-.setStyle(walletQuestFields.modal.componentsList[3].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-.setMinLength(walletQuestFields.modal.componentsList[3].minLenght)
-.setMaxLength(walletQuestFields.modal.componentsList[3].maxLength)
-.setPlaceholder(solanaAddress)
-.setRequired(walletQuestFields.modal.componentsList[3].required) // If it's required or not
-
-
-const modal = new Modal() // We create a Modal
-.setCustomId(walletQuestFields.modal.id)
-.setTitle(walletQuestFields.modal.title)
-.addComponents(textInputFirstName, textInputLastName, textInputEmail, textInputProvideSolana);
-
-
-*/
 
 async function init(interaction: Interaction){
     let functionName = init.name
@@ -83,10 +29,9 @@ async function init(interaction: Interaction){
          writeDiscordLog(filename, functionName, msg,  err.toString())
          console.log(err)
      }
+ }*/
 
-
- }
-
+/*
  async function refreshData(interaction: Interaction) {
     let functionName = refreshData.name
     let msg = 'Trying to refresh user gobal data'
@@ -118,7 +63,7 @@ async function init(interaction: Interaction){
          console.log(err)
      }
 
-}
+}*/
 
 async function drawModal(interaction:Interaction):Promise<Modal>{
 
@@ -194,12 +139,6 @@ async function drawButton(interaction: Interaction): Promise<MessageButton>{
 
          if(subscribed){
              joinQuestButton.setLabel(walletQuestFields.button.label_edit)
-            // textInputProvideSolana.setLabel('Edit your solana wallet address:')
-             //textInputFirstName.setPlaceholder(userFirstName)
-            // textInputLastName.setPlaceholder(userLastName)
-            // textInputEmail.setPlaceholder(userEmail)
-            // textInputProvideSolana.setPlaceholder(solanaAddress)
-
          }else{
              joinQuestButton.setLabel(walletQuestFields.button.label)
           }
@@ -312,6 +251,19 @@ async function isSubscribed(interaction:Interaction): Promise <boolean> {
 }
 
 
+function userLevelUp(userID:string)
+{
+    let userXP = usersXP.get(userID)
+    userXP+= walletQuestTokenPrize
+    usersXP.set(userID,userXP)
+
+    let userLevel = 1
+    usersLevel.set(userID, userLevel)
+
+    let userTokens = usersTokens.get(userID)
+    userTokens += walletQuestTokenPrize
+    usersTokens.set(userID, userTokens)
+}
 
 async function modalSubmit(modal:ModalSubmitInteraction){
     await modal.deferReply({ ephemeral: true })
@@ -341,6 +293,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
         modalEmail.trim()
         isEmailValid = validate(modalEmail)
         emailMsg = modalEmail
+
     }else{isEmailValid = true}
     if(modalSolanaAddress != null){
         modalSolanaAddress.trim()
@@ -348,18 +301,20 @@ async function modalSubmit(modal:ModalSubmitInteraction){
     let isSolAddress = validateSolAddress(modalSolanaAddress)
 
     if (isSolAddress && isEmailValid) {
+        usersEmail.set(userID, modalEmail)
+        usersSolanaAddress.set(userID, modalSolanaAddress)
         let discordServerObjID = await getDiscordServerObjID(modal.guildId!)
 
         if(subscribed){
             questMsg = "You edited the Wallet Quest. This is the information I'll be editing: "
 
-        }else{ //Give EXP points
-
-
-            userXp += walletQuestTokenPrize
-            userLevel = 1
-            userTokens += walletQuestTokenPrize
+        }else{ //Give EXP points, tokens, and levelup
+            userLevelUp(userID)
         }
+
+        console.log('usersLevel.get(userID): ' + usersLevel.get(userID))
+        console.log('usersXP.get(userID): ' + usersXP.get(userID))
+
 
         modal.followUp({ content: questMsg + '\nName: '+ firstNameMsg
         + '\nLast Name: ' + lastNameMsg + '\nEmail: '+ emailMsg +'\nSolana address: ' +  `\`\`\`${modalSolanaAddress}\`\`\``, ephemeral: true })
@@ -380,15 +335,18 @@ async function modalSubmit(modal:ModalSubmitInteraction){
                 }]
             },
             Gamifications:[{
+                Level: usersLevel.get(userID),
+                XP: usersXP.get(userID),
+                Tokens: usersTokens.get(userID),
                 Discord_Server:{
                     objectId: discordServerObjID!,
                     server_id: modal.guildId!,
-                    server_name: modal.guild?.name!
+                    server_name: modal.guild?.name!,
                 }
             }]
         }
         updateDiscordUser(userToSave)
-        
+
 
     }else{
         let msg = ""
@@ -409,37 +367,30 @@ async function modalSubmit(modal:ModalSubmitInteraction){
 
 
 export class WalletQuest {
+    /*
     public async init(interaction:Interaction){
         return await init (interaction)
+    }*/
+    public get menu(){
+        return menu
     }
-
-
     public  get joinQuestButtonLabel():string{
         return walletQuestFields.button.customId
     }
 
-    public get menu(){
-        return menu
-    }
     public joinQuestButtonClicked(interaction:Interaction, client: Client ){
         joinQuestButtonClicked(interaction, client)
     }
     public get modalCustomID():string{
         return walletQuestFields.modal.id
     }
-
     public async modalQuestSubmit(modal:ModalSubmitInteraction){
         return await modalSubmit(modal)
     }
 
-
-    public  isSubscribed(interaction: Interaction): Promise <boolean>{
-        return isSubscribed(interaction)
-    }
     public embedRedraw(interaction: Interaction) {
 		return embedRedraw(interaction);
-
-}
+    }
     public async drawButton(interaction: Interaction){
         return await drawButton(interaction)
     }

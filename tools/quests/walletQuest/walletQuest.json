@@ -31,7 +31,7 @@
         "style": "SUCCESS"
     },
     "menu": {
-        "label": "Wallet Quest",
+        "label": "Wallet Quest (L0)",
         "value":"wallet_quest",
         "description": ""
     },

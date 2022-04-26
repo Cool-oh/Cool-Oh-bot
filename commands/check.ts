@@ -79,6 +79,7 @@ export default {
         actionTakenContent = 'Reporting last database stats!'
         let databaseTweetCount = await getDatabaseTweetCount()
 
+
         let lastTweetSaved =  await getBackendlessLastTweet()
         const date = new Date(lastTweetSaved.created );
         var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' } as const;

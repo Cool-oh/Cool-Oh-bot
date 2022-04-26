@@ -30,7 +30,7 @@
         "style": "SUCCESS"
     },
     "menu": {
-        "label": "Twitter Quest",
+        "label": "Twitter Quest (L1)",
         "value":"twitter_quest",
         "description": ""
     },
@@ -46,5 +46,8 @@
             "placeholder": "@yourTwitterHandle",
             "required": true
         }]
+    },
+    "gamification":{
+        "levelRequired": 1
     }
 }

@@ -190,5 +190,8 @@ export interface QuestEmbedJson{
             placeholder: string,
             required: boolean,
         }[]
+    },
+    gamification:{
+        levelRequired:number
     }
 }
