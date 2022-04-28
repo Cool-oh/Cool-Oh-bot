@@ -65,7 +65,7 @@ exports.default = {
                         for (let index = 0; index < optionsList.length; index++) {
                             if (selectedOptions[0].value == optionsList[index].value) {
                                 if (buttonRow.components[0] != null) {
-                                    buttonRow.spliceComponents(0, 1); //deletes the previous button 
+                                    buttonRow.spliceComponents(0, 1); //deletes the previous button
                                 }
                                 let fixedOptions = buildMessageSelectoptions(optionsList[index].value, optionsList);
                                 dropDown.setComponents(component.spliceOptions(0, component.options.length)); //remove all options from menu

@@ -37,8 +37,36 @@
     "modal": {
         "id":"twitter_quest_modal",
         "title": "Twitter Quest Form",
-        "componentsList": [{
-            "id": "textinput_twitter_quest",
+        "componentsList": [
+             {
+            "id": "textinput_tq_first_name",
+            "label": "What's your first name?",
+            "style": "SHORT",
+            "minLenght": 0,
+            "maxLength": 60,
+            "placeholder": "Elon",
+            "required": false
+        },
+        {
+            "id": "textinput_tq_lastname_name",
+            "label": "What's your last name?",
+            "style": "SHORT",
+            "minLenght": 0,
+            "maxLength": 60,
+            "placeholder": "Musk",
+            "required": false
+        },
+        {
+            "id": "textinput_tq_email",
+            "label": "Please provide your email address",
+            "style": "SHORT",
+            "minLenght": 0,
+            "maxLength": 60,
+            "placeholder": "elon@tesla.com",
+            "required": false
+        },
+        {
+            "id": "textinput_tq_twitterHandler",
             "label": "Please provide your twitter handle with the @",
             "style": "SHORT",
             "minLenght": 4,

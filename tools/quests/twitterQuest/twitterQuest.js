@@ -20,59 +20,75 @@ const discord_modals_1 = require("discord-modals");
 const userBackendless_1 = require("../../users/userBackendless");
 const discordLogger_1 = require("../../../features/discordLogger");
 const questInit_1 = require("../questInit");
+const miscTools_1 = require("../../miscTools");
 dotenv_1.default.config();
 const filename = 'twitterQuests.ts';
 const twitterQuestName = process.env.TWITTER_QUEST_NAME;
 const twitterQuestFields = twitterQuest_json_1.default;
 const menu = twitterQuestFields.menu;
-//var interactionGlobal:Interaction
 var subscribed; //If the user is subscribed to this quest
-const modal = new discord_modals_1.Modal() // We create a Modal
-    .setCustomId(twitterQuestFields.modal.id)
-    .setTitle(twitterQuestFields.modal.title)
-    .addComponents(new discord_modals_1.TextInputComponent() // We create a Text Input Component
-    .setCustomId(twitterQuestFields.modal.componentsList[0].id)
-    .setLabel(twitterQuestFields.modal.componentsList[0].label)
-    .setStyle(twitterQuestFields.modal.componentsList[0].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-    .setMinLength(twitterQuestFields.modal.componentsList[0].minLenght)
-    .setMaxLength(twitterQuestFields.modal.componentsList[0].maxLength)
-    .setPlaceholder(twitterQuestFields.modal.componentsList[0].placeholder)
-    .setRequired(twitterQuestFields.modal.componentsList[0].required) // If it's required or not
-);
-/*
-async function init(interaction: Interaction,){
-    //interactionGlobal = interaction
-    let subscribed = await isSubscribed()
-    if(subscribed){
-        joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
-        console.log('Twitter Quests subscribed: ' + subscribed)
-    }else{
-
-    }
-}*/
+function drawModal(interaction) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let functionName = drawModal.name;
+        let msg = 'Trying to draw modal';
+        let userID = interaction.user.id;
+        let basicModalTextInputList;
+        const modal = new discord_modals_1.Modal();
+        try {
+            basicModalTextInputList = (0, miscTools_1.basicModalTextInputs)(userID, twitterQuestFields); //array of text input components with Name, lastname and email
+            let offset = basicModalTextInputList.length;
+            // We create a Text Input Component Twitter Handle
+            const textInputTwitterHandle = new discord_modals_1.TextInputComponent() // We create a Text Input Component
+                .setCustomId(twitterQuestFields.modal.componentsList[offset].id)
+                .setLabel(twitterQuestFields.modal.componentsList[offset].label)
+                .setStyle(twitterQuestFields.modal.componentsList[offset].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+                .setMinLength(twitterQuestFields.modal.componentsList[offset].minLenght)
+                .setMaxLength(twitterQuestFields.modal.componentsList[offset].maxLength)
+                .setPlaceholder(twitterQuestFields.modal.componentsList[offset].placeholder)
+                .setRequired(twitterQuestFields.modal.componentsList[offset].required); // If it's required or not
+            modal.setCustomId(twitterQuestFields.modal.id)
+                .setTitle(twitterQuestFields.modal.title);
+            for (let index = 0; index < basicModalTextInputList.length; index++) {
+                modal.addComponents(basicModalTextInputList[index]);
+            }
+            modal.addComponents(textInputTwitterHandle);
+        }
+        catch (err) {
+            (0, discordLogger_1.writeDiscordLog)(filename, functionName, msg, err.toString());
+        }
+        return modal;
+    });
+}
 function drawButton(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
+        let functionName = drawButton.name;
+        let msg = 'Trying to draw button';
         let userID = interaction.user.id;
-        const joinQuestButton = new discord_js_1.MessageButton()
-            .setCustomId(twitterQuestFields.button.customId) //our own name for our button in our code to detect which button the user clicked on
-            .setEmoji(twitterQuestFields.button.emoji) //CTRL+i :emojisense:
-            .setLabel(twitterQuestFields.button.label)
-            .setStyle(twitterQuestFields.button.style);
-        subscribed = yield isSubscribed(interaction);
-        if (subscribed) {
-            joinQuestButton.setLabel(twitterQuestFields.button.label_edit);
-        }
-        else {
-            if (questInit_1.usersLevel.get(userID) < twitterQuestFields.gamification.levelRequired) {
-                console.log('User level: ' + questInit_1.usersLevel.get(userID));
-                console.log('Level required: ' + twitterQuestFields.gamification.levelRequired);
-                joinQuestButton.setLabel('You need to be L' + twitterQuestFields.gamification.levelRequired)
-                    .setDisabled(true)
-                    .setStyle('DANGER');
+        const joinQuestButton = new discord_js_1.MessageButton();
+        try {
+            joinQuestButton.setCustomId(twitterQuestFields.button.customId) //our own name for our button in our code to detect which button the user clicked on
+                .setEmoji(twitterQuestFields.button.emoji) //CTRL+i :emojisense:
+                .setLabel(twitterQuestFields.button.label)
+                .setStyle(twitterQuestFields.button.style);
+            subscribed = yield isSubscribed(interaction);
+            if (subscribed) {
+                joinQuestButton.setLabel(twitterQuestFields.button.label_edit);
             }
             else {
-                joinQuestButton.setLabel(twitterQuestFields.button.label);
+                if (questInit_1.usersLevel.get(userID) < twitterQuestFields.gamification.levelRequired) {
+                    console.log('User level: ' + questInit_1.usersLevel.get(userID));
+                    console.log('Level required: ' + twitterQuestFields.gamification.levelRequired);
+                    joinQuestButton.setLabel('You need to be L' + twitterQuestFields.gamification.levelRequired)
+                        .setDisabled(true)
+                        .setStyle('DANGER');
+                }
+                else {
+                    joinQuestButton.setLabel(twitterQuestFields.button.label);
+                }
             }
+        }
+        catch (err) {
+            (0, discordLogger_1.writeDiscordLog)(filename, functionName, msg, err.toString());
         }
         return joinQuestButton;
     });
@@ -118,18 +134,27 @@ function embedRedraw(interaction) {
         }
         catch (err) {
             (0, discordLogger_1.writeDiscordLog)(filename, functionName, msg, err.toString());
-            console.log(err);
             throw err;
         }
     });
 }
 function joinQuestButtonClicked(interaction, client) {
-    if (interaction.isButton()) {
-        (0, discord_modals_1.showModal)(modal, {
-            client: client,
-            interaction: interaction // The showModal() method needs the interaction to send the modal with the Interaction ID & Token.
-        });
-    }
+    return __awaiter(this, void 0, void 0, function* () {
+        let functionName = joinQuestButtonClicked.name;
+        let msg = 'Error on clicking Quest Button';
+        try {
+            if (interaction.isButton()) {
+                let modal = yield drawModal(interaction);
+                (0, discord_modals_1.showModal)(modal, {
+                    client: client,
+                    interaction: interaction // The showModal() method needs the interaction to send the modal with the Interaction ID & Token.
+                });
+            }
+        }
+        catch (err) {
+            (0, discordLogger_1.writeDiscordLog)(filename, functionName, msg, err.toString());
+        }
+    });
 }
 function isSubscribed(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -157,25 +182,15 @@ function modalSubmit(modal) {
     return __awaiter(this, void 0, void 0, function* () {
         yield modal.deferReply({ ephemeral: true });
         const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id);
-        //modal.reply('OK! You are now on the Twitter quest!!. This is the information I got from you: ' + `\n\`\`\`${firstResponse}\`\`\``)
-        modal.followUp({ content: 'Congrats! Powered by discord-modals.' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
+        modal.followUp({ content: 'OK! You are now on the Twitter quest!!. This is the information I got from you: \n' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true });
     });
 }
 class TwitterQuest {
-    /*
-    public async init(interaction: Interaction,){
-        return await init (interaction)
-    }
-    public get embed(): MessageEmbed{
-        return twitterQuestEmbed
-    }
-
-*/
-    get joinQuestButtonLabel() {
-        return twitterQuestFields.button.customId;
-    }
     get menu() {
         return menu;
+    }
+    get joinQuestButtonLabel() {
+        return twitterQuestFields.button.customId;
     }
     joinQuestButtonClicked(interaction, client) {
         joinQuestButtonClicked(interaction, client);
@@ -187,9 +202,6 @@ class TwitterQuest {
         return __awaiter(this, void 0, void 0, function* () {
             yield modalSubmit(modal);
         });
-    }
-    get modal() {
-        return modal;
     }
     embedRedraw(interaction) {
         return embedRedraw(interaction);

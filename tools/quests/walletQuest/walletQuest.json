@@ -65,7 +65,8 @@
             "maxLength": 60,
             "placeholder": "elon@tesla.com",
             "required": false
-        },{
+        },
+        {
             "id": "textinput_wq",
             "label": "Please provide your Solana wallet address",
             "style": "SHORT",
@@ -74,5 +75,8 @@
             "placeholder": "Write your Solana Address here",
             "required": true
         }]
+    },
+    "gamification":{
+        "levelRequired": 0
     }
 }
