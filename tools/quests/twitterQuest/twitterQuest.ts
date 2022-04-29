@@ -16,7 +16,7 @@ const twitterQuestName = process.env.TWITTER_QUEST_NAME
 
 const twitterQuestFields = twitterQuestJson as QuestEmbedJson
 const menu = twitterQuestFields.menu
-var subscribed:boolean  //If the user is subscribed to this quest
+const subscribed = new Map() //If the user is subscribed to this quest
 
 async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
     let functionName = embedRedraw.name
@@ -66,8 +66,9 @@ async function drawButton(interaction: Interaction): Promise<MessageButton>{
             .setEmoji(twitterQuestFields.button.emoji)   //CTRL+i :emojisense:
             .setLabel(twitterQuestFields.button.label)
             .setStyle(twitterQuestFields.button.style)
-        subscribed = await  isSubscribed(interaction) //OJO CON ESTO!! SE MEZCLAN LOS DATOS?
-        if(subscribed){
+        subscribed.set(userID, await  isSubscribed(interaction))
+        //subscribed = await  isSubscribed(interaction) //OJO CON ESTO!! SE MEZCLAN LOS DATOS?
+        if(subscribed.get(userID)){
             joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
         }else{
             if(usersLevel.get(userID) < twitterQuestFields.gamification.levelRequired){
@@ -215,7 +216,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
         if (twitterValid && isEmailValid) {
             usersEmail.set(userID, modalEmail)
             usersTwitterHandle.set(userID, modalTwitterHandle)
-            if(subscribed){
+            if(subscribed.get(userID)){
                 questMsg = "You edited the Wallet Quest. This is the information I'll be editing: "
 
             }else{ //Give EXP points, tokens, and levelup

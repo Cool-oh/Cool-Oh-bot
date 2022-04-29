@@ -27,7 +27,7 @@ const filename = 'twitterQuests.ts';
 const twitterQuestName = process.env.TWITTER_QUEST_NAME;
 const twitterQuestFields = twitterQuest_json_1.default;
 const menu = twitterQuestFields.menu;
-var subscribed; //If the user is subscribed to this quest
+const subscribed = new Map(); //If the user is subscribed to this quest
 function embedRedraw(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         let functionName = embedRedraw.name;
@@ -84,8 +84,9 @@ function drawButton(interaction) {
                 .setEmoji(twitterQuestFields.button.emoji) //CTRL+i :emojisense:
                 .setLabel(twitterQuestFields.button.label)
                 .setStyle(twitterQuestFields.button.style);
-            subscribed = yield isSubscribed(interaction); //OJO CON ESTO!! SE MEZCLAN LOS DATOS?
-            if (subscribed) {
+            subscribed.set(userID, yield isSubscribed(interaction));
+            //subscribed = await  isSubscribed(interaction) //OJO CON ESTO!! SE MEZCLAN LOS DATOS?
+            if (subscribed.get(userID)) {
                 joinQuestButton.setLabel(twitterQuestFields.button.label_edit);
             }
             else {
@@ -244,7 +245,7 @@ function modalSubmit(modal) {
             if (twitterValid && isEmailValid) {
                 questInit_1.usersEmail.set(userID, modalEmail);
                 questInit_1.usersTwitterHandle.set(userID, modalTwitterHandle);
-                if (subscribed) {
+                if (subscribed.get(userID)) {
                     questMsg = "You edited the Wallet Quest. This is the information I'll be editing: ";
                 }
                 else { //Give EXP points, tokens, and levelup
