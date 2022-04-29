@@ -1,7 +1,17 @@
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { TextInputComponent, TextInputStyle } from "discord-modals";
 import { text } from "express";
-import { QuestEmbedJson } from "../interfaces/interfaces";
+import { QuestEmbedJson, twitterHandleResponses } from "../interfaces/interfaces";
 import { usersEmail, usersFirstName, usersLastName } from "./quests/questInit";
+import dotenv from 'dotenv'
+dotenv.config();
+
+const headers = {
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + process.env.TWITTER_TOKEN_BEARER
+    },
+};
 
 export function titleCase(str:string) {
     var splitStr = str.toLowerCase().split(' ');
@@ -57,3 +67,32 @@ export function titleCase(str:string) {
      return textInputs
 
  }
+
+
+ export async function isTwitterHandleValid(twitterHandle: string): Promise<twitterHandleResponses|null> {
+    let uri = ""
+    uri = 'https://api.twitter.com/2/users/by/username/' + twitterHandle
+    var message:twitterHandleResponses
+
+    try {
+        let response = await axios.get(uri, headers) as AxiosResponse
+
+        if(response.data.errors){
+            message = 'HANDLE_NOT_EXISTS'
+            return message
+        }else if (response.data.data.username){
+            message = 'HANDLE_EXISTS'
+            return message
+        }else{
+            return null
+        }
+    } catch (reason: any) {
+         if (reason.response!.status === 400) {
+                message = 'HANDLE_ERROR'
+                return message
+            } else {
+                message = 'OTHER_ERROR'
+                return message
+            }
+    }
+}

@@ -69,8 +69,8 @@
             "id": "textinput_tq_twitterHandler",
             "label": "Please provide your twitter handle with the @",
             "style": "SHORT",
-            "minLenght": 4,
-            "maxLength": 10,
+            "minLenght": 0,
+            "maxLength": 20,
             "placeholder": "@yourTwitterHandle",
             "required": true
         }]

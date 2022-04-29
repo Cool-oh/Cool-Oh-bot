@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.QuestInit = exports.usersTokens = exports.usersXP = exports.usersLevel = exports.usersIsSubscribed = exports.usersSolanaAddress = exports.usersEmail = exports.usersLastName = exports.usersFirstName = void 0;
+exports.QuestInit = exports.usersTwitterHandle = exports.usersTokens = exports.usersXP = exports.usersLevel = exports.usersIsSubscribed = exports.usersSolanaAddress = exports.usersEmail = exports.usersLastName = exports.usersFirstName = void 0;
 const discord_modals_1 = require("discord-modals");
 const discord_js_1 = require("discord.js");
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -28,6 +28,7 @@ exports.usersIsSubscribed = new Map();
 exports.usersLevel = new Map();
 exports.usersXP = new Map();
 exports.usersTokens = new Map();
+exports.usersTwitterHandle = new Map();
 dotenv_1.default.config();
 const walletQuestName = process.env.WALLET_QUEST_NAME;
 const filename = "questInit.ts";

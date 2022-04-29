@@ -15,6 +15,7 @@ export const usersIsSubscribed = new Map()
 export const usersLevel = new Map()
 export const usersXP = new Map()
 export const usersTokens = new Map()
+export const usersTwitterHandle = new Map()
 
 
 dotenv.config();

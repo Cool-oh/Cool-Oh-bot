@@ -195,3 +195,10 @@ export interface QuestEmbedJson{
         levelRequired:number
     }
 }
+
+export type twitterHandleResponses =
+    | 'HANDLE_EXISTS'
+    | 'HANDLE_NOT_EXISTS'
+    | 'HANDLE_ERROR'
+    | 'OTHER_ERROR'
+

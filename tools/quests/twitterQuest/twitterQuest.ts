@@ -1,14 +1,15 @@
 import dotenv from 'dotenv'
-import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js';
-import { BackendlessPerson, QuestEmbedJson, WalletQuestIntfc } from '../../../interfaces/interfaces';
+import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js'
+import { BackendlessPerson, QuestEmbedJson, twitterHandleResponses, WalletQuestIntfc } from '../../../interfaces/interfaces'
 import twitterQuestJson from './twitterQuest.json'
-import {Modal, TextInputComponent, showModal, TextInputStyle } from 'discord-modals'
-import { checkIfDiscordIDRegistered, isSubscribedToQuest, isSubscribedToQuest2 } from '../../users/userBackendless';
-import { writeDiscordLog } from '../../../features/discordLogger';
-import { usersEmail, usersFirstName, usersLastName, usersLevel } from '../questInit';
-import { basicModalTextInputs } from '../../miscTools';
+import {Modal, TextInputComponent, showModal, TextInputStyle, ModalSubmitInteraction } from 'discord-modals'
+import { checkIfDiscordIDRegistered, isSubscribedToQuest, isSubscribedToQuest2 } from '../../users/userBackendless'
+import { writeDiscordLog } from '../../../features/discordLogger'
+import { usersEmail, usersFirstName, usersLastName, usersLevel, usersTwitterHandle } from '../questInit'
+import { basicModalTextInputs, isTwitterHandleValid } from '../../miscTools'
+import { validate } from 'email-validator'
 
-dotenv.config();
+dotenv.config()
 const filename = 'twitterQuests.ts'
 const twitterQuestName = process.env.TWITTER_QUEST_NAME
 
@@ -16,68 +17,6 @@ const twitterQuestName = process.env.TWITTER_QUEST_NAME
 const twitterQuestFields = twitterQuestJson as QuestEmbedJson
 const menu = twitterQuestFields.menu
 var subscribed:boolean  //If the user is subscribed to this quest
-
-
-async function drawModal(interaction:Interaction):Promise<Modal> {
-    let functionName = drawModal.name
-    let msg = 'Trying to draw modal'
-    let userID = interaction.user.id
-    let basicModalTextInputList:TextInputComponent[]
-    const modal = new Modal()
-
-    try {
-        basicModalTextInputList = basicModalTextInputs(userID, twitterQuestFields ) //array of text input components with Name, lastname and email
-        let offset = basicModalTextInputList.length
-        // We create a Text Input Component Twitter Handle
-        const textInputTwitterHandle = new TextInputComponent() // We create a Text Input Component
-            .setCustomId(twitterQuestFields.modal.componentsList[offset].id)
-            .setLabel(twitterQuestFields.modal.componentsList[offset].label)
-            .setStyle(twitterQuestFields.modal.componentsList[offset].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
-            .setMinLength(twitterQuestFields.modal.componentsList[offset].minLenght)
-            .setMaxLength(twitterQuestFields.modal.componentsList[offset].maxLength)
-            .setPlaceholder(twitterQuestFields.modal.componentsList[offset].placeholder)
-            .setRequired(twitterQuestFields.modal.componentsList[offset].required) // If it's required or not
-        modal.setCustomId(twitterQuestFields.modal.id)
-            .setTitle(twitterQuestFields.modal.title)
-            for (let index = 0; index < basicModalTextInputList.length; index++) {
-                modal.addComponents(basicModalTextInputList[index] );
-            }
-        modal.addComponents(textInputTwitterHandle)
-    } catch (err:any) {
-        writeDiscordLog(filename, functionName, msg, err.toString())
-    }
-    return modal
-}
-
-async function drawButton(interaction: Interaction): Promise<MessageButton>{
-    let functionName = drawButton.name
-    let msg = 'Trying to draw button'
-    let userID = interaction.user.id
-    const joinQuestButton = new MessageButton()
-    try {
-       joinQuestButton.setCustomId(twitterQuestFields.button.customId) //our own name for our button in our code to detect which button the user clicked on
-            .setEmoji(twitterQuestFields.button.emoji)   //CTRL+i :emojisense:
-            .setLabel(twitterQuestFields.button.label)
-            .setStyle(twitterQuestFields.button.style)
-        subscribed = await  isSubscribed(interaction)
-        if(subscribed){
-            joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
-        }else{
-            if(usersLevel.get(userID) < twitterQuestFields.gamification.levelRequired){
-                console.log('User level: ' + usersLevel.get(userID))
-                console.log('Level required: ' + twitterQuestFields.gamification.levelRequired)
-                joinQuestButton.setLabel('You need to be L'+ twitterQuestFields.gamification.levelRequired)
-                .setDisabled(true)
-                .setStyle('DANGER')
-            }else{
-                joinQuestButton.setLabel(twitterQuestFields.button.label)
-            }
-        }
-    } catch (err:any) {
-        writeDiscordLog(filename, functionName, msg, err.toString())
-    }
-    return joinQuestButton
-}
 
 async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
     let functionName = embedRedraw.name
@@ -117,6 +56,66 @@ async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
         throw err
      }
 }
+async function drawButton(interaction: Interaction): Promise<MessageButton>{
+    let functionName = drawButton.name
+    let msg = 'Trying to draw button'
+    let userID = interaction.user.id
+    const joinQuestButton = new MessageButton()
+    try {
+       joinQuestButton.setCustomId(twitterQuestFields.button.customId) //our own name for our button in our code to detect which button the user clicked on
+            .setEmoji(twitterQuestFields.button.emoji)   //CTRL+i :emojisense:
+            .setLabel(twitterQuestFields.button.label)
+            .setStyle(twitterQuestFields.button.style)
+        subscribed = await  isSubscribed(interaction) //OJO CON ESTO!! SE MEZCLAN LOS DATOS?
+        if(subscribed){
+            joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
+        }else{
+            if(usersLevel.get(userID) < twitterQuestFields.gamification.levelRequired){
+                console.log('User level: ' + usersLevel.get(userID))
+                console.log('Level required: ' + twitterQuestFields.gamification.levelRequired)
+                joinQuestButton.setLabel('You need to be L'+ twitterQuestFields.gamification.levelRequired)
+                .setDisabled(true)
+                .setStyle('DANGER')
+            }else{
+                joinQuestButton.setLabel(twitterQuestFields.button.label)
+            }
+        }
+    } catch (err:any) {
+        writeDiscordLog(filename, functionName, msg, err.toString())
+    }
+    return joinQuestButton
+}
+
+async function drawModal(interaction:Interaction):Promise<Modal> {
+    let functionName = drawModal.name
+    let msg = 'Trying to draw modal'
+    let userID = interaction.user.id
+    let basicModalTextInputList:TextInputComponent[]
+    const modal = new Modal()
+
+    try {
+        basicModalTextInputList = basicModalTextInputs(userID, twitterQuestFields ) //array of text input components with Name, lastname and email
+        let offset = basicModalTextInputList.length
+        // We create a Text Input Component Twitter Handle
+        const textInputTwitterHandle = new TextInputComponent() // We create a Text Input Component
+            .setCustomId(twitterQuestFields.modal.componentsList[offset].id)
+            .setLabel(twitterQuestFields.modal.componentsList[offset].label)
+            .setStyle(twitterQuestFields.modal.componentsList[offset].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
+            .setMinLength(twitterQuestFields.modal.componentsList[offset].minLenght)
+            .setMaxLength(twitterQuestFields.modal.componentsList[offset].maxLength)
+            .setPlaceholder(twitterQuestFields.modal.componentsList[offset].placeholder)
+            .setRequired(twitterQuestFields.modal.componentsList[offset].required) // If it's required or not
+        modal.setCustomId(twitterQuestFields.modal.id)
+            .setTitle(twitterQuestFields.modal.title)
+            for (let index = 0; index < basicModalTextInputList.length; index++) {
+                modal.addComponents(basicModalTextInputList[index] )
+            }
+        modal.addComponents(textInputTwitterHandle)
+    } catch (err:any) {
+        writeDiscordLog(filename, functionName, msg, err.toString())
+    }
+    return modal
+}
 
 async function joinQuestButtonClicked(interaction:Interaction, client: Client){
         let functionName = joinQuestButtonClicked.name
@@ -153,11 +152,86 @@ async function isSubscribed(interaction:Interaction): Promise <boolean> {
     }
 }
 
-async function modalSubmit(modal: any){
+async function modalSubmit(modal:ModalSubmitInteraction){
+    let functionName = modalSubmit.name
+    let msg = "Error trying to check if Twitter handle is valid! Got: 'OTHER_ERROR' "
     await modal.deferReply({ ephemeral: true })
-    const firstResponse = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
-    modal.followUp({ content: 'OK! You are now on the Twitter quest!!. This is the information I got from you: \n' + `\`\`\`${firstResponse}\`\`\``, ephemeral: true })
+    let isEmailValid:boolean
+    let isTwitterValid:twitterHandleResponses|null
+    let firstNameMsg ='Not provided'
+    let lastNameMsg ='Not provided'
+    let emailMsg ='Not provided'
+    let questMsg = 'OK! You are now on the Wallet quest!!. This is the information I got from you: '
+    let userID = modal.user.id
+    let twitterValid = false
+    let twitterHandleValidText = ''
+
+    try {
+        const modalFirstName = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
+        const modalLastName = modal.getTextInputValue(twitterQuestFields.modal.componentsList[1].id)
+        const modalEmail = modal.getTextInputValue(twitterQuestFields.modal.componentsList[2].id)
+        const modalTwitterHandle = modal.getTextInputValue(twitterQuestFields.modal.componentsList[3].id)
+
+        if(modalFirstName != null){
+            modalFirstName.trim()
+            firstNameMsg = modalFirstName
+            usersFirstName.set(userID, modalFirstName)
+        }
+        if(modalLastName != null){
+            modalLastName.trim()
+            lastNameMsg = modalLastName
+            usersLastName.set(userID, modalLastName )
+        }
+        if(modalEmail != null){
+            modalEmail.trim()
+            isEmailValid = validate(modalEmail)
+            emailMsg = modalEmail
+        }else{isEmailValid = true}
+        if(modalTwitterHandle != null){
+            modalTwitterHandle.trim()
+            isTwitterValid = await isTwitterHandleValid(modalTwitterHandle)
+            switch (isTwitterValid){
+                case 'HANDLE_NOT_EXISTS':
+                    console.log('HANDLE_NOT_EXISTS')
+                    twitterHandleValidText = "The handle you are using doesn't exist! Please try again"
+                    break
+                case 'HANDLE_EXISTS':
+                    twitterValid = true
+                      break
+                case 'HANDLE_ERROR':
+                    twitterHandleValidText = "The handle you are using doesn't follow Twitter handle guideliness. Are you sure you typed it correctly?"
+                    break
+                case 'OTHER_ERROR':
+                    twitterHandleValidText = "The handle you are using is giving an error. Are you sure you typed it correctly?"
+                    break
+                case null:
+                        writeDiscordLog(filename, functionName, msg, 'Function returned null')
+                    break
+                default:
+                    writeDiscordLog(filename, functionName, msg, "Default: Switch statement didn't match any of the case clauses")
+                    break
+            }
+        }
+        if (twitterValid && isEmailValid) {
+            usersEmail.set(userID, modalEmail)
+            usersTwitterHandle.set(userID, modalTwitterHandle)
+            if(subscribed){
+                questMsg = "You edited the Wallet Quest. This is the information I'll be editing: "
+
+            }else{ //Give EXP points, tokens, and levelup
+            //userLevelUp(userID)
+        }
+        }else{
+            if(!twitterValid){
+                
+
+            }
+        }
+    } catch (err) {
+        throw err
+    }
 }
+
 
 
 export class TwitterQuest {
@@ -168,19 +242,19 @@ export class TwitterQuest {
     public  get joinQuestButtonLabel():string{
         return twitterQuestFields.button.customId
     }
-    public joinQuestButtonClicked(interaction:Interaction, client: Client ){
-        joinQuestButtonClicked(interaction, client)
-    }
     public get modalCustomID():string{
         return twitterQuestFields.modal.id
     }
-    public async  modalQuestSubmit(modal:any){
-       await  modalSubmit(modal)
-    }
     public embedRedraw(interaction: Interaction) {
-        return embedRedraw(interaction);
+		return embedRedraw(interaction)
     }
     public async drawButton(interaction: Interaction){
         return await drawButton(interaction)
+    }
+    public joinQuestButtonClicked(interaction:Interaction, client: Client ){
+        joinQuestButtonClicked(interaction, client)
+    }
+    public async modalQuestSubmit(modal:ModalSubmitInteraction){
+        return await modalSubmit(modal)
     }
 }
