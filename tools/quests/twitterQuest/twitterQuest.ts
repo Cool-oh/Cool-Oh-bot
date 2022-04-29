@@ -3,20 +3,23 @@ import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } fro
 import { BackendlessPerson, QuestEmbedJson, twitterHandleResponses, WalletQuestIntfc } from '../../../interfaces/interfaces'
 import twitterQuestJson from './twitterQuest.json'
 import {Modal, TextInputComponent, showModal, TextInputStyle, ModalSubmitInteraction } from 'discord-modals'
-import { checkIfDiscordIDRegistered, isSubscribedToQuest, isSubscribedToQuest2 } from '../../users/userBackendless'
+import { checkIfDiscordIDRegistered, getDiscordServerObjID, isSubscribedToQuest, isSubscribedToQuest2, updateDiscordUser } from '../../users/userBackendless'
 import { writeDiscordLog } from '../../../features/discordLogger'
-import { usersEmail, usersFirstName, usersLastName, usersLevel, usersTwitterHandle } from '../questInit'
+import { usersEmail, usersFirstName, usersLastName, usersLevel, usersTokens, usersTwitterHandle, usersXP } from '../questInit'
 import { basicModalTextInputs, isTwitterHandleValid } from '../../miscTools'
 import { validate } from 'email-validator'
 
 dotenv.config()
 const filename = 'twitterQuests.ts'
 const twitterQuestName = process.env.TWITTER_QUEST_NAME
-
-
 const twitterQuestFields = twitterQuestJson as QuestEmbedJson
+const twitterQuestTokenPrize = twitterQuestFields.tokenPrize
+
+
+
 const menu = twitterQuestFields.menu
 const subscribed = new Map() //If the user is subscribed to this quest
+var userToSave: BackendlessPerson
 
 async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
     let functionName = embedRedraw.name
@@ -152,6 +155,19 @@ async function isSubscribed(interaction:Interaction): Promise <boolean> {
     throw error
     }
 }
+function userLevelUp(userID:string)
+{
+    let userXP = usersXP.get(userID)
+    userXP+= twitterQuestTokenPrize
+    usersXP.set(userID,userXP)
+
+    let userLevel = 1
+    usersLevel.set(userID, userLevel)
+
+    let userTokens = usersTokens.get(userID)
+    userTokens += twitterQuestTokenPrize
+    usersTokens.set(userID, userTokens)
+}
 
 async function modalSubmit(modal:ModalSubmitInteraction){
     let functionName = modalSubmit.name
@@ -162,17 +178,18 @@ async function modalSubmit(modal:ModalSubmitInteraction){
     let firstNameMsg ='Not provided'
     let lastNameMsg ='Not provided'
     let emailMsg ='Not provided'
-    let questMsg = 'OK! You are now on the Wallet quest!!. This is the information I got from you: '
+    let questMsg = 'OK! You are now on the Twitter quest!!. This is the information I got from you: '
     let userID = modal.user.id
     let twitterValid = false
     let twitterHandleValidText = ''
+    
 
     try {
         const modalFirstName = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
         const modalLastName = modal.getTextInputValue(twitterQuestFields.modal.componentsList[1].id)
         const modalEmail = modal.getTextInputValue(twitterQuestFields.modal.componentsList[2].id)
         const modalTwitterHandle = modal.getTextInputValue(twitterQuestFields.modal.componentsList[3].id)
-
+        const modalTwitterHandleClean = modalTwitterHandle.replace('@', '')
         if(modalFirstName != null){
             modalFirstName.trim()
             firstNameMsg = modalFirstName
@@ -190,7 +207,8 @@ async function modalSubmit(modal:ModalSubmitInteraction){
         }else{isEmailValid = true}
         if(modalTwitterHandle != null){
             modalTwitterHandle.trim()
-            isTwitterValid = await isTwitterHandleValid(modalTwitterHandle)
+            
+            isTwitterValid = await isTwitterHandleValid(modalTwitterHandleClean)
             switch (isTwitterValid){
                 case 'HANDLE_NOT_EXISTS':
                     console.log('HANDLE_NOT_EXISTS')
@@ -215,16 +233,51 @@ async function modalSubmit(modal:ModalSubmitInteraction){
         }
         if (twitterValid && isEmailValid) {
             usersEmail.set(userID, modalEmail)
-            usersTwitterHandle.set(userID, modalTwitterHandle)
+            usersTwitterHandle.set(userID, modalTwitterHandleClean)
+            let discordServerObjID = await getDiscordServerObjID(modal.guildId!)
             if(subscribed.get(userID)){
                 questMsg = "You edited the Wallet Quest. This is the information I'll be editing: "
 
             }else{ //Give EXP points, tokens, and levelup
-            //userLevelUp(userID)
-        }
+            userLevelUp(userID)
+
+            }
+            modal.followUp({ content: questMsg + '\nName: '+ firstNameMsg
+            + '\nLast Name: ' + lastNameMsg + '\nEmail: '+ emailMsg +'\nTwitter handle: ' +  `\`\`\`${modalTwitterHandleClean}\`\`\``, ephemeral: true })
+            userToSave = {
+                First_Name: modalFirstName,
+                Last_Name: modalLastName,
+                email: modalEmail,
+                Discord_ID: modal.user.id,
+                Discord_Handle: modal.user.username,
+                Quests: {
+                    Twitter_quests:[{
+                        twitter_handle: modalTwitterHandleClean,
+                        twitter_id: '',
+                        Discord_Server: {
+                            objectId: discordServerObjID!,
+                            server_id: modal.guildId!,
+                            server_name: modal.guild?.name!
+                        }
+                    }]
+                },
+                Gamifications:[{
+                    Level: usersLevel.get(userID),
+                    XP: usersXP.get(userID),
+                    Tokens: usersTokens.get(userID),
+                    Discord_Server:{
+                        objectId: discordServerObjID!,
+                        server_id: modal.guildId!,
+                        server_name: modal.guild?.name!,
+                    }
+                }]
+            }
+            updateDiscordUser(userToSave)     
         }else{
             if(!twitterValid){
-                
+
+
+               modal.followUp({ content: twitterHandleValidText, ephemeral: true })
 
             }
         }

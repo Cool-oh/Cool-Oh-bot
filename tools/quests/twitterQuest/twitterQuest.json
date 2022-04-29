@@ -9,6 +9,7 @@
     },
     "description": "Some description here",
     "thumbnail": "https://karencropper.files.wordpress.com/2013/06/twitter.png",
+    "tokenPrize": 65,
     "fields": [
         { "name": "Welcome to the Twitter quest!!", "value": "For this quest, we need you to follow help on othe promotion of our Twitter profile.", "inline":false },
         { "name": "\u200B", "value": "\u200B", "inline":false  },
@@ -67,11 +68,11 @@
         },
         {
             "id": "textinput_tq_twitterHandler",
-            "label": "Please provide your twitter handle with the @",
+            "label": "Provide your twitter handle without the @",
             "style": "SHORT",
-            "minLenght": 0,
-            "maxLength": 20,
-            "placeholder": "@yourTwitterHandle",
+            "minLenght": 4,
+            "maxLength": 15,
+            "placeholder": "yourTwitterHandle",
             "required": true
         }]
     },

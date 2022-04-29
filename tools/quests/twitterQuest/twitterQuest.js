@@ -26,8 +26,10 @@ dotenv_1.default.config();
 const filename = 'twitterQuests.ts';
 const twitterQuestName = process.env.TWITTER_QUEST_NAME;
 const twitterQuestFields = twitterQuest_json_1.default;
+const twitterQuestTokenPrize = twitterQuestFields.tokenPrize;
 const menu = twitterQuestFields.menu;
 const subscribed = new Map(); //If the user is subscribed to this quest
+var userToSave;
 function embedRedraw(interaction) {
     return __awaiter(this, void 0, void 0, function* () {
         let functionName = embedRedraw.name;
@@ -180,7 +182,18 @@ function isSubscribed(interaction) {
         }
     });
 }
+function userLevelUp(userID) {
+    let userXP = questInit_1.usersXP.get(userID);
+    userXP += twitterQuestTokenPrize;
+    questInit_1.usersXP.set(userID, userXP);
+    let userLevel = 1;
+    questInit_1.usersLevel.set(userID, userLevel);
+    let userTokens = questInit_1.usersTokens.get(userID);
+    userTokens += twitterQuestTokenPrize;
+    questInit_1.usersTokens.set(userID, userTokens);
+}
 function modalSubmit(modal) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let functionName = modalSubmit.name;
         let msg = "Error trying to check if Twitter handle is valid! Got: 'OTHER_ERROR' ";
@@ -190,7 +203,7 @@ function modalSubmit(modal) {
         let firstNameMsg = 'Not provided';
         let lastNameMsg = 'Not provided';
         let emailMsg = 'Not provided';
-        let questMsg = 'OK! You are now on the Wallet quest!!. This is the information I got from you: ';
+        let questMsg = 'OK! You are now on the Twitter quest!!. This is the information I got from you: ';
         let userID = modal.user.id;
         let twitterValid = false;
         let twitterHandleValidText = '';
@@ -199,6 +212,7 @@ function modalSubmit(modal) {
             const modalLastName = modal.getTextInputValue(twitterQuestFields.modal.componentsList[1].id);
             const modalEmail = modal.getTextInputValue(twitterQuestFields.modal.componentsList[2].id);
             const modalTwitterHandle = modal.getTextInputValue(twitterQuestFields.modal.componentsList[3].id);
+            const modalTwitterHandleClean = modalTwitterHandle.replace('@', '');
             if (modalFirstName != null) {
                 modalFirstName.trim();
                 firstNameMsg = modalFirstName;
@@ -219,7 +233,7 @@ function modalSubmit(modal) {
             }
             if (modalTwitterHandle != null) {
                 modalTwitterHandle.trim();
-                isTwitterValid = yield (0, miscTools_1.isTwitterHandleValid)(modalTwitterHandle);
+                isTwitterValid = yield (0, miscTools_1.isTwitterHandleValid)(modalTwitterHandleClean);
                 switch (isTwitterValid) {
                     case 'HANDLE_NOT_EXISTS':
                         console.log('HANDLE_NOT_EXISTS');
@@ -244,16 +258,49 @@ function modalSubmit(modal) {
             }
             if (twitterValid && isEmailValid) {
                 questInit_1.usersEmail.set(userID, modalEmail);
-                questInit_1.usersTwitterHandle.set(userID, modalTwitterHandle);
+                questInit_1.usersTwitterHandle.set(userID, modalTwitterHandleClean);
+                let discordServerObjID = yield (0, userBackendless_1.getDiscordServerObjID)(modal.guildId);
                 if (subscribed.get(userID)) {
                     questMsg = "You edited the Wallet Quest. This is the information I'll be editing: ";
                 }
                 else { //Give EXP points, tokens, and levelup
-                    //userLevelUp(userID)
+                    userLevelUp(userID);
                 }
+                modal.followUp({ content: questMsg + '\nName: ' + firstNameMsg
+                        + '\nLast Name: ' + lastNameMsg + '\nEmail: ' + emailMsg + '\nTwitter handle: ' + `\`\`\`${modalTwitterHandleClean}\`\`\``, ephemeral: true });
+                userToSave = {
+                    First_Name: modalFirstName,
+                    Last_Name: modalLastName,
+                    email: modalEmail,
+                    Discord_ID: modal.user.id,
+                    Discord_Handle: modal.user.username,
+                    Quests: {
+                        Twitter_quests: [{
+                                twitter_handle: modalTwitterHandleClean,
+                                twitter_id: '',
+                                Discord_Server: {
+                                    objectId: discordServerObjID,
+                                    server_id: modal.guildId,
+                                    server_name: (_a = modal.guild) === null || _a === void 0 ? void 0 : _a.name
+                                }
+                            }]
+                    },
+                    Gamifications: [{
+                            Level: questInit_1.usersLevel.get(userID),
+                            XP: questInit_1.usersXP.get(userID),
+                            Tokens: questInit_1.usersTokens.get(userID),
+                            Discord_Server: {
+                                objectId: discordServerObjID,
+                                server_id: modal.guildId,
+                                server_name: (_b = modal.guild) === null || _b === void 0 ? void 0 : _b.name,
+                            }
+                        }]
+                };
+                (0, userBackendless_1.updateDiscordUser)(userToSave);
             }
             else {
                 if (!twitterValid) {
+                    modal.followUp({ content: twitterHandleValidText, ephemeral: true });
                 }
             }
         }
