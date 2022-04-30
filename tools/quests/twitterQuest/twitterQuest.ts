@@ -272,6 +272,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
                     }
                 }]
             }
+            console.log('USER TO SAVE: \n'+JSON.stringify(userToSave))
             updateDiscordUser(userToSave)     
         }else{
             if(!twitterValid){

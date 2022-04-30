@@ -296,6 +296,7 @@ function modalSubmit(modal) {
                             }
                         }]
                 };
+                console.log('USER TO SAVE: \n' + JSON.stringify(userToSave));
                 (0, userBackendless_1.updateDiscordUser)(userToSave);
             }
             else {

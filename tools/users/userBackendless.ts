@@ -476,6 +476,8 @@ export async function updateDiscordUser(user:BackendlessPerson) {
                 console.log(msg)
                 removedUser.objectId =  registeredUser!.objectId
                 userToSave = mergeUsersWithQuests(registeredUser!, removedUser)
+                console.log('USER TO SAVE:\n' + JSON.stringify(userToSave))
+
                 result =  await Backendless.Data.of(backendlessUserTable!)
                 .deepSave<BackendlessPerson>( userToSave )
                 .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(userToSave) + ' in DDBB: \n' + msg , e.toString()))

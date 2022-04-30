@@ -500,6 +500,7 @@ function updateDiscordUser(user) {
                     console.log(msg);
                     removedUser.objectId = registeredUser.objectId;
                     userToSave = mergeUsersWithQuests(registeredUser, removedUser);
+                    console.log('USER TO SAVE:\n' + JSON.stringify(userToSave));
                     result = yield backendless_1.default.Data.of(backendlessUserTable)
                         .deepSave(userToSave)
                         .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + JSON.stringify(userToSave) + ' in DDBB: \n' + msg, e.toString()));
