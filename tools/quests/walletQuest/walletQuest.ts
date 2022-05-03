@@ -18,7 +18,8 @@ const menu = walletQuestFields.menu
 const filename = 'walletQuests.ts'
 
 var userToSave: BackendlessPerson
-var subscribed:boolean  //If the user is subscribed to this quest
+const subscribed = new Map() //If the user is subscribed to this quest
+
 
 async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
     let functionName = embedRedraw.name
@@ -62,14 +63,15 @@ async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
 async function drawButton(interaction: Interaction): Promise<MessageButton>{
     let functionName = drawButton.name
     let msg = 'Trying to draw button'
+    let userID = interaction.user.id
     let joinQuestButton = new MessageButton()
     try {
         joinQuestButton.setCustomId(walletQuestFields.button.customId) //our own name for our button in our code to detect which button the user clicked on
             .setEmoji(walletQuestFields.button.emoji)   //CTRL+i :emojisense:
             .setLabel(walletQuestFields.button.label)
             .setStyle(walletQuestFields.button.style)
-        subscribed = await  isSubscribed(interaction)
-             if(subscribed){
+        subscribed.set(userID, await  isSubscribed(interaction))
+             if(subscribed.get(userID)){
                  joinQuestButton.setLabel(walletQuestFields.button.label_edit)
              }else{
                  joinQuestButton.setLabel(walletQuestFields.button.label)

@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import { Client, ColorResolvable, Interaction, MessageButton, MessageEmbed } from 'discord.js'
-import { BackendlessPerson, QuestEmbedJson, twitterHandleResponses, WalletQuestIntfc } from '../../../interfaces/interfaces'
+import { BackendlessPerson, QuestEmbedJson, twitterHandleResponses, WalletQuestIntfc, TwitterQuestIntfc } from '../../../interfaces/interfaces'
 import twitterQuestJson from './twitterQuest.json'
 import {Modal, TextInputComponent, showModal, TextInputStyle, ModalSubmitInteraction } from 'discord-modals'
 import { checkIfDiscordIDRegistered, getDiscordServerObjID, isSubscribedToQuest, isSubscribedToQuest2, updateDiscordUser } from '../../users/userBackendless'
@@ -24,7 +24,7 @@ var userToSave: BackendlessPerson
 async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
     let functionName = embedRedraw.name
     let msg = 'Trying to init the Quest'
-    let userTwitterQuest:WalletQuestIntfc|null
+    let userTwitterQuest:TwitterQuestIntfc|null
     let discordServerID = interaction.guildId!
     let userID = interaction.user.id
 
@@ -45,6 +45,7 @@ async function embedRedraw(interaction: Interaction):Promise <MessageEmbed> {
             userTwitterQuest = isSubscribedToQuest2(user, twitterQuestName!, discordServerID)
             if (userTwitterQuest != null){
                 twitterQuestEmbed.setDescription('You are alreday subscribed to this quest. Click the button below to edit it.')
+                usersTwitterHandle.set(userID, userTwitterQuest.twitter_handle)
             }
             if(user.First_Name != null){usersFirstName.set(userID,user.First_Name) }
             if(user.Last_Name != null){usersLastName.set(userID,user.Last_Name )  }
@@ -70,7 +71,6 @@ async function drawButton(interaction: Interaction): Promise<MessageButton>{
             .setLabel(twitterQuestFields.button.label)
             .setStyle(twitterQuestFields.button.style)
         subscribed.set(userID, await  isSubscribed(interaction))
-        //subscribed = await  isSubscribed(interaction) //OJO CON ESTO!! SE MEZCLAN LOS DATOS?
         if(subscribed.get(userID)){
             joinQuestButton.setLabel(twitterQuestFields.button.label_edit)
         }else{
@@ -107,8 +107,13 @@ async function drawModal(interaction:Interaction):Promise<Modal> {
             .setStyle(twitterQuestFields.modal.componentsList[offset].style as TextInputStyle) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
             .setMinLength(twitterQuestFields.modal.componentsList[offset].minLenght)
             .setMaxLength(twitterQuestFields.modal.componentsList[offset].maxLength)
-            .setPlaceholder(twitterQuestFields.modal.componentsList[offset].placeholder)
-            .setRequired(twitterQuestFields.modal.componentsList[offset].required) // If it's required or not
+            .setRequired(twitterQuestFields.modal.componentsList[offset].required)
+            if (usersTwitterHandle.get(userID)) {
+            textInputTwitterHandle.setPlaceholder(usersTwitterHandle.get(userID))
+            } else {
+                textInputTwitterHandle.setPlaceholder(twitterQuestFields.modal.componentsList[offset].placeholder)
+            }
+
         modal.setCustomId(twitterQuestFields.modal.id)
             .setTitle(twitterQuestFields.modal.title)
             for (let index = 0; index < basicModalTextInputList.length; index++) {
@@ -157,16 +162,16 @@ async function isSubscribed(interaction:Interaction): Promise <boolean> {
 }
 function userLevelUp(userID:string)
 {
-    let userXP = usersXP.get(userID)
-    userXP+= twitterQuestTokenPrize
-    usersXP.set(userID,userXP)
+    if(!subscribed.get(userID)){
+        let userXP = usersXP.get(userID)
+        userXP+= twitterQuestTokenPrize
+        usersXP.set(userID,userXP)
 
-    let userLevel = 1
-    usersLevel.set(userID, userLevel)
+        let userTokens = usersTokens.get(userID)
+        userTokens += twitterQuestTokenPrize
+        usersTokens.set(userID, userTokens)
+    }
 
-    let userTokens = usersTokens.get(userID)
-    userTokens += twitterQuestTokenPrize
-    usersTokens.set(userID, userTokens)
 }
 
 async function modalSubmit(modal:ModalSubmitInteraction){
@@ -182,7 +187,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
     let userID = modal.user.id
     let twitterValid = false
     let twitterHandleValidText = ''
-    
+
 
     try {
         const modalFirstName = modal.getTextInputValue(twitterQuestFields.modal.componentsList[0].id)
@@ -207,7 +212,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
         }else{isEmailValid = true}
         if(modalTwitterHandle != null){
             modalTwitterHandle.trim()
-            
+
             isTwitterValid = await isTwitterHandleValid(modalTwitterHandleClean)
             switch (isTwitterValid){
                 case 'HANDLE_NOT_EXISTS':
@@ -273,7 +278,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
                 }]
             }
             console.log('USER TO SAVE: \n'+JSON.stringify(userToSave))
-            updateDiscordUser(userToSave)     
+            updateDiscordUser(userToSave)
         }else{
             if(!twitterValid){
 

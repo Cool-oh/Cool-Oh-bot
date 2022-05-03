@@ -110,13 +110,13 @@ export interface WalletQuestIntfc extends AllQuests{
 
 export interface WalletQuests extends Array<WalletQuestIntfc>{}
 
-interface TwitterQuest extends AllQuests{
+export interface TwitterQuestIntfc extends AllQuests{
 
-    twitter_handle: string,
-    twitter_id: string,
+    twitter_handle?: string,
+    twitter_id?: string,
 
 }
-export interface TwitterQuests extends Array<TwitterQuest>{}
+export interface TwitterQuests extends Array<TwitterQuestIntfc>{}
 
 export interface Quests {
     created?: Date,
@@ -201,4 +201,6 @@ export type twitterHandleResponses =
     | 'HANDLE_NOT_EXISTS'
     | 'HANDLE_ERROR'
     | 'OTHER_ERROR'
+
+
 

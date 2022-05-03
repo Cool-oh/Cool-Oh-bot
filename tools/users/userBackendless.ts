@@ -1,7 +1,7 @@
 import {Snowflake } from 'discord.js';
 import Backendless from 'backendless'
 import dotenv from 'dotenv'
-import { BackendlessPerson, AllQuests, WalletQuests, TwitterQuests, DiscordServer, Gamification, Quests, WalletQuestIntfc, Gamifications} from '../../interfaces/interfaces';
+import { BackendlessPerson, AllQuests, WalletQuests, TwitterQuests, DiscordServer, Gamification, Quests, WalletQuestIntfc, Gamifications, TwitterQuestIntfc} from '../../interfaces/interfaces';
 import {writeDiscordLog} from '../../features/discordLogger';
 import { WalletQuest } from '../quests/walletQuest/walletQuest';
 const _ = require("lodash");
@@ -468,16 +468,13 @@ export async function updateDiscordUser(user:BackendlessPerson) {
                 }
             }
         }else{ //email not provided
-            console.log('ID2: ' + user.Discord_ID)
             let registeredUser = await checkIfDiscordIDRegistered(user.Discord_ID)
-            console.log('registeredUser:\n' + registeredUser)
             if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                 let msg = "5 Email NOT provided. DiscordID exists: We UPDATE record"
                 console.log(msg)
                 removedUser.objectId =  registeredUser!.objectId
-                userToSave = mergeUsersWithQuests(registeredUser!, removedUser)
-                console.log('USER TO SAVE:\n' + JSON.stringify(userToSave))
-
+                let removedRegisteredUser  = removeEmpty(registeredUser)
+                userToSave = mergeUsersWithQuests(removedRegisteredUser, removedUser)
                 result =  await Backendless.Data.of(backendlessUserTable!)
                 .deepSave<BackendlessPerson>( userToSave )
                 .catch( e => writeDiscordLog(filename, functionName, 'Trying to save user ' + JSON.stringify(userToSave) + ' in DDBB: \n' + msg , e.toString()))
@@ -493,7 +490,107 @@ export async function updateDiscordUser(user:BackendlessPerson) {
         throw error
     }
 }
+/*
 
+
+
+
+
+export async function  checkIfDiscordIDRegistered(discordUserId: Snowflake): Promise<BackendlessPerson|null> {
+    let functionName = checkIfDiscordIDRegistered.name
+    let errMsg = 'Trying to find discord user ID: ' + discordUserId + ' in DDBB'
+    let result:BackendlessPerson[]
+    var queryBuilder = Backendless.DataQueryBuilder.create()
+    queryBuilder.setRelationsDepth( backendlessRelationshipDepth )
+    queryBuilder.setWhereClause("Discord_ID = '" + discordUserId + "'")
+
+    try {
+        result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
+        .catch( e => {
+            writeDiscordLog(filename, functionName, errMsg , e.toString())
+            return result})
+              if(!result[0]){  //user not found
+                return null
+            }else { //user found
+                return result[0]
+            }
+
+
+    } catch (error) {
+        throw error
+    }
+}
+*/
+
+
+export async function deleteDeepDiscordUser(user:BackendlessPerson, discordServerID: string) {
+    let functionName = deleteDiscordUser.name
+    let errMsg = 'Trying to deep delete discord user with ID: ' + user.Discord_ID + ' in DDBB'
+
+    let userGamificationsObjID = user.Gamifications![0].objectId
+
+    try {
+    let subscribedToWalletQ = await isSubscribedToQuest(user, walletQuestName!, discordServerID) as WalletQuestIntfc
+    console.log(JSON.stringify('subscribedToWallet:' + subscribedToWalletQ))
+    let subscribedToTwitterQ = await isSubscribedToQuest(user, twitterQuestName!, discordServerID) as TwitterQuestIntfc
+
+
+
+     Backendless.Data.of( backendlessUserTable! ).remove( user )
+  .then( function( timestamp ) {
+      console.log( "Contact instance has been deleted" );
+    })
+  .catch( function( error ) {
+      console.log( "an error has occurred " + error.message );
+    })
+
+     Backendless.Data.of( 'Wallet_Quest_Test' ).remove( subscribedToWalletQ.objectId! )
+  .then( function( timestamp ) {
+      console.log( "Contact instance has been deleted" );
+    })
+  .catch( function( error ) {
+      console.log( "an error has occurred " + error.message );
+    })
+
+    Backendless.Data.of( 'Twitter_Quest_Test' ).remove( subscribedToTwitterQ.objectId! )
+  .then( function( timestamp ) {
+      console.log( "Contact instance has been deleted" );
+    })
+  .catch( function( error ) {
+      console.log( "an error has occurred " + error.message );
+    })
+
+    Backendless.Data.of( 'Gamifications_Test' ).remove( userGamificationsObjID! )
+  .then( function( timestamp ) {
+      console.log( "Contact instance has been deleted" );
+    })
+  .catch( function( error ) {
+      console.log( "an error has occurred " + error.message );
+    })
+
+
+
+    } catch (error) {
+
+    }
+
+
+}
+
+
+
+export async function deleteDiscordUser(discordUserId: Snowflake) {
+    let functionName = deleteDiscordUser.name
+    let errMsg = 'Trying to delete discord user with ID: ' + discordUserId + ' in DDBB'
+
+    try {
+
+    } catch (error) {
+
+    }
+
+
+}
 export async function getUserGamification(user:BackendlessPerson):Promise<Gamification | null>
  {
     try {

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGamificationsData = exports.getAllUserQuestsNames = exports.getUserGamification = exports.updateDiscordUser = exports.createBackendlessUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.isSubscribedToQuest2 = exports.getDiscordServerObjID = void 0;
+exports.getGamificationsData = exports.getAllUserQuestsNames = exports.getUserGamification = exports.deleteDiscordUser = exports.deleteDeepDiscordUser = exports.updateDiscordUser = exports.createBackendlessUser = exports.removeEmpty = exports.checkIfDiscordIDRegistered = exports.checkIfEmailRegistered = exports.isSubscribedToQuest = exports.isSubscribedToQuest2 = exports.getDiscordServerObjID = void 0;
 const backendless_1 = __importDefault(require("backendless"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const discordLogger_1 = require("../../features/discordLogger");
@@ -492,15 +492,13 @@ function updateDiscordUser(user) {
                 }
             }
             else { //email not provided
-                console.log('ID2: ' + user.Discord_ID);
                 let registeredUser = yield checkIfDiscordIDRegistered(user.Discord_ID);
-                console.log('registeredUser:\n' + registeredUser);
                 if (registeredUser !== null) { //DiscordID exists in ddbb: Update record
                     let msg = "5 Email NOT provided. DiscordID exists: We UPDATE record";
                     console.log(msg);
                     removedUser.objectId = registeredUser.objectId;
-                    userToSave = mergeUsersWithQuests(registeredUser, removedUser);
-                    console.log('USER TO SAVE:\n' + JSON.stringify(userToSave));
+                    let removedRegisteredUser = removeEmpty(registeredUser);
+                    userToSave = mergeUsersWithQuests(removedRegisteredUser, removedUser);
                     result = yield backendless_1.default.Data.of(backendlessUserTable)
                         .deepSave(userToSave)
                         .catch(e => (0, discordLogger_1.writeDiscordLog)(filename, functionName, 'Trying to save user ' + JSON.stringify(userToSave) + ' in DDBB: \n' + msg, e.toString()));
@@ -520,6 +518,91 @@ function updateDiscordUser(user) {
     });
 }
 exports.updateDiscordUser = updateDiscordUser;
+/*
+
+
+
+
+
+export async function  checkIfDiscordIDRegistered(discordUserId: Snowflake): Promise<BackendlessPerson|null> {
+    let functionName = checkIfDiscordIDRegistered.name
+    let errMsg = 'Trying to find discord user ID: ' + discordUserId + ' in DDBB'
+    let result:BackendlessPerson[]
+    var queryBuilder = Backendless.DataQueryBuilder.create()
+    queryBuilder.setRelationsDepth( backendlessRelationshipDepth )
+    queryBuilder.setWhereClause("Discord_ID = '" + discordUserId + "'")
+
+    try {
+        result =  await Backendless.Data.of( backendlessUserTable! ).find<BackendlessPerson>( queryBuilder )
+        .catch( e => {
+            writeDiscordLog(filename, functionName, errMsg , e.toString())
+            return result})
+              if(!result[0]){  //user not found
+                return null
+            }else { //user found
+                return result[0]
+            }
+
+
+    } catch (error) {
+        throw error
+    }
+}
+*/
+function deleteDeepDiscordUser(user, discordServerID) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let functionName = deleteDiscordUser.name;
+        let errMsg = 'Trying to deep delete discord user with ID: ' + user.Discord_ID + ' in DDBB';
+        let userGamificationsObjID = user.Gamifications[0].objectId;
+        try {
+            let subscribedToWalletQ = yield isSubscribedToQuest(user, walletQuestName, discordServerID);
+            console.log(JSON.stringify('subscribedToWallet:' + subscribedToWalletQ));
+            let subscribedToTwitterQ = yield isSubscribedToQuest(user, twitterQuestName, discordServerID);
+            backendless_1.default.Data.of(backendlessUserTable).remove(user)
+                .then(function (timestamp) {
+                console.log("Contact instance has been deleted");
+            })
+                .catch(function (error) {
+                console.log("an error has occurred " + error.message);
+            });
+            backendless_1.default.Data.of('Wallet_Quest_Test').remove(subscribedToWalletQ.objectId)
+                .then(function (timestamp) {
+                console.log("Contact instance has been deleted");
+            })
+                .catch(function (error) {
+                console.log("an error has occurred " + error.message);
+            });
+            backendless_1.default.Data.of('Twitter_Quest_Test').remove(subscribedToTwitterQ.objectId)
+                .then(function (timestamp) {
+                console.log("Contact instance has been deleted");
+            })
+                .catch(function (error) {
+                console.log("an error has occurred " + error.message);
+            });
+            backendless_1.default.Data.of('Gamifications_Test').remove(userGamificationsObjID)
+                .then(function (timestamp) {
+                console.log("Contact instance has been deleted");
+            })
+                .catch(function (error) {
+                console.log("an error has occurred " + error.message);
+            });
+        }
+        catch (error) {
+        }
+    });
+}
+exports.deleteDeepDiscordUser = deleteDeepDiscordUser;
+function deleteDiscordUser(discordUserId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let functionName = deleteDiscordUser.name;
+        let errMsg = 'Trying to delete discord user with ID: ' + discordUserId + ' in DDBB';
+        try {
+        }
+        catch (error) {
+        }
+    });
+}
+exports.deleteDiscordUser = deleteDiscordUser;
 function getUserGamification(user) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

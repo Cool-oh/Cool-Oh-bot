@@ -53,6 +53,7 @@ function embedRedraw(interaction) {
                 userTwitterQuest = (0, userBackendless_1.isSubscribedToQuest2)(user, twitterQuestName, discordServerID);
                 if (userTwitterQuest != null) {
                     twitterQuestEmbed.setDescription('You are alreday subscribed to this quest. Click the button below to edit it.');
+                    questInit_1.usersTwitterHandle.set(userID, userTwitterQuest.twitter_handle);
                 }
                 if (user.First_Name != null) {
                     questInit_1.usersFirstName.set(userID, user.First_Name);
@@ -87,7 +88,6 @@ function drawButton(interaction) {
                 .setLabel(twitterQuestFields.button.label)
                 .setStyle(twitterQuestFields.button.style);
             subscribed.set(userID, yield isSubscribed(interaction));
-            //subscribed = await  isSubscribed(interaction) //OJO CON ESTO!! SE MEZCLAN LOS DATOS?
             if (subscribed.get(userID)) {
                 joinQuestButton.setLabel(twitterQuestFields.button.label_edit);
             }
@@ -127,8 +127,13 @@ function drawModal(interaction) {
                 .setStyle(twitterQuestFields.modal.componentsList[offset].style) //IMPORTANT: Text Input Component Style can be 'SHORT' or 'LONG'
                 .setMinLength(twitterQuestFields.modal.componentsList[offset].minLenght)
                 .setMaxLength(twitterQuestFields.modal.componentsList[offset].maxLength)
-                .setPlaceholder(twitterQuestFields.modal.componentsList[offset].placeholder)
-                .setRequired(twitterQuestFields.modal.componentsList[offset].required); // If it's required or not
+                .setRequired(twitterQuestFields.modal.componentsList[offset].required);
+            if (questInit_1.usersTwitterHandle.get(userID)) {
+                textInputTwitterHandle.setPlaceholder(questInit_1.usersTwitterHandle.get(userID));
+            }
+            else {
+                textInputTwitterHandle.setPlaceholder(twitterQuestFields.modal.componentsList[offset].placeholder);
+            }
             modal.setCustomId(twitterQuestFields.modal.id)
                 .setTitle(twitterQuestFields.modal.title);
             for (let index = 0; index < basicModalTextInputList.length; index++) {
@@ -183,14 +188,14 @@ function isSubscribed(interaction) {
     });
 }
 function userLevelUp(userID) {
-    let userXP = questInit_1.usersXP.get(userID);
-    userXP += twitterQuestTokenPrize;
-    questInit_1.usersXP.set(userID, userXP);
-    let userLevel = 1;
-    questInit_1.usersLevel.set(userID, userLevel);
-    let userTokens = questInit_1.usersTokens.get(userID);
-    userTokens += twitterQuestTokenPrize;
-    questInit_1.usersTokens.set(userID, userTokens);
+    if (!subscribed.get(userID)) {
+        let userXP = questInit_1.usersXP.get(userID);
+        userXP += twitterQuestTokenPrize;
+        questInit_1.usersXP.set(userID, userXP);
+        let userTokens = questInit_1.usersTokens.get(userID);
+        userTokens += twitterQuestTokenPrize;
+        questInit_1.usersTokens.set(userID, userTokens);
+    }
 }
 function modalSubmit(modal) {
     var _a, _b;
