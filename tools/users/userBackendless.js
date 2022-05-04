@@ -553,8 +553,9 @@ function deleteDeepDiscordUser(user, discordServerID) {
     return __awaiter(this, void 0, void 0, function* () {
         let functionName = deleteDiscordUser.name;
         let errMsg = 'Trying to deep delete discord user with ID: ' + user.Discord_ID + ' in DDBB';
-        let userGamificationsObjID = user.Gamifications[0].objectId;
         try {
+            let userGamificationsObjID = user.Gamifications[0].objectId;
+            // let userQuestsObjID = user.Quests![0].objectId
             let subscribedToWalletQ = yield isSubscribedToQuest(user, walletQuestName, discordServerID);
             console.log(JSON.stringify('subscribedToWallet:' + subscribedToWalletQ));
             let subscribedToTwitterQ = yield isSubscribedToQuest(user, twitterQuestName, discordServerID);
@@ -586,6 +587,15 @@ function deleteDeepDiscordUser(user, discordServerID) {
                 .catch(function (error) {
                 console.log("an error has occurred " + error.message);
             });
+            /*
+                    Backendless.Data.of( 'Quests_Test' ).remove( userQuestsObjID! )
+              .then( function( timestamp ) {
+                  console.log( "Contact instance has been deleted" );
+                })
+              .catch( function( error ) {
+                  console.log( "an error has occurred " + error.message );
+                })
+            */
         }
         catch (error) {
         }

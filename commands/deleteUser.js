@@ -39,14 +39,15 @@ exports.default = {
         let userToDelete = yield (0, userBackendless_1.checkIfDiscordIDRegistered)(target.user.id);
         if (userToDelete != null) {
             let userID = userToDelete.Discord_ID;
-            (0, userBackendless_1.deleteDeepDiscordUser)(userToDelete, interaction.guildId);
+            yield (0, userBackendless_1.deleteDeepDiscordUser)(userToDelete, interaction.guildId);
             questInit_1.usersSolanaAddress.delete(userID);
             questInit_1.usersTwitterHandle.delete(userID);
             questInit_1.usersFirstName.delete(userID);
             questInit_1.usersLastName.delete(userID);
             questInit_1.usersEmail.delete(userID);
+            return 'User and all his datas has been deleted!';
         }
-        return 'User and all his datas has been deleted!';
+        return 'User not found!';
         //console.log(args[0] + ' ' + target.user.username)//
     })
 };

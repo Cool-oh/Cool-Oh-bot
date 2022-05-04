@@ -37,14 +37,15 @@ export default {
 
         if(userToDelete != null){
             let userID = userToDelete.Discord_ID
-            deleteDeepDiscordUser(userToDelete, interaction.guildId!)
+            await  deleteDeepDiscordUser(userToDelete, interaction.guildId!)
             usersSolanaAddress.delete(userID)
             usersTwitterHandle.delete(userID)
             usersFirstName.delete(userID)
             usersLastName.delete(userID)
             usersEmail.delete(userID)
+            return 'User and all his datas has been deleted!'
         }
-        return 'User and all his datas has been deleted!'
+        return 'User not found!'
         //console.log(args[0] + ' ' + target.user.username)//
 
     }
