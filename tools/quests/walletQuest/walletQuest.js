@@ -191,6 +191,7 @@ function isSubscribed(interaction) {
 }
 function userLevelUp(userID) {
     let userXP = questInit_1.usersXP.get(userID);
+    console.log('userXP: ' + userXP);
     userXP += walletQuestTokenPrize;
     questInit_1.usersXP.set(userID, userXP);
     let userLevel = 1;
@@ -198,6 +199,8 @@ function userLevelUp(userID) {
     let userTokens = questInit_1.usersTokens.get(userID);
     userTokens += walletQuestTokenPrize;
     questInit_1.usersTokens.set(userID, userTokens);
+    console.log('User XP: ' + questInit_1.usersXP.get(userID));
+    console.log('User LEVEL: ' + questInit_1.usersLevel.get(userID));
 }
 function modalSubmit(modal) {
     var _a, _b;
@@ -277,6 +280,7 @@ function modalSubmit(modal) {
                         }
                     }]
             };
+            console.log(JSON.stringify(userToSave));
             (0, userBackendless_1.updateDiscordUser)(userToSave);
         }
         else {

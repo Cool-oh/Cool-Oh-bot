@@ -22,12 +22,6 @@ Backendless.initApp(process.env.BACKENDLESS_APP_ID!, process.env.BACKENDLESS_API
 
 
 
-
-
-
-
-
-
 let testUser1 =
 {
     Discord_Handle: 'MamaCarlos55',

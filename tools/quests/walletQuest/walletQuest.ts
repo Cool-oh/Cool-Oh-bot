@@ -169,6 +169,7 @@ async function isSubscribed(interaction:Interaction): Promise <boolean> {
 function userLevelUp(userID:string)
 {
     let userXP = usersXP.get(userID)
+    console.log('userXP: ' + userXP )
     userXP+= walletQuestTokenPrize
     usersXP.set(userID,userXP)
 
@@ -178,6 +179,10 @@ function userLevelUp(userID:string)
     let userTokens = usersTokens.get(userID)
     userTokens += walletQuestTokenPrize
     usersTokens.set(userID, userTokens)
+
+    console.log('User XP: ' + usersXP.get(userID))
+    console.log('User LEVEL: ' + usersLevel.get(userID))
+
 }
 
 async function modalSubmit(modal:ModalSubmitInteraction){
@@ -260,6 +265,7 @@ async function modalSubmit(modal:ModalSubmitInteraction){
                 }
             }]
         }
+        console.log(JSON.stringify(userToSave))
         updateDiscordUser(userToSave)
 
     }else{

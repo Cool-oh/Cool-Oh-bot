@@ -36,7 +36,9 @@ export default {
         let userToDelete = await checkIfDiscordIDRegistered(target.user.id)
 
         if(userToDelete != null){
+            //console.log('USer to delete: ' + JSON.stringify(userToDelete))
             let userID = userToDelete.Discord_ID
+            console.log('interaction.guildId: '+ interaction.guildId)
             await  deleteDeepDiscordUser(userToDelete, interaction.guildId!)
             usersSolanaAddress.delete(userID)
             usersTwitterHandle.delete(userID)

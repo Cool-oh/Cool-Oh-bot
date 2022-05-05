@@ -38,7 +38,9 @@ exports.default = {
         }
         let userToDelete = yield (0, userBackendless_1.checkIfDiscordIDRegistered)(target.user.id);
         if (userToDelete != null) {
+            //console.log('USer to delete: ' + JSON.stringify(userToDelete))
             let userID = userToDelete.Discord_ID;
+            console.log('interaction.guildId: ' + interaction.guildId);
             yield (0, userBackendless_1.deleteDeepDiscordUser)(userToDelete, interaction.guildId);
             questInit_1.usersSolanaAddress.delete(userID);
             questInit_1.usersTwitterHandle.delete(userID);

@@ -23,6 +23,11 @@ const walletQuestName = process.env.WALLET_QUEST_NAME;
 const twitterQuestName = process.env.TWITTER_QUEST_NAME;
 const backendlessUserTable = process.env.BACKENDLESS_USER_TABLE;
 const backendlessDiscordServersTable = process.env.BACKENDLESS_DISCORDSERVERS_TABLE;
+const backendlessGamificationTable = process.env.BACKENDLESS_GAMIFICATION_TABLE;
+const backendlessGamificationsTable = process.env.BACKENDLESS_GAMIFICATIONS_TABLE;
+const backendlessQuestsTable = process.env.BACKENDLESS_QUESTS_TABLE;
+const backendlessWalletQuestTable = process.env.BACKENDLESS_WALLET_QUEST_TABLE;
+const backendlessTwitterQuestTable = process.env.BACKENDLESS_TWITTER_QUEST_TABLE;
 const backendlessRelationshipDepth = Number(process.env.BACKENDLESS_RELATIONSHIP_DEPTH);
 try {
     backendless_1.default.initApp(process.env.BACKENDLESS_APP_ID, process.env.BACKENDLESS_API_KEY);
@@ -553,49 +558,57 @@ function deleteDeepDiscordUser(user, discordServerID) {
     return __awaiter(this, void 0, void 0, function* () {
         let functionName = deleteDiscordUser.name;
         let errMsg = 'Trying to deep delete discord user with ID: ' + user.Discord_ID + ' in DDBB';
+        console.log('USER TO DELETE: \n' + JSON.stringify(user));
         try {
+            console.log('HERE!!!!');
             let userGamificationsObjID = user.Gamifications[0].objectId;
-            // let userQuestsObjID = user.Quests![0].objectId
+            let userQuestsObjID = user.Quests.objectId;
+            console.log('userGamificationsObjID: ' + userGamificationsObjID);
+            console.log('userQuestsObjID: ' + userQuestsObjID);
             let subscribedToWalletQ = yield isSubscribedToQuest(user, walletQuestName, discordServerID);
-            console.log(JSON.stringify('subscribedToWallet:' + subscribedToWalletQ));
+            console.log('subscribedToWallet:' + JSON.stringify(subscribedToWalletQ));
+            console.log('TEST');
             let subscribedToTwitterQ = yield isSubscribedToQuest(user, twitterQuestName, discordServerID);
+            console.log('TEST2');
             backendless_1.default.Data.of(backendlessUserTable).remove(user)
                 .then(function (timestamp) {
-                console.log("Contact instance has been deleted");
+                console.log("Contact USER has been deleted");
             })
                 .catch(function (error) {
                 console.log("an error has occurred " + error.message);
             });
-            backendless_1.default.Data.of('Wallet_Quest_Test').remove(subscribedToWalletQ.objectId)
-                .then(function (timestamp) {
-                console.log("Contact instance has been deleted");
-            })
-                .catch(function (error) {
-                console.log("an error has occurred " + error.message);
-            });
-            backendless_1.default.Data.of('Twitter_Quest_Test').remove(subscribedToTwitterQ.objectId)
-                .then(function (timestamp) {
-                console.log("Contact instance has been deleted");
-            })
-                .catch(function (error) {
-                console.log("an error has occurred " + error.message);
-            });
-            backendless_1.default.Data.of('Gamifications_Test').remove(userGamificationsObjID)
-                .then(function (timestamp) {
-                console.log("Contact instance has been deleted");
-            })
-                .catch(function (error) {
-                console.log("an error has occurred " + error.message);
-            });
-            /*
-                    Backendless.Data.of( 'Quests_Test' ).remove( userQuestsObjID! )
-              .then( function( timestamp ) {
-                  console.log( "Contact instance has been deleted" );
+            if (subscribedToWalletQ != null) {
+                backendless_1.default.Data.of(backendlessWalletQuestTable).remove(subscribedToWalletQ.objectId)
+                    .then(function (timestamp) {
+                    console.log("Contact SUBSCRIBED_TO_WALLET_QUEST has been deleted");
                 })
-              .catch( function( error ) {
-                  console.log( "an error has occurred " + error.message );
+                    .catch(function (error) {
+                    console.log("an error has occurred " + error.message);
+                });
+            }
+            if (subscribedToTwitterQ != null) {
+                backendless_1.default.Data.of(backendlessTwitterQuestTable).remove(subscribedToTwitterQ.objectId)
+                    .then(function (timestamp) {
+                    console.log("Contact TWITTERQUEST has been deleted");
                 })
-            */
+                    .catch(function (error) {
+                    console.log("an error has occurred " + error.message);
+                });
+            }
+            backendless_1.default.Data.of(backendlessGamificationsTable).remove(userGamificationsObjID)
+                .then(function (timestamp) {
+                console.log("Contact GAMIFICATIONS has been deleted");
+            })
+                .catch(function (error) {
+                console.log("an error has occurred " + error.message);
+            });
+            backendless_1.default.Data.of(backendlessQuestsTable).remove(userQuestsObjID)
+                .then(function (timestamp) {
+                console.log("Contact QUESTS has been deleted");
+            })
+                .catch(function (error) {
+                console.log("an error has occurred " + error.message);
+            });
         }
         catch (error) {
         }
